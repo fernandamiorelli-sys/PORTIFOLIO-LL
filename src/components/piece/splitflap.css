@@ -1,0 +1,109 @@
+.flapboard {
+  display: inline-grid;
+  gap: 6px;
+  padding: clamp(10px, 1.4vw, 20px);
+  background: linear-gradient(145deg, #0c0d0c, #080908 55%, #0a0b0a);
+  border: 1px solid rgba(232, 227, 215, 0.07);
+  box-shadow:
+    0 30px 90px rgba(0, 0, 0, 0.7),
+    inset 0 1px 0 rgba(232, 227, 215, 0.04);
+  --cell-w: clamp(13px, 1.55vw, 26px);
+  --cell-h: calc(var(--cell-w) * 1.42);
+}
+
+.flap-row {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.flap-row__led {
+  width: 4px;
+  align-self: stretch;
+  margin: 0 4px;
+  background: linear-gradient(180deg, var(--color-calango), color-mix(in oklab, var(--color-calango) 45%, transparent));
+  box-shadow: 0 0 8px rgba(124, 217, 59, 0.35);
+}
+
+.flap {
+  position: relative;
+  width: var(--cell-w);
+  height: var(--cell-h);
+  perspective: 300px;
+  font-family: var(--font-mono);
+  font-weight: 600;
+  font-stretch: 100%;
+  font-size: calc(var(--cell-h) * 0.62);
+  color: #e8e6e3;
+}
+
+.flap__top,
+.flap__bottom,
+.flap__leaf-top,
+.flap__leaf-bottom {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 50%;
+  overflow: hidden;
+  backface-visibility: hidden;
+}
+
+.flap__top,
+.flap__leaf-top {
+  top: 0;
+  border-radius: 2px 2px 0 0;
+  background: linear-gradient(180deg, #1f211f, #191a19);
+  transform-origin: bottom center;
+}
+
+.flap__bottom,
+.flap__leaf-bottom {
+  bottom: 0;
+  border-radius: 0 0 2px 2px;
+  background: linear-gradient(180deg, #161716, #111211);
+  transform-origin: top center;
+}
+
+.flap__leaf-top,
+.flap__leaf-bottom {
+  z-index: 2;
+}
+
+.flap__leaf-bottom {
+  transform: rotateX(90deg);
+}
+
+.flap__top > span,
+.flap__leaf-top > span {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 200%;
+  display: grid;
+  place-items: center;
+}
+
+.flap__bottom > span,
+.flap__leaf-bottom > span {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 200%;
+  display: grid;
+  place-items: center;
+}
+
+.flap::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  height: 1px;
+  translate: 0 -0.5px;
+  background: rgba(0, 0, 0, 0.85);
+  z-index: 3;
+}

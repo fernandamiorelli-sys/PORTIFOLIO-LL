@@ -1,0 +1,195 @@
+.hud {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  pointer-events: none;
+  color: #fff;
+  mix-blend-mode: difference;
+  animation: hud-in 1.2s var(--ease-out) 0.6s both;
+  transition: opacity 0.4s ease;
+}
+
+.hud.is-hidden {
+  opacity: 0;
+}
+
+@keyframes hud-in {
+  from {
+    opacity: 0;
+  }
+}
+
+.hud a,
+.hud button {
+  pointer-events: auto;
+  color: inherit;
+  text-decoration: none;
+}
+
+.hud__brand {
+  position: absolute;
+  top: var(--hud);
+  left: var(--hud);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.7em;
+}
+
+.hud__brand svg {
+  width: 11px;
+  height: auto;
+  transform: rotate(-20deg);
+}
+
+.hud__right {
+  position: absolute;
+  top: var(--hud);
+  right: var(--hud);
+  display: flex;
+  gap: 1.6rem;
+  align-items: center;
+}
+
+.hud__sound,
+.hud__menu {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6em;
+  padding: 0.4em 0;
+  cursor: pointer;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: var(--step--2);
+}
+
+.hud__bars {
+  display: inline-flex;
+  align-items: flex-end;
+  gap: 2px;
+  height: 10px;
+}
+
+.hud__bars span {
+  width: 2px;
+  height: 100%;
+  background: currentColor;
+  transform-origin: bottom;
+  transform: scaleY(0.15);
+}
+
+.hud__room {
+  position: absolute;
+  left: var(--hud);
+  bottom: var(--hud);
+}
+
+.hud__meta {
+  position: absolute;
+  right: var(--hud);
+  bottom: var(--hud);
+  display: inline-flex;
+  gap: 0.6em;
+  font-variant-numeric: tabular-nums;
+}
+
+.hud__meta i {
+  font-style: normal;
+  opacity: 0.6;
+}
+
+.hud__rail {
+  position: absolute;
+  right: calc(var(--hud) * 0.45);
+  top: 22vh;
+  bottom: 22vh;
+  width: 1px;
+  background: rgba(255, 255, 255, 0.22);
+}
+
+.hud__rail span {
+  position: absolute;
+  inset: 0;
+  background: #fff;
+  transform-origin: top;
+  transform: scaleY(0);
+}
+
+/* índice */
+.index {
+  position: fixed;
+  inset: 0;
+  z-index: 55;
+  display: grid;
+  align-content: center;
+  padding: 12vh var(--gutter);
+  background: color-mix(in oklab, var(--color-breu) 94%, transparent);
+  backdrop-filter: blur(14px);
+  color: var(--color-osso);
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    opacity 0.45s ease,
+    visibility 0s linear 0.45s;
+}
+
+.index.is-open {
+  opacity: 1;
+  visibility: visible;
+  transition: opacity 0.45s ease;
+}
+
+.index__k {
+  margin: 0 0 3vh;
+  color: var(--color-calango);
+}
+
+.index ol {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border-top: 1px solid color-mix(in oklab, var(--color-osso) 16%, transparent);
+}
+
+.index li {
+  border-bottom: 1px solid color-mix(in oklab, var(--color-osso) 16%, transparent);
+}
+
+.index button {
+  display: grid;
+  grid-template-columns: 4rem 1fr;
+  align-items: baseline;
+  width: 100%;
+  padding: 1.1vh 0;
+  text-align: left;
+  cursor: pointer;
+}
+
+.index button .t-mono {
+  color: color-mix(in oklab, var(--color-osso) 50%, transparent);
+}
+
+.index__label {
+  font-size: clamp(1.8rem, 5.4vh, 4rem);
+  font-stretch: 62%;
+  transition:
+    font-stretch 0.5s var(--ease-out),
+    color 0.3s ease;
+}
+
+.index button:hover .index__label,
+.index button:focus-visible .index__label {
+  font-stretch: 110%;
+  color: var(--color-calango);
+}
+
+@media (max-width: 760px) {
+  .hud__brand span {
+    display: none;
+  }
+  .hud__rail {
+    display: none;
+  }
+  .hud__meta {
+    display: none;
+  }
+}

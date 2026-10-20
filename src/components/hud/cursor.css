@@ -1,0 +1,89 @@
+html.has-cursor,
+html.has-cursor * {
+  cursor: none !important;
+}
+
+.cursor {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  pointer-events: none;
+  mix-blend-mode: difference;
+  color: #fff;
+}
+
+.cursor__dot,
+.cursor__ring {
+  position: absolute;
+  left: 0;
+  top: 0;
+  will-change: transform;
+}
+
+.cursor__dot {
+  width: 4px;
+  height: 4px;
+  margin: -2px 0 0 -2px;
+  background: #fff;
+}
+
+.cursor__ring {
+  width: 34px;
+  height: 34px;
+  margin: -17px 0 0 -17px;
+  display: grid;
+  place-items: center;
+}
+
+.cursor__ring::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  transition:
+    transform 0.35s var(--ease-out),
+    border-color 0.3s ease;
+}
+
+/* cantos de mira */
+.cursor__ring::after {
+  content: '';
+  position: absolute;
+  inset: -6px;
+  background:
+    linear-gradient(#fff, #fff) left top / 6px 1px no-repeat,
+    linear-gradient(#fff, #fff) left top / 1px 6px no-repeat,
+    linear-gradient(#fff, #fff) right bottom / 6px 1px no-repeat,
+    linear-gradient(#fff, #fff) right bottom / 1px 6px no-repeat;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.cursor__ring.is-active::before {
+  transform: scale(1.7) rotate(45deg);
+  border-color: transparent;
+}
+
+.cursor__ring.is-active::after {
+  opacity: 1;
+}
+
+.cursor__ring.has-label::before {
+  transform: scale(1);
+}
+
+.cursor__ring.is-down::before {
+  transform: scale(0.7);
+}
+
+.cursor__ring.is-gone {
+  opacity: 0;
+}
+
+.cursor__label {
+  position: absolute;
+  left: 28px;
+  top: 26px;
+  white-space: nowrap;
+  font-size: 10px;
+}

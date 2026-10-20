@@ -1,0 +1,123 @@
+.card {
+  position: relative;
+  flex: 0 0 auto;
+  color: var(--fg);
+  transition: color 0.5s ease;
+}
+
+.card__inner {
+  display: grid;
+  gap: 1.1rem;
+  transform-style: preserve-3d;
+  will-change: transform;
+}
+
+.card__media {
+  position: relative;
+  display: block;
+  width: 100%;
+  aspect-ratio: 4 / 5;
+  overflow: hidden;
+  cursor: pointer;
+  background: var(--color-breu-2);
+  box-shadow: 0 30px 80px -30px rgba(0, 0, 0, 0.6);
+}
+
+.card__pic,
+.card__pic img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  transition: transform 1.2s var(--ease-out);
+}
+
+.card__media:hover .card__pic img,
+.card__media:focus-visible .card__pic img {
+  transform: scale(1.045);
+}
+
+.card__frame {
+  position: absolute;
+  inset: 0;
+  border: 1px solid color-mix(in oklab, var(--color-osso) 18%, transparent);
+  pointer-events: none;
+}
+
+.card__frame::before,
+.card__frame::after {
+  content: '';
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  border-color: var(--color-calango);
+  border-style: solid;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.card__frame::before {
+  top: 10px;
+  left: 10px;
+  border-width: 1px 0 0 1px;
+}
+
+.card__frame::after {
+  right: 10px;
+  bottom: 10px;
+  border-width: 0 1px 1px 0;
+}
+
+.card__media:hover .card__frame::before,
+.card__media:hover .card__frame::after,
+.card__media:focus-visible .card__frame::before,
+.card__media:focus-visible .card__frame::after {
+  opacity: 1;
+}
+
+.card__label {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.card__meta {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  margin: 0;
+  padding-bottom: 0.55rem;
+  border-bottom: 1px solid var(--line);
+  color: var(--fg-dim);
+}
+
+.card__meta span:first-child {
+  color: var(--color-calango);
+}
+
+.card__title {
+  margin: 0.3rem 0 0;
+  font-size: var(--step-3);
+  line-height: 0.95;
+}
+
+.card__lead {
+  margin: 0;
+  text-transform: none;
+  letter-spacing: 0.01em;
+  font-size: var(--step--1);
+  color: var(--fg-dim);
+  max-width: 42ch;
+}
+
+.card__more {
+  justify-self: start;
+  margin-top: 0.4rem;
+  padding: 0.4rem 0;
+  color: var(--fg);
+  border-bottom: 1px solid currentColor;
+  cursor: pointer;
+}
+
+.card__more:hover span {
+  color: var(--color-calango);
+}

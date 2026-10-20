@@ -1,0 +1,227 @@
+@import 'tailwindcss';
+@import '@fontsource-variable/anybody/wdth.css';
+@import '@fontsource-variable/bodoni-moda/opsz-italic.css';
+@import '@fontsource-variable/bodoni-moda/opsz.css';
+@import '@fontsource-variable/martian-mono/wdth.css';
+
+/*
+  Paleta extraída das próprias peças:
+  breu (fundo da vitrine), osso (camisa listrada / papel), verde Abigos (escudo),
+  verde-mata (Trademark), calango (patch da camisa Casa), névoa e sálvia (Gen X Soft Club),
+  terra (sertão, usado só no ciclo do dia).
+*/
+@theme {
+  --color-breu: #070807;
+  --color-breu-2: #0d0f0d;
+  --color-grafite: #1b1f1c;
+  --color-osso: #e8e3d7;
+  --color-verde: #1f8645;
+  --color-mata: #026a36;
+  --color-calango: #7cd93b;
+  --color-nevoa: #6a7c96;
+  --color-salvia: #a8c4b0;
+  --color-terra: #8c6a43;
+
+  --font-display: 'Anybody Variable', 'Arial Narrow', sans-serif;
+  --font-serif: 'Bodoni Moda Variable', 'Didot', 'Bodoni 72', serif;
+  --font-mono: 'Martian Mono Variable', ui-monospace, 'SFMono-Regular', monospace;
+}
+
+:root {
+  --bg: var(--color-breu);
+  --fg: var(--color-osso);
+  --fg-dim: color-mix(in oklab, var(--fg) 62%, transparent);
+  --fg-faint: color-mix(in oklab, var(--fg) 28%, transparent);
+  --line: color-mix(in oklab, var(--fg) 16%, transparent);
+  --accent: var(--color-calango);
+
+  --gutter: clamp(16px, 3.2vw, 48px);
+  --hud: clamp(14px, 2vw, 28px);
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-inout: cubic-bezier(0.76, 0, 0.24, 1);
+
+  --step--2: clamp(0.62rem, 0.6rem + 0.1vw, 0.7rem);
+  --step--1: clamp(0.74rem, 0.7rem + 0.18vw, 0.86rem);
+  --step-0: clamp(0.95rem, 0.9rem + 0.25vw, 1.08rem);
+  --step-1: clamp(1.15rem, 1rem + 0.6vw, 1.5rem);
+  --step-2: clamp(1.5rem, 1.2rem + 1.4vw, 2.4rem);
+  --step-3: clamp(2.1rem, 1.4rem + 3vw, 4.2rem);
+  --step-4: clamp(3rem, 1.6rem + 6vw, 8rem);
+  --step-5: clamp(3.6rem, 1rem + 11vw, 15rem);
+}
+
+html {
+  background: var(--color-breu);
+  color: var(--color-osso);
+  -webkit-text-size-adjust: 100%;
+  text-rendering: optimizeLegibility;
+}
+
+body {
+  margin: 0;
+  background: var(--color-breu);
+  color: var(--fg);
+  font-family: var(--font-mono);
+  font-size: var(--step-0);
+  line-height: 1.55;
+  overflow-x: clip;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Enquanto a abertura roda, a página não rola. */
+body.is-locked {
+  overflow: hidden;
+}
+
+::selection {
+  background: var(--color-calango);
+  color: var(--color-breu);
+}
+
+img,
+video,
+canvas,
+svg {
+  display: block;
+  max-width: 100%;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+  background: none;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+}
+
+a {
+  color: inherit;
+}
+
+:focus-visible {
+  outline: 1px solid var(--color-calango);
+  outline-offset: 4px;
+}
+
+/* Lenis */
+html.lenis,
+html.lenis body {
+  height: auto;
+}
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+.lenis.lenis-smooth [data-lenis-prevent] {
+  overscroll-behavior: contain;
+}
+.lenis.lenis-stopped {
+  overflow: hidden;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Tipografia utilitária do sistema */
+.t-mono {
+  font-family: var(--font-mono);
+  font-size: var(--step--2);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-stretch: 85%;
+  font-weight: 400;
+}
+
+.t-display {
+  font-family: var(--font-display);
+  font-weight: 860;
+  font-stretch: 62%;
+  line-height: 0.86;
+  letter-spacing: -0.01em;
+  text-transform: uppercase;
+}
+
+.t-serif {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-weight: 400;
+  font-variation-settings: 'opsz' 96;
+  letter-spacing: -0.01em;
+}
+
+.t-body {
+  font-family: var(--font-mono);
+  font-size: var(--step--1);
+  line-height: 1.75;
+  font-stretch: 92%;
+  font-weight: 300;
+  color: var(--fg-dim);
+}
+
+.t-body strong {
+  color: var(--fg);
+  font-weight: 500;
+}
+
+/* Fundo global: muda com as salas (ciclo do dia em Sangue-Frio). */
+.backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  background: var(--bg);
+  transition: background-color 0.6s linear;
+  pointer-events: none;
+}
+
+.stage-canvas {
+  position: fixed !important;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.stage-canvas.is-front {
+  z-index: 40;
+}
+
+main.site {
+  position: relative;
+  z-index: 2;
+}
+
+@keyframes grain {
+  0% {
+    transform: translate(0, 0);
+  }
+  20% {
+    transform: translate(-48px, 28px);
+  }
+  40% {
+    transform: translate(36px, -42px);
+  }
+  60% {
+    transform: translate(-22px, 54px);
+  }
+  80% {
+    transform: translate(58px, 12px);
+  }
+  100% {
+    transform: translate(-12px, -30px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}

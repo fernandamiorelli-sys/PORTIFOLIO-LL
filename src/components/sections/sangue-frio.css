@@ -1,0 +1,228 @@
+/* ───────── sala de projeção */
+.screening {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  column-gap: var(--gutter);
+  align-items: center;
+  padding: 6vh var(--gutter) 18vh;
+  color: var(--fg);
+}
+
+.screening__player {
+  position: relative;
+  grid-column: 2 / 7;
+  justify-self: center;
+  height: min(84vh, 150vw);
+  aspect-ratio: 9 / 16;
+  background: #000;
+  box-shadow:
+    0 0 0 1px var(--line),
+    0 60px 140px -40px rgba(0, 0, 0, 0.8);
+}
+
+.screening__player video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.screening__sound {
+  position: absolute;
+  left: 50%;
+  bottom: 20px;
+  translate: -50% 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6em;
+  padding: 0.75em 1.2em;
+  color: var(--color-breu);
+  background: var(--color-osso);
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.screening__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--color-breu);
+}
+
+.screening__dot.is-on {
+  background: var(--color-calango);
+  box-shadow: 0 0 0 3px rgba(124, 217, 59, 0.3);
+}
+
+.screening__text {
+  grid-column: 8 / 12;
+  display: grid;
+  gap: 1rem;
+}
+
+.screening__k {
+  margin: 0;
+  color: var(--fg-dim);
+}
+
+.screening__k span {
+  color: var(--color-calango);
+}
+
+.screening__title {
+  margin: 0;
+  font-size: var(--step-4);
+  line-height: 0.9;
+}
+
+.screening__lead {
+  margin: 0 0 0.6rem;
+  text-transform: none;
+  letter-spacing: 0.01em;
+  color: var(--fg);
+}
+
+.screening__text .t-body {
+  margin: 0;
+}
+
+.screening__ficha {
+  list-style: none;
+  margin: 0.8rem 0 0;
+  padding: 0;
+  border-top: 1px solid var(--line);
+}
+
+.screening__ficha li {
+  padding: 0.55rem 0;
+  border-bottom: 1px solid var(--line);
+  color: var(--fg-dim);
+}
+
+/* ───────── um dia no sertão */
+.day {
+  position: relative;
+  overflow-x: clip;
+}
+
+.day__sticky {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  height: 100svh;
+  overflow: hidden;
+  perspective: 1400px;
+}
+
+.day__sun {
+  position: absolute;
+  left: 0;
+  top: 0;
+  aspect-ratio: 1;
+  width: 50vh;
+  border-radius: 50%;
+  background: radial-gradient(circle, var(--sun, #fff) 0%, color-mix(in oklab, var(--sun, #fff) 55%, transparent) 38%, transparent 70%);
+  filter: blur(18px);
+  opacity: 0;
+  pointer-events: none;
+  will-change: transform, opacity;
+}
+
+.day__ground {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 88vh;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--line) 12%, var(--line) 88%, transparent);
+}
+
+.day__clock {
+  position: absolute;
+  z-index: 2;
+  top: calc(var(--hud) * 3.4);
+  left: var(--gutter);
+  margin: 0;
+  color: var(--fg-dim);
+  transition: color 0.5s ease;
+}
+
+.day__clock b {
+  font-weight: 500;
+  color: var(--fg);
+  font-variant-numeric: tabular-nums;
+  font-size: 1.6em;
+  vertical-align: -0.12em;
+  padding: 0 0.2em;
+}
+
+.day__clock i {
+  font-style: normal;
+  color: var(--color-calango);
+}
+
+.day__track {
+  position: relative;
+  display: flex;
+  align-items: center;
+  height: 100%;
+  gap: 9vw;
+  padding: 0 32vw;
+  transform-style: preserve-3d;
+  will-change: transform;
+}
+
+.day__slot {
+  flex: 0 0 auto;
+  width: clamp(240px, 41vh, 470px);
+  transform-style: preserve-3d;
+}
+
+.day__walk {
+  position: absolute;
+  left: 6vw;
+  top: 89.5vh;
+  width: 16vh;
+  height: 9vh;
+}
+
+.day__progress {
+  position: absolute;
+  left: var(--gutter);
+  right: var(--gutter);
+  bottom: calc(var(--hud) * 1.1);
+  height: 1px;
+  background: var(--line);
+}
+
+.day__progress span {
+  position: absolute;
+  inset: 0;
+  background: var(--color-calango);
+  transform: scaleX(0);
+  transform-origin: left;
+}
+
+@media (max-width: 900px) {
+  .screening {
+    grid-template-columns: 1fr;
+    gap: 2.5rem;
+  }
+  .screening__player,
+  .screening__text {
+    grid-column: 1 / -1;
+  }
+  .screening__player {
+    height: min(78vh, 140vw);
+  }
+  .day__track {
+    gap: 12vw;
+    padding: 0 12vw;
+  }
+  .day__slot {
+    width: 74vw;
+  }
+  .day__walk {
+    top: 91vh;
+    height: 6vh;
+  }
+}

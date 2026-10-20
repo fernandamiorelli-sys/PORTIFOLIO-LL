@@ -1,0 +1,219 @@
+.hero {
+  position: relative;
+  height: 330vh;
+}
+
+.hero__sticky {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  height: 100svh;
+  overflow: hidden;
+}
+
+.hero__frame {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 100vw;
+  height: 100vh;
+  translate: -50% -50%;
+  overflow: hidden;
+  z-index: 2;
+  box-shadow:
+    0 0 0 var(--frame-border, 0px) var(--color-osso),
+    0 40px 120px rgba(0, 0, 0, 0.55);
+  will-change: width, height;
+}
+
+.hero__pic,
+.hero__pic img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.hero__pb {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+}
+
+.hero__frame::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  background: linear-gradient(to top, rgba(7, 8, 7, 0.78) 0%, rgba(7, 8, 7, 0.32) 34%, transparent 62%);
+  opacity: var(--scrim, 1);
+  pointer-events: none;
+}
+
+.hero__sig {
+  position: absolute;
+  z-index: 3;
+  right: 6%;
+  bottom: 5%;
+  width: 82%;
+  color: var(--color-osso);
+  filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.45));
+  pointer-events: none;
+}
+
+.hero__names {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 var(--gutter);
+  font-size: clamp(3rem, 10.5vw, 13rem);
+  color: var(--color-osso);
+  pointer-events: none;
+}
+
+.hero__name {
+  opacity: 0;
+  font-stretch: 60%;
+  line-height: 0.8;
+}
+
+.hero__overlay {
+  position: absolute;
+  z-index: 3;
+  bottom: calc(var(--hud) * 3);
+  color: var(--color-osso);
+  text-shadow: 0 1px 20px rgba(0, 0, 0, 0.55);
+  pointer-events: none;
+}
+
+.hero__overlay--left {
+  left: var(--gutter);
+  max-width: min(30rem, 80vw);
+}
+
+.hero__overlay--left .t-mono {
+  color: var(--color-calango);
+  margin: 0 0 0.6rem;
+}
+
+.hero__lede {
+  margin: 0;
+  font-size: var(--step-2);
+  line-height: 1.08;
+}
+
+.hero__overlay--right {
+  right: var(--gutter);
+  display: grid;
+  gap: 4px;
+  text-align: right;
+}
+
+.hero__caption {
+  position: absolute;
+  z-index: 3;
+  left: 50%;
+  bottom: 3.2vh;
+  translate: -50% 0;
+  display: flex;
+  gap: 1.6em;
+  white-space: nowrap;
+  color: var(--fg-dim);
+  opacity: 0;
+}
+
+.hero__caption span:first-child {
+  color: var(--color-calango);
+}
+
+.hero__ascii {
+  position: absolute;
+  z-index: 4;
+  right: 9vw;
+  bottom: 10vh;
+  height: 32vh;
+  aspect-ratio: 408 / 642;
+  pointer-events: none;
+}
+
+.hero__ascii canvas {
+  width: 100%;
+  height: 100%;
+}
+
+.hero__hint {
+  position: absolute;
+  z-index: 3;
+  left: 50%;
+  top: calc(var(--hud) * 3.2);
+  translate: -50% 0;
+  display: grid;
+  justify-items: center;
+  gap: 8px;
+  color: var(--color-osso);
+  text-shadow: 0 1px 12px rgba(0, 0, 0, 0.5);
+}
+
+.hero__hint i {
+  display: block;
+  width: 1px;
+  height: 42px;
+  background: linear-gradient(to bottom, var(--color-osso), transparent);
+  animation: hint 1.8s var(--ease-inout) infinite;
+  transform-origin: top;
+}
+
+@keyframes hint {
+  0% {
+    transform: scaleY(0);
+  }
+  50% {
+    transform: scaleY(1);
+    transform-origin: top;
+  }
+  51% {
+    transform-origin: bottom;
+  }
+  100% {
+    transform: scaleY(0);
+    transform-origin: bottom;
+  }
+}
+
+.hero__flash {
+  position: absolute;
+  inset: 0;
+  z-index: 6;
+  background: #f4fbef;
+  opacity: 0;
+  pointer-events: none;
+}
+
+@media (max-width: 760px) {
+  .hero {
+    height: 300vh;
+  }
+  .hero__names {
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 9vh var(--gutter) 11vh;
+    font-size: 21vw;
+  }
+  .hero__overlay--right {
+    display: none;
+  }
+  .hero__overlay--left {
+    bottom: calc(var(--hud) * 4);
+  }
+  .hero__ascii {
+    right: 4vw;
+    bottom: 16vh;
+    height: 22vh;
+  }
+  .hero__caption {
+    display: none;
+  }
+}

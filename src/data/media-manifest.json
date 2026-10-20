@@ -1,0 +1,196 @@
+{
+  "confrontos-amistoso": {
+    "width": 1086,
+    "height": 1448,
+    "widths": [
+      480,
+      960,
+      1086
+    ],
+    "lqip": "data:image/webp;base64,UklGRpAAAABXRUJQVlA4IIQAAABQBQCdASoYACAAPu1mrU8ppaQiMBgIATAdiWcAtsg0bistk5K8rD+msqKXbpJ1CzF63gAA/vRP4ziTC8ULPmpiVgqf5zFAsmomVFAyI4qzsahDOYFQF2jaudNoTUSLv1uN1rQPBRmlrVedY8CqndclvqkNNtphR+1bRL2tRrHrd4XAAAA=",
+    "color": "#080808"
+  },
+  "confrontos-treino": {
+    "width": 1033,
+    "height": 1290,
+    "widths": [
+      480,
+      960,
+      1033
+    ],
+    "lqip": "data:image/webp;base64,UklGRowAAABXRUJQVlA4IIAAAABQBQCdASoYAB4APu1mq04ppaQiMAgBMB2JYwDKAB5z6gHU4pVZVwtAdoN12cZ++0KggQAA/HcfSjGJadgsKBtz+QsgA6hDdYSVEXo9Z6m6hqpPRsfg7pPaek7xL6ErVMKrSF8FrXFhhn05JeBMsdWmFxXO2Trb4sCq5yUkYqAAAA==",
+    "color": "#e8e8d8"
+  },
+  "identidade-mascote": {
+    "width": 1122,
+    "height": 1402,
+    "widths": [
+      480,
+      960,
+      1122
+    ],
+    "lqip": "data:image/webp;base64,UklGRloAAABXRUJQVlA4IE4AAAAQBACdASoYAB4APtleo02oJaMiN/qoAQAbCUAZv4Q7+AojMi+K40B4SAD+9BqWNo3m7TsW8V0M79RGzJyGz/3raDhNN9LsLiRrAYQgAAA=",
+    "color": "#080808"
+  },
+  "identidade-vidro": {
+    "width": 1122,
+    "height": 1402,
+    "widths": [
+      480,
+      960,
+      1122
+    ],
+    "lqip": "data:image/webp;base64,UklGRnAAAABXRUJQVlA4IGQAAABQBACdASoYAB4APu1ur1IppiQiqAgBMB2JZQAAPPSBqWswpNWLMyqpFCkAAP7vD50PLxSrl7n4UtHRNvlBqqi+VuZvP2WnU6t606FSF4Nc+ymIbSGhfGPCWYg+oX1uvp6+GZAA",
+    "color": "#080808"
+  },
+  "logo-abigos-principal": {
+    "width": 1080,
+    "height": 1120,
+    "widths": [
+      480,
+      960,
+      1080
+    ],
+    "lqip": "data:image/webp;base64,UklGRo4AAABXRUJQVlA4IIIAAAAQBQCdASoYABkAPu1urVGppqQiqAqpMB2JZACdMoABXK9+W9SCzmUhJaUnt5843AwAAP7o8D8mGYEI9u4WD50k3DolVUW7EcTPMjxPHbw7zVbMZv9VhqEKABYaa206b5zJlcISAVj6XR0BsIISe2CUXRczoF69ERyQHlgAsz3+gAAA",
+    "color": "#389848"
+  },
+  "lucas-lopes-dono": {
+    "width": 900,
+    "height": 1600,
+    "widths": [
+      480,
+      900
+    ],
+    "lqip": "data:image/webp;base64,UklGRp4AAABXRUJQVlA4IJIAAACQBgCdASoYACsAPu1qqE6ppiOiKqwBMB2JZwDAKA7RQqTGB+k2wAxgMPjf+Erv2w5vWnXwaV3imdoRhj4AAP7L40qNmzWvzLCEhcWxdPsGw9LmgeAxGrhd0i1Jl6Ixo1AKlfCTzKvidIaftvF1wCl7SL82aqP/luwgZwXBh2GmdU0oJyMPh7/tt5jhI/hMCS4AAA==",
+    "color": "#080808"
+  },
+  "reforcos-filipe": {
+    "width": 1122,
+    "height": 1402,
+    "widths": [
+      480,
+      960,
+      1122
+    ],
+    "lqip": "data:image/webp;base64,UklGRowAAABXRUJQVlA4IIAAAACwBACdASoYAB4APu1iq1AppSOisBgIATAdiUAYmwzBSmNX81XsemY0iCie5S8MAP76Bw+V+N/c8ZqKL8cy6rW3j3WxD2ZPfo5+scqGwAYmR8o2M+KNYMyxFfytd3E18f7JT+xK7JN+gbBMrnyqJ+XuVuuGHluGmrkVmtgyOkAAAA==",
+    "color": "#080808"
+  },
+  "sangue-frio-brand": {
+    "width": 1122,
+    "height": 1402,
+    "widths": [
+      480,
+      960,
+      1122
+    ],
+    "lqip": "data:image/webp;base64,UklGRooAAABXRUJQVlA4IH4AAACQBACdASoYAB4APu1osFAppaSiqAqpMB2JY0wAABuyU3ppBt2JzEXpQS7HGMAA/t5A5mWs+Ixukf13q//w7ubr1pVPrR4dnqUa/wJQrUpyEpbMMwJzrx9eipdYXsPJKLvzFB3jBtuSQkkAvkmYCoMDY9AlmXzjUP0H1gAAAAA=",
+    "color": "#086838"
+  },
+  "sangue-frio-cavalo": {
+    "width": 1122,
+    "height": 1402,
+    "widths": [
+      480,
+      960,
+      1122
+    ],
+    "lqip": "data:image/webp;base64,UklGRmQAAABXRUJQVlA4IFgAAABQBACdASoYAB4APuFapk2opSOiN/qoARAcCWkAAFpMpjk+5K/29Z1YV2/AAP6jBNFH5SaX0iJjkEZKHctXNcoMJNgCFFTItBdVe6z5eoOntW1BmkzDAAAA",
+    "color": "#181818"
+  },
+  "sangue-frio-close": {
+    "width": 1288,
+    "height": 1600,
+    "widths": [
+      480,
+      960,
+      1288
+    ],
+    "lqip": "data:image/webp;base64,UklGRpAAAABXRUJQVlA4IIQAAACQBQCdASoYAB4APu1gqE4ppSOiMBgMATAdiUAWnQIXnyUhsou0veEdmG1Vrnmk8nPYPBBrAAD+8qQp/pHqGwIpwI3gFdtqlyZxZEMBRgbxXxzU7UEMfD7clSt2pbr89y/vg3mt9it4khg7VvouhUbGSHtEOmjR8gE6VuH/5BwvDMkAAAA=",
+    "color": "#180808"
+  },
+  "sangue-frio-dobrado": {
+    "width": 1288,
+    "height": 1600,
+    "widths": [
+      480,
+      960,
+      1288
+    ],
+    "lqip": "data:image/webp;base64,UklGRoQAAABXRUJQVlA4IHgAAADwBACdASoYAB4APu1oqk8ppiOiKA1RMB2JZQDG9EXfq/QjSt9p4csMTaYv1EZ6u24A/vpa876xwZX8yoJzinqcKOk7CQ62DCJjs5GB6DOM47RUhodALv3erjNy6QfLwr/OzocQdjWthHb1uFyz1DD+XGJGD4YAAAA=",
+    "color": "#080808"
+  },
+  "sangue-frio-noite": {
+    "width": 1086,
+    "height": 1448,
+    "widths": [
+      480,
+      960,
+      1086
+    ],
+    "lqip": "data:image/webp;base64,UklGRoQAAABXRUJQVlA4IHgAAAAwBQCdASoYACAAPu1sq1EppiOiqAqpMB2JQBOmUJDKApx4WHuXDSc99p2hZqhRno3kAAD+69I6wBOv7grstccbFju40A6E8iJklM4wHPMSbybNaPQOHg7WuLvRXamgK7/7f0XBxB9W7Rur9x/FIj7VP/7wms4gAAA=",
+    "color": "#080808"
+  },
+  "sangue-frio-novo-escudo": {
+    "width": 1254,
+    "height": 1254,
+    "widths": [
+      480,
+      960,
+      1254
+    ],
+    "lqip": "data:image/webp;base64,UklGRmgAAABXRUJQVlA4IFwAAACwBACdASoYABgAPuFeqE2opSQiMAwBEBwJYgDKACHh3HiVz0cMvr8nIzHgiVNcAP71cHQhhKRI6gMji1eifVuvO5qq2brFprWjFcuoXKOzCyNVNa0ICRDouDQAAA==",
+    "color": "#080808"
+  },
+  "sangue-frio-pendurado": {
+    "width": 1288,
+    "height": 1600,
+    "widths": [
+      480,
+      960,
+      1288
+    ],
+    "lqip": "data:image/webp;base64,UklGRnwAAABXRUJQVlA4IHAAAADwBACdASoYAB4APuVgpk2pJaOiMAwBIByJYwC1G5OAhy4A1zkaCctyzi7I2govN0AA/RwtPVr27CSnUxwbEFSptJCwjC8TBXXFZH21JrEvGwfh/8SmNWjQlWQAepFFpzdfVNUjpy25O3rrVlELAAAA",
+    "color": "#e8d8c8"
+  },
+  "sangue-frio-posing": {
+    "width": 880,
+    "height": 1168,
+    "widths": [
+      480,
+      880
+    ],
+    "lqip": "data:image/webp;base64,UklGRngAAABXRUJQVlA4IGwAAAAwBQCdASoYACAAPu1ipk2ppaMiMBgMATAdiWUAyFxX7/HfKf9gUEw4qtyHXWCsDlJ9AAD++cKwzx3/pnB8fOKu7V9X8J23EEVlqcnI9sYDBh0FVQ5ezPf0PpND3rr84G6byuJ8J8ZHqs3TwAA=",
+    "color": "#080808"
+  },
+  "sangue-frio-resenha": {
+    "width": 880,
+    "height": 1168,
+    "widths": [
+      480,
+      880
+    ],
+    "lqip": "data:image/webp;base64,UklGRrIAAABXRUJQVlA4IKYAAABQBgCdASoYACAAPu1mqE4ppaOiMAgBMB2JQBYj5oQBfAAblAtoZ42r4nFNKRB7z/4mi77IFHVeYQ8SAAD+6/juIFNBggUYOH3f/CpvJ92lQxfGV7z/ZDvY8rkclrGkMMSQSkoPNOLK0kcusRUM6g5f0Kga7q9VAzGsnWQWmV+Hh/bHZy5e3nfnGucIhR2mojC8IxW3zfqbs7CCjMaHr42Y3Js0AAAA",
+    "color": "#080808"
+  },
+  "sangue-frio-tecido": {
+    "width": 1288,
+    "height": 1600,
+    "widths": [
+      480,
+      960,
+      1288
+    ],
+    "lqip": "data:image/webp;base64,UklGRpoAAABXRUJQVlA4II4AAAAQBQCdASoYAB4APt1UpU2opCOiN/qoARAbiUAAC9HclCTmqZ5VUmZFMqElSSMYqODAAP7JVMIDtKL+r7UhQSB0ewiJqtjqNNc4V03rnVDLWMTKrViF0DWORtoHbNCllz16AsiOIkKuw7gOn2GaXCEIkcLJUW/z/gEASE41Zgqeux2iL6vhPoonbBJIAAAA",
+    "color": "#180808"
+  },
+  "lucas-lopes-dono-pb": {
+    "width": 900,
+    "height": 1600,
+    "widths": [
+      480,
+      900
+    ],
+    "lqip": "data:image/webp;base64,UklGRpYAAABXRUJQVlA4IIoAAACQBgCdASoYACsAPu1ysVMppqSipWmZMB2JaQAAWumDXDAcd3CwP0k+rOpd0tSFRL81pc066X5InNmnhq4AAP7lnTcCb6SNbs5LeROF4xvVZA7IikHFQE/4ZmLnSJ8iOD798G0nPRFXeHX8v7OVRMRmAAaMIOYlYVjDTl4Sg97+zOfVS2kDW8U4AAA=",
+    "color": "#080808"
+  }
+}

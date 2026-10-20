@@ -1,0 +1,196 @@
+.intro {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  background: var(--color-breu);
+  color: var(--color-osso);
+  overflow: hidden;
+}
+
+.intro__glass {
+  position: absolute;
+  inset: 0;
+  filter: blur(28px) brightness(1.6) saturate(0.6);
+  transform: scale(1.04);
+  transition:
+    filter 1s var(--ease-out),
+    transform 1.2s var(--ease-out);
+}
+
+.intro__glass canvas {
+  width: 100%;
+  height: 100%;
+}
+
+.intro__glass.is-fallback {
+  background:
+    radial-gradient(circle at 70% 40%, rgba(124, 217, 59, 0.08), transparent 50%),
+    repeating-linear-gradient(0deg, rgba(232, 227, 215, 0.04) 0 1px, transparent 1px 14px),
+    var(--color-breu);
+}
+
+.phase-title .intro__glass {
+  filter: blur(0) brightness(1) saturate(1);
+  transform: scale(1);
+}
+
+.phase-hacking .intro__glass,
+.phase-site .intro__glass {
+  filter: blur(14px) brightness(0.32) saturate(0.7);
+  transform: scale(1.03);
+  transition-duration: 0.45s;
+}
+
+.intro.is-leaving {
+  pointer-events: none;
+  animation: intro-out 1.1s var(--ease-inout) 0.2s both;
+}
+
+@keyframes intro-out {
+  0% {
+    opacity: 1;
+    clip-path: inset(0 0 0 0);
+  }
+  100% {
+    opacity: 0;
+    clip-path: inset(0 0 100% 0);
+  }
+}
+
+.intro__hud {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  color: color-mix(in oklab, var(--color-osso) 78%, transparent);
+  opacity: 0;
+  transition: opacity 0.8s ease 0.6s;
+}
+
+.phase-title .intro__hud,
+.phase-hacking .intro__hud {
+  opacity: 1;
+}
+
+.phase-hacking .intro__corner.is-bl,
+.phase-hacking .intro__corner.is-br,
+.phase-site .intro__corner.is-bl,
+.phase-site .intro__corner.is-br {
+  opacity: 0;
+}
+
+.intro__hud i {
+  font-style: normal;
+  color: var(--color-calango);
+  padding: 0 0.4em;
+}
+
+.intro__corner {
+  position: absolute;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6em;
+}
+
+.intro__corner.is-tl {
+  top: var(--hud);
+  left: var(--hud);
+}
+.intro__corner.is-tr {
+  top: var(--hud);
+  right: var(--hud);
+}
+.intro__corner.is-bl {
+  bottom: var(--hud);
+  left: var(--hud);
+}
+.intro__corner.is-br {
+  bottom: var(--hud);
+  right: var(--hud);
+}
+
+.intro__dot {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  background: var(--color-calango);
+}
+
+.intro__dot.is-busy {
+  background: var(--color-osso);
+  animation: blink 0.6s steps(2) infinite;
+}
+
+.intro__prompt {
+  position: absolute;
+  display: grid;
+  gap: 14px;
+  justify-items: start;
+  opacity: 0;
+  transition: opacity 0.6s ease 0.4s;
+}
+
+.phase-title .intro__prompt {
+  opacity: 1;
+}
+
+.intro__press {
+  font-size: clamp(11px, 0.95vw, 14px);
+  letter-spacing: 0.22em;
+  color: var(--color-osso);
+  padding: 10px 0;
+  border-bottom: 1px solid color-mix(in oklab, var(--color-osso) 30%, transparent);
+  cursor: pointer;
+}
+
+.intro__press.is-ready {
+  animation: blink 1.4s steps(1) infinite;
+}
+
+.intro__press:disabled {
+  cursor: progress;
+  opacity: 0.55;
+}
+
+.intro__silent {
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  color: color-mix(in oklab, var(--color-osso) 52%, transparent);
+  text-decoration: underline;
+  text-underline-offset: 4px;
+  cursor: pointer;
+  padding: 6px 0;
+}
+
+.intro__silent:hover {
+  color: var(--color-calango);
+}
+
+@keyframes blink {
+  0%,
+  60% {
+    opacity: 1;
+  }
+  61%,
+  100% {
+    opacity: 0.18;
+  }
+}
+
+@media (max-width: 760px) {
+  .intro__prompt {
+    justify-items: center;
+  }
+  .intro__corner.is-tr,
+  .intro__corner.is-br {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .intro__press.is-ready {
+    animation: none;
+  }
+  .intro__glass {
+    transition: none;
+  }
+}
