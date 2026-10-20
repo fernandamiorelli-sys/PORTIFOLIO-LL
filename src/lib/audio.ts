@@ -27,8 +27,12 @@ class AudioDirector {
       el.preload = 'auto';
       el.crossOrigin = 'anonymous';
       el.src = AUDIO.src;
+      let settled = false;
       const done = (ok: boolean) => {
+        if (settled) return;
+        settled = true;
         this.available = ok;
+        experience.set({ sound: ok });
         resolve(ok);
       };
       el.addEventListener('canplay', () => done(true), { once: true });
@@ -77,9 +81,28 @@ class AudioDirector {
       await this.ctx.resume();
       await el.play();
       this.usingVirtual = false;
+      this.watchVisibility();
     } catch {
       this.usingVirtual = true;
     }
+  }
+
+  /** Aba em segundo plano: a música some em fade e volta de onde parou. */
+  private watchVisibility() {
+    document.addEventListener('visibilitychange', () => {
+      const el = this.el;
+      if (!el || !this.ctx || !this.gain) return;
+      if (document.hidden) {
+        const now = this.ctx.currentTime;
+        this.gain.gain.cancelScheduledValues(now);
+        this.gain.gain.setValueAtTime(Math.max(0.0001, this.gain.gain.value), now);
+        this.gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.4);
+        window.setTimeout(() => document.hidden && el.pause(), 420);
+      } else {
+        void el.play().catch(() => {});
+        this.applyLevel(0.8);
+      }
+    });
   }
 
   /** Tempo da trilha em segundos (real ou virtual). */

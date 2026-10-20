@@ -62,7 +62,7 @@ function Screening({ piece }: { piece: Piece }) {
         setWithSound(false);
         audio.duck(false);
         v.loop = true;
-        void v.play();
+        void v.play().catch(() => {});
       }
     };
     v.addEventListener('ended', onEnd);
@@ -78,7 +78,7 @@ function Screening({ piece }: { piece: Piece }) {
       v.muted = false;
       v.loop = false;
       v.currentTime = 0;
-      void v.play();
+      void v.play().catch(() => {});
       setWithSound(true);
       audio.duck(true);
     } else {
@@ -92,16 +92,10 @@ function Screening({ piece }: { piece: Piece }) {
   return (
     <section className="screening" aria-labelledby="screening-title">
       <div className="screening__player">
-        <video
-          ref={videoRef}
-          src={piece.video!.src}
-          poster={`/media/img/${piece.media}-960.jpg`}
-          muted
-          loop
-          playsInline
-          preload="metadata"
-          aria-label={piece.alt}
-        />
+        <video ref={videoRef} poster={`${piece.video!.base}-poster.jpg`} muted loop playsInline preload="metadata" aria-label={piece.alt}>
+          <source src={`${piece.video!.base}.webm`} type="video/webm" />
+          <source src={`${piece.video!.base}.mp4`} type="video/mp4" />
+        </video>
         <button type="button" className="screening__sound t-mono" onClick={toggleSound} data-cursor={withSound ? 'Silenciar' : 'Ouvir'}>
           <span className={`screening__dot ${withSound ? 'is-on' : ''}`} aria-hidden="true" />
           {withSound ? 'Tirar o som' : 'Assistir com som'}

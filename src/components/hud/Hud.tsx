@@ -18,6 +18,7 @@ const INDEX = [
 
 function SoundToggle() {
   const muted = useExperience((s) => s.muted);
+  const sound = useExperience((s) => s.sound);
   const bars = useRef<HTMLSpanElement[]>([]);
   useEffect(() => {
     const levels = new Array(4).fill(0);
@@ -30,6 +31,7 @@ function SoundToggle() {
     gsap.ticker.add(tick);
     return () => gsap.ticker.remove(tick);
   }, []);
+  if (!sound) return null;
   return (
     <button type="button" className="hud__sound" onClick={() => audio.setMuted(!muted)} aria-pressed={!muted} aria-label={muted ? 'Ligar o som' : 'Desligar o som'}>
       <span className="hud__bars" aria-hidden="true">

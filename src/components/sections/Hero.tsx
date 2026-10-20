@@ -115,7 +115,7 @@ export function Hero() {
       names.forEach((el, i) => {
         el.style.opacity = String(n);
         el.style.transform = `translateX(${(1 - n) * (i ? 6 : -6)}vw)`;
-        el.style.fontStretch = `${60 + n * 75}%`;
+        el.style.fontStretch = `${60 + n * 32}%`;
       });
       overlay.forEach((el) => (el.style.opacity = String(1 - range(p, 0.0, 0.14))));
       caption.style.opacity = String(ease(range(p, 0.62, 0.88)));

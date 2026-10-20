@@ -12,12 +12,12 @@
   grid-column: 1 / 3;
   grid-row: 1 / 3;
   align-self: start;
-  font-size: clamp(4rem, 12vw, 13rem);
-  font-stretch: 50%;
-  font-weight: 200;
+  font-size: clamp(4rem, 11vw, 12rem);
+  font-stretch: 56%;
+  font-weight: 800;
   line-height: 0.78;
   color: transparent;
-  -webkit-text-stroke: 1px var(--fg-faint);
+  -webkit-text-stroke: 1px var(--fg-dim);
 }
 
 .room-intro__kicker {

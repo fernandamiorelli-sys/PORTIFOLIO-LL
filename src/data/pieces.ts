@@ -20,7 +20,8 @@ export interface Piece {
   room: RoomId;
   /** slug da imagem em media-manifest.json (pôster, no caso de vídeo) */
   media: string;
-  video?: { src: string; pending?: boolean };
+  /** filme: `base` sem extensão; o site serve base.webm e base.mp4 (gerados por `npm run video`) */
+  video?: { base: string; pending?: boolean };
   alt: string;
   lead: string;
   ficha: string[];
@@ -97,7 +98,7 @@ export const PIECES: Piece[] = [
     title: 'Alvi-Verde',
     room: 'sangue-frio',
     media: 'sangue-frio-tecido',
-    video: { src: '/media/video/alvi-verde.mp4', pending: true },
+    video: { base: '/media/video/alvi-verde', pending: true },
     alt: 'Filme da campanha Sangue-Frio: a camisa alvi-verde do Abigos FR vista em primeira pessoa, do corte do tecido à prensa.',
     lead: 'O processo industrial da camisa, visto pelos olhos dela mesma.',
     ficha: [

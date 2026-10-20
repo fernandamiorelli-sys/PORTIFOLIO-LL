@@ -40,6 +40,7 @@ async function preloadAll(onProgress: (k: number) => void) {
 export function Intro({ onEnterSite }: { onEnterSite: () => void }) {
   const phase = useExperience((s) => s.phase);
   const loaded = useExperience((s) => s.loaded);
+  const sound = useExperience((s) => s.sound);
   const hostRef = useRef<HTMLDivElement>(null);
   const rendererRef = useRef<GlassRenderer | null>(null);
   const [layout, setLayout] = useState<TitleLayout | null>(null);
@@ -219,7 +220,7 @@ export function Intro({ onEnterSite }: { onEnterSite: () => void }) {
             </>
           )}
         </span>
-        <span className="intro__corner is-br">
+        <span className="intro__corner is-br" hidden={!sound}>
           <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true">
             <path d="M4 14v-2a8 8 0 0 1 16 0v2" fill="none" stroke="currentColor" strokeWidth="1.6" />
             <rect x="3" y="13" width="4" height="7" rx="1" fill="currentColor" />
@@ -234,7 +235,7 @@ export function Intro({ onEnterSite }: { onEnterSite: () => void }) {
           <button type="button" className={`intro__press t-mono ${ready ? 'is-ready' : ''}`} onClick={() => begin()} disabled={!ready}>
             {ready ? (isTouch ? 'Toque para acessar' : 'Aperte qualquer botão para acessar') : 'Carregando acervo…'}
           </button>
-          {ready && (
+          {ready && sound && (
             <button type="button" data-intro-option className="intro__silent t-mono" onClick={() => begin(true)}>
               ou entre em silêncio
             </button>

@@ -43,7 +43,7 @@ O site já funciona sem eles: as peças pendentes ficam escondidas até o arquiv
 
 | Arquivo | Onde colocar | Depois |
 | --- | --- | --- |
-| Filme *Alvi-Verde* (SANGUE-FRIO vídeo) | `public/media/video/alvi-verde.mp4` | Em `src/data/pieces.ts`, na peça `alvi-verde`, apague `pending: true` |
+| Filme *Alvi-Verde* (SANGUE-FRIO vídeo) | `media-src/video/alvi-verde.mp4` e rode `npm run video media-src/video/alvi-verde.mp4` (gera WebM, MP4 e pôster; precisa de ffmpeg) | Em `src/data/pieces.ts`, na peça `alvi-verde`, apague `pending: true` |
 | Música (Tame Impala, instrumental) | `public/media/audio/new-person-same-old-mistakes.mp3` | Nada: o site detecta sozinho |
 | REFORÇOS leo | `media-src/img/reforcos-leo.png` e rode `npm run media` | Na peça `telemetria`, apague `pending: true` |
 | CONFRONTOS PUCRS | `media-src/img/confrontos-pucrs.png` e rode `npm run media` | Na peça `miragem`, apague `pending: true` |

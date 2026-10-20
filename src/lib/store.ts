@@ -13,6 +13,8 @@ export interface ExperienceState {
   room: string;
   /** rótulo do cursor customizado */
   cursor: string | null;
+  /** a trilha existe e pode tocar */
+  sound: boolean;
 }
 
 type Listener = () => void;
@@ -57,6 +59,7 @@ export const experience = createStore<ExperienceState>({
   sheet: null,
   room: '',
   cursor: null,
+  sound: false,
 });
 
 export function useExperience<S>(selector: (s: ExperienceState) => S): S {
