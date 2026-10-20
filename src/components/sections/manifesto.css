@@ -297,9 +297,10 @@
     left: 46%;
     top: 84%;
   }
+  /* no vão entre a frase e o texto do clube */
   .manifesto__anchor--about {
-    left: 50%;
-    top: 87%;
+    left: 56%;
+    top: 35%;
   }
   .manifesto__about {
     top: 46svh;
