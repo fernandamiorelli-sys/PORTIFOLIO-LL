@@ -28,7 +28,7 @@ export function createScratchTexture(width: number, height: number, seed = 2026)
 
   // riscos lineares longos, com algumas direções dominantes (como um vidro limpo sempre do mesmo jeito)
   const dominant = [r() * Math.PI, r() * Math.PI, r() * Math.PI];
-  const longCount = Math.round(170 * area);
+  const longCount = Math.round(105 * area);
   for (let i = 0; i < longCount; i++) {
     const a = dominant[i % 3] + (r() - 0.5) * 0.5;
     const len = (0.04 + r() ** 2 * 0.45) * Math.max(width, height);
@@ -39,7 +39,7 @@ export function createScratchTexture(width: number, height: number, seed = 2026)
     const y2 = y + Math.sin(a) * len;
     const mx = (x + x2) / 2 + Math.cos(a + Math.PI / 2) * bend;
     const my = (y + y2) / 2 + Math.sin(a + Math.PI / 2) * bend;
-    ctx.strokeStyle = `rgba(255,0,0,${0.12 + r() * 0.55})`;
+    ctx.strokeStyle = `rgba(255,0,0,${0.08 + r() * 0.42})`;
     ctx.lineWidth = 0.4 + r() ** 3 * 1.6;
     ctx.beginPath();
     ctx.moveTo(x, y);

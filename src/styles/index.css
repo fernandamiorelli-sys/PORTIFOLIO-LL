@@ -1,8 +1,21 @@
 @import 'tailwindcss';
-@import '@fontsource-variable/anybody/wdth.css';
-@import '@fontsource-variable/bodoni-moda/opsz-italic.css';
-@import '@fontsource-variable/bodoni-moda/opsz.css';
-@import '@fontsource-variable/martian-mono/wdth.css';
+/* A voz do curador: a Courier que o Lucas ama, na versão refeita para roteiros (Courier Prime, OFL). */
+@import '@fontsource/courier-prime/400.css';
+@import '@fontsource/courier-prime/400-italic.css';
+@import '@fontsource/courier-prime/700.css';
+/* A voz das obras: Redaction, serifa de documento jurídico com seis graus de degradação em pixel.
+   O que "não somos" fica em baixa resolução; o que somos entra em foco. */
+@import '@fontsource/redaction/400.css';
+@import '@fontsource/redaction/400-italic.css';
+@import '@fontsource/redaction/700.css';
+@import '@fontsource/redaction-20/400.css';
+@import '@fontsource/redaction-35/400.css';
+@import '@fontsource/redaction-50/400.css';
+@import '@fontsource/redaction-70/400.css';
+@import '@fontsource/redaction-100/400.css';
+@import '@fontsource/redaction-100/400-italic.css';
+/* A voz da máquina: matriz de pontos de placar e de letreiro de metrô. */
+@import '@fontsource-variable/doto/full.css';
 
 /*
   Paleta extraída das próprias peças:
@@ -22,9 +35,10 @@
   --color-salvia: #a8c4b0;
   --color-terra: #8c6a43;
 
-  --font-display: 'Anybody Variable', 'Arial Narrow', sans-serif;
-  --font-serif: 'Bodoni Moda Variable', 'Didot', 'Bodoni 72', serif;
-  --font-mono: 'Martian Mono Variable', ui-monospace, 'SFMono-Regular', monospace;
+  --font-display: 'Redaction', 'Times New Roman', Times, serif;
+  --font-serif: 'Redaction', 'Times New Roman', Times, serif;
+  --font-mono: 'Courier Prime', 'Courier New', Courier, monospace;
+  --font-led: 'Doto Variable', 'Courier Prime', 'Courier New', monospace;
 }
 
 :root {
@@ -136,36 +150,41 @@ html.lenis body {
 /* Tipografia utilitária do sistema */
 .t-mono {
   font-family: var(--font-mono);
-  font-size: var(--step--2);
-  letter-spacing: 0.08em;
+  font-size: var(--step--1);
+  letter-spacing: 0.02em;
   text-transform: uppercase;
-  font-stretch: 85%;
   font-weight: 400;
 }
 
 .t-display {
+  --ls: -0.035em;
   font-family: var(--font-display);
-  font-weight: 860;
-  font-stretch: 62%;
-  line-height: 0.86;
-  letter-spacing: -0.01em;
+  font-weight: 400;
+  line-height: 0.84;
+  letter-spacing: var(--ls);
   text-transform: uppercase;
 }
 
 .t-serif {
+  --ls: -0.02em;
   font-family: var(--font-serif);
   font-style: italic;
   font-weight: 400;
-  font-variation-settings: 'opsz' 96;
-  letter-spacing: -0.01em;
+  letter-spacing: var(--ls);
+}
+
+.t-led {
+  font-family: var(--font-led);
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
 }
 
 .t-body {
   font-family: var(--font-mono);
-  font-size: var(--step--1);
-  line-height: 1.75;
-  font-stretch: 92%;
-  font-weight: 300;
+  font-size: var(--step-0);
+  line-height: 1.62;
+  font-weight: 400;
   color: var(--fg-dim);
   text-shadow:
     0 0 10px var(--bg),
@@ -174,7 +193,41 @@ html.lenis body {
 
 .t-body strong {
   color: var(--fg);
-  font-weight: 500;
+  font-weight: 700;
+}
+
+/* Escada de resolução da Redaction: 100 (bitmap) → limpa. Usada pelo <Resolve />. */
+.rz {
+  font-family: var(--font-display);
+}
+.rz[data-l='20'] {
+  font-family: 'Redaction 20', var(--font-display);
+}
+.rz[data-l='35'] {
+  font-family: 'Redaction 35', var(--font-display);
+}
+.rz[data-l='50'] {
+  font-family: 'Redaction 50', var(--font-display);
+}
+.rz[data-l='70'] {
+  font-family: 'Redaction 70', var(--font-display);
+}
+.rz[data-l='100'] {
+  font-family: 'Redaction 100', var(--font-display);
+}
+.rz-word {
+  display: inline-block;
+  white-space: nowrap;
+}
+/* durante a resolução, cada letra ocupa a largura da versão limpa */
+.rz-c {
+  display: inline-block;
+  width: calc(var(--a) * 1em + var(--ls, 0em));
+  letter-spacing: 0;
+  text-align: center;
+}
+.rz-no {
+  font-style: italic;
 }
 
 /* Fundo global: muda com as salas (ciclo do dia em Sangue-Frio). */

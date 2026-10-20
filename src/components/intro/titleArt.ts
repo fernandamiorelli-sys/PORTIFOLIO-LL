@@ -1,106 +1,176 @@
-// Camada "impressa no vidro" da title screen: escudo + título + assinatura do autor.
-// O "NÃO" é vazado (só contorno): a ausência desenhada. No fechamento do site ele desaparece.
+// Camada impressa no vidro da title screen: escudo oficial + título + autor + chamada.
+// Desenhada no espaço do painel (a textura cobre o vidro inteiro). O título entra em foco letra a letra
+// pela escada da Redaction; o "NÃO" nunca resolve: fica em bitmap, em itálico, em verde.
+import { ADV } from '../type/advances';
 
 const OSSO = '#E8E3D7';
 const CALANGO = '#7CD93B';
+const MONO = '"Courier Prime", "Courier New", monospace';
 
-export interface TitleLayout {
-  /** retângulo do bloco do título em px CSS, para posicionar elementos DOM em volta */
-  block: { x: number; y: number; w: number; h: number };
-  promptY: number;
-  align: 'left' | 'center';
+const FAMILY: Record<number, string> = {
+  0: '"Redaction", "Times New Roman", serif',
+  20: '"Redaction 20", "Redaction", serif',
+  35: '"Redaction 35", "Redaction", serif',
+  50: '"Redaction 50", "Redaction", serif',
+  70: '"Redaction 70", "Redaction", serif',
+  100: '"Redaction 100", "Redaction", serif',
+};
+
+export const TITLE_LINES = ['TUDO O QUE', 'NÃO SOMOS'] as const;
+/** índices (na sequência de letras das duas linhas, sem espaços) que formam o "NÃO" */
+export const NAO = new Set([8, 9, 10]);
+/** quantidade de letras (sem espaços) do título */
+export const TITLE_CHARS = TITLE_LINES.join('').replace(/\s/g, '').length;
+
+export interface PrintLayout {
+  /** retângulo do "aperte qualquer botão" em uv do vidro (origem embaixo à esquerda) */
+  prompt: [number, number, number, number];
+  /** retângulo (0..1, origem em cima) atrás do título, para os dados abaixarem */
+  quiet: [number, number, number, number];
+  /** onde a lente foca (uv do vidro) */
+  focus: [number, number];
 }
 
-function lumaKey(img: HTMLImageElement, size: number) {
-  const c = document.createElement('canvas');
-  c.width = size;
-  c.height = Math.round((img.naturalHeight / img.naturalWidth) * size);
-  const ctx = c.getContext('2d', { willReadFrequently: true })!;
-  ctx.drawImage(img, 0, 0, c.width, c.height);
-  const data = ctx.getImageData(0, 0, c.width, c.height);
-  const p = data.data;
-  for (let i = 0; i < p.length; i += 4) {
-    const m = Math.max(p[i], p[i + 1], p[i + 2]);
-    p[i + 3] = Math.max(0, Math.min(255, (m - 14) * 3.2));
-  }
-  ctx.putImageData(data, 0, 0);
-  return c;
+export interface PrintOptions {
+  crest: HTMLImageElement | null;
+  width: number;
+  height: number;
+  portrait: boolean;
+  /** degrau de cada letra do título (sem espaços) */
+  levels: number[];
+  /** texto da chamada (muda enquanto carrega) */
+  prompt: string;
 }
 
-export function drawTitleArt(canvas: HTMLCanvasElement, crest: HTMLImageElement | null, cssW: number, cssH: number, dpr: number): TitleLayout {
-  canvas.width = Math.round(cssW * dpr);
-  canvas.height = Math.round(cssH * dpr);
+function setSpacing(ctx: CanvasRenderingContext2D, px: number) {
+  if ('letterSpacing' in ctx) (ctx as CanvasRenderingContext2D & { letterSpacing: string }).letterSpacing = `${px}px`;
+}
+
+export function drawGlassPrint(canvas: HTMLCanvasElement, o: PrintOptions): PrintLayout {
+  canvas.width = o.width;
+  canvas.height = o.height;
   const ctx = canvas.getContext('2d')!;
-  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-  ctx.clearRect(0, 0, cssW, cssH);
-
-  const wide = cssW / cssH > 1.05;
-  const align: TitleLayout['align'] = wide ? 'left' : 'center';
-  const titleSize = wide ? Math.min(cssH * 0.15, cssW * 0.105) : Math.min(cssW * 0.205, cssH * 0.105);
-  const crestH = wide ? titleSize * 1.55 : titleSize * 1.7;
-  const gap = titleSize * 0.32;
-  const subSize = Math.max(10, titleSize * 0.13);
-  const blockH = crestH + gap + titleSize * 1.86 + gap * 0.9 + subSize;
-  const x0 = wide ? cssW * 0.075 : cssW / 2;
-  let y = wide ? (cssH - blockH) / 2 - cssH * 0.02 : cssH * 0.17;
-
-  // escudo
-  if (crest) {
-    const keyed = lumaKey(crest, Math.round(crestH * dpr * 1.2));
-    const cw = crestH * (keyed.width / keyed.height);
-    const cx = wide ? x0 - cw * 0.06 : x0 - cw / 2;
-    ctx.globalAlpha = 0.96;
-    ctx.drawImage(keyed, cx, y, cw, crestH);
-    ctx.globalAlpha = 1;
-  }
-  y += crestH + gap;
-
-  // título
+  const W = o.width;
+  const H = o.height;
+  ctx.clearRect(0, 0, W, H);
   ctx.textBaseline = 'alphabetic';
-  ctx.textAlign = 'left';
-  const font = `900 extra-condensed ${titleSize}px "Anybody Variable", "Arial Narrow", sans-serif`;
-  ctx.font = font;
-  if ('letterSpacing' in ctx) (ctx as CanvasRenderingContext2D & { letterSpacing: string }).letterSpacing = `${-titleSize * 0.01}px`;
 
-  const line1 = 'TUDO O QUE';
-  const nao = 'NÃO';
-  const somos = ' SOMOS';
-  const w1 = ctx.measureText(line1).width;
-  const wNao = ctx.measureText(nao).width;
-  const w2 = wNao + ctx.measureText(somos).width;
-  const blockW = Math.max(w1, w2);
+  // tudo em "unidades de painel": a altura do vidro vale 1 (no retrato, a largura vale 1)
+  const unit = o.portrait ? W : H;
+  const L = o.portrait
+    ? { x: 0.1, crestY: 0.16, crestH: 0.36, title: 0.128, gap: 0.05 }
+    : { x: 0.1, crestY: 0.15, crestH: 0.24, title: 0.128, gap: 0.035 };
+  const x0 = L.x * unit;
+  let y = L.crestY * unit;
 
-  const lx1 = wide ? x0 : x0 - w1 / 2;
-  const lx2 = wide ? x0 : x0 - w2 / 2;
-  const base1 = y + titleSize * 0.82;
-  const base2 = base1 + titleSize * 0.92;
+  // cabeçalho técnico
+  ctx.font = `700 ${0.018 * unit}px ${MONO}`;
+  setSpacing(ctx, 0.004 * unit);
+  ctx.fillStyle = 'rgba(232,227,215,0.72)';
+  ctx.fillText('EXPOSIÇÃO PERMANENTE  ·  4 SALAS  ·  18 PEÇAS', x0, y - 0.035 * unit);
+  setSpacing(ctx, 0);
 
-  ctx.fillStyle = OSSO;
-  ctx.fillText(line1, lx1, base1);
-  ctx.strokeStyle = OSSO;
-  ctx.lineWidth = Math.max(1.2, titleSize * 0.014);
-  ctx.strokeText(nao, lx2, base2);
-  ctx.fillText(somos, lx2 + wNao, base2);
+  // escudo oficial (recortado do círculo verde)
+  if (o.crest) {
+    const ch = L.crestH * unit;
+    const cw = ch * (o.crest.naturalWidth / o.crest.naturalHeight);
+    ctx.save();
+    ctx.globalAlpha = 0.97;
+    ctx.shadowColor = 'rgba(124,217,59,0.35)';
+    ctx.shadowBlur = 0.02 * unit;
+    ctx.drawImage(o.crest, x0 - cw * 0.04, y, cw, ch);
+    ctx.restore();
+    // colchetes de mira em volta do escudo
+    ctx.strokeStyle = 'rgba(232,227,215,0.5)';
+    ctx.lineWidth = Math.max(1.5, 0.0022 * unit);
+    const m = 0.012 * unit;
+    const bx = x0 - cw * 0.04 - m;
+    const by = y - m;
+    const bw = cw + m * 2;
+    const bh = ch + m * 2;
+    const k = 0.03 * unit;
+    ctx.beginPath();
+    ctx.moveTo(bx, by + k);
+    ctx.lineTo(bx, by);
+    ctx.lineTo(bx + k, by);
+    ctx.moveTo(bx + bw - k, by + bh);
+    ctx.lineTo(bx + bw, by + bh);
+    ctx.lineTo(bx + bw, by + bh - k);
+    ctx.stroke();
+    ctx.font = `400 ${0.014 * unit}px ${MONO}`;
+    ctx.fillStyle = 'rgba(232,227,215,0.6)';
+    ctx.fillText('ESCUDO OFICIAL · 2026', bx + bw + 0.012 * unit, by + 0.02 * unit);
+    ctx.fillText('FUTEBOL SOCIETY · POA', bx + bw + 0.012 * unit, by + 0.042 * unit);
+    y += ch + L.gap * unit;
+  }
 
-  // marcador calango sob o título
-  const yLine = base2 + titleSize * 0.2;
+  // título, letra a letra
+  const size = L.title * unit;
+  const ls = -0.03 * size;
+  let idx = 0;
+  const lineH = size * 0.92;
+  const titleTop = y;
+  const baselines: number[] = [];
+  TITLE_LINES.forEach((line, li) => {
+    const base = y + size * 0.8 + li * lineH;
+    baselines.push(base);
+    let x = x0;
+    for (const ch of line) {
+      const adv = (ADV[ch] ?? 0.55) * size + ls;
+      if (ch === ' ') {
+        x += adv;
+        continue;
+      }
+      const nao = NAO.has(idx);
+      const level = nao ? 100 : (o.levels[idx] ?? 100);
+      ctx.font = `${nao ? 'italic ' : ''}400 ${size}px ${FAMILY[level] ?? FAMILY[0]}`;
+      ctx.fillStyle = nao ? CALANGO : OSSO;
+      const w = ctx.measureText(ch).width;
+      // a letra degradada fica centrada na largura da letra limpa: nada se mexe
+      ctx.fillText(ch, x + (adv - ls - w) / 2, base);
+      x += adv;
+      idx++;
+    }
+  });
+  y = baselines[baselines.length - 1] + size * 0.32;
+
+  // fio + autoria
   ctx.fillStyle = CALANGO;
-  ctx.fillRect(wide ? x0 : x0 - blockW / 2, yLine, titleSize * 0.42, Math.max(2, titleSize * 0.025));
-
-  // subtítulo
-  ctx.font = `400 ${subSize}px "Martian Mono Variable", monospace`;
-  if ('letterSpacing' in ctx) (ctx as CanvasRenderingContext2D & { letterSpacing: string }).letterSpacing = `${subSize * 0.22}px`;
-  const sub = 'ABIGOS FR — POR LUCAS LOPES';
-  const sw = ctx.measureText(sub).width;
+  ctx.fillRect(x0, y, size * 0.5, Math.max(2, size * 0.022));
+  y += size * 0.3;
+  const sub = 0.026 * unit;
+  ctx.font = `700 ${sub}px ${MONO}`;
+  setSpacing(ctx, sub * 0.06);
   ctx.fillStyle = OSSO;
-  ctx.globalAlpha = 0.86;
-  ctx.fillText(sub, wide ? x0 : x0 - sw / 2, yLine + gap * 0.9 + subSize);
-  ctx.globalAlpha = 1;
+  ctx.fillText('UMA EXPOSIÇÃO DE LUCAS LOPES', x0, y);
+  ctx.font = `400 ${sub * 0.78}px ${MONO}`;
+  ctx.fillStyle = 'rgba(232,227,215,0.7)';
+  ctx.fillText('ABIGOS FR · PORTO ALEGRE · 2026', x0, y + sub * 1.25);
+  y += sub * 1.25 + 0.06 * unit;
 
-  const top = wide ? (cssH - blockH) / 2 - cssH * 0.02 : cssH * 0.17;
+  // chamada
+  const ps = 0.029 * unit;
+  ctx.font = `700 ${ps}px ${MONO}`;
+  setSpacing(ctx, ps * 0.14);
+  const label = `[ ${o.prompt} ]`;
+  const pw = ctx.measureText(label).width;
+  ctx.fillStyle = OSSO;
+  ctx.fillText(label, x0, y);
+  // cursor de bloco
+  ctx.fillStyle = CALANGO;
+  ctx.fillRect(x0 + pw + ps * 0.4, y - ps * 0.82, ps * 0.62, ps * 0.95);
+  setSpacing(ctx, 0);
+
+  const titleW = Math.max(...TITLE_LINES.map((l) => [...l].reduce((a, ch) => a + (ADV[ch] ?? 0.55) * size + ls, 0)));
+  const pr: [number, number, number, number] = [
+    (x0 - ps * 0.3) / W,
+    1 - (y + ps * 0.4) / H,
+    (x0 + pw + ps * 1.3) / W,
+    1 - (y - ps * 1.1) / H,
+  ];
   return {
-    block: { x: wide ? x0 : x0 - blockW / 2, y: top, w: blockW, h: blockH },
-    promptY: top + blockH + titleSize * 0.7,
-    align,
+    prompt: pr,
+    quiet: [x0 / W - 0.02, (titleTop - (o.crest ? L.crestH * unit : 0)) / H - 0.05, (titleW + 0.06 * unit) / W, (y - titleTop + L.crestH * unit) / H + 0.1],
+    focus: [(x0 + titleW * 0.4) / W, 1 - (titleTop + size) / H],
   };
 }

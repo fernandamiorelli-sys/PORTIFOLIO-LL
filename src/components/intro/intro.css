@@ -61,6 +61,8 @@
   position: absolute;
   inset: 0;
   pointer-events: none;
+  font-size: var(--step--2);
+  letter-spacing: 0.06em;
   color: color-mix(in oklab, var(--color-osso) 78%, transparent);
   opacity: 0;
   transition: opacity 0.8s ease 0.6s;
@@ -122,47 +124,41 @@
 
 .intro__prompt {
   position: absolute;
+  left: 50%;
+  bottom: calc(var(--hud) + 2px);
+  translate: -50% 0;
   display: grid;
-  gap: 14px;
-  justify-items: start;
+  justify-items: center;
   opacity: 0;
-  transition: opacity 0.6s ease 0.4s;
+  transition: opacity 0.6s ease 0.9s;
 }
 
 .phase-title .intro__prompt {
   opacity: 1;
 }
 
-.intro__press {
-  font-size: clamp(11px, 0.95vw, 14px);
-  letter-spacing: 0.22em;
-  color: var(--color-osso);
-  padding: 10px 0;
-  border-bottom: 1px solid color-mix(in oklab, var(--color-osso) 30%, transparent);
-  cursor: pointer;
-}
-
-.intro__press.is-ready {
-  animation: blink 1.4s steps(1) infinite;
-}
-
-.intro__press:disabled {
-  cursor: progress;
-  opacity: 0.55;
-}
-
 .intro__silent {
-  font-size: 10px;
-  letter-spacing: 0.16em;
-  color: color-mix(in oklab, var(--color-osso) 52%, transparent);
+  font-size: var(--step--2);
+  letter-spacing: 0.12em;
+  color: color-mix(in oklab, var(--color-osso) 62%, transparent);
   text-decoration: underline;
   text-underline-offset: 4px;
   cursor: pointer;
-  padding: 6px 0;
+  padding: 6px 4px;
 }
 
-.intro__silent:hover {
+.intro__silent:hover,
+.intro__silent:focus-visible {
   color: var(--color-calango);
+}
+
+.intro__rec {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #e5484d;
+  animation: blink 1.2s steps(1) infinite;
 }
 
 @keyframes blink {
@@ -177,9 +173,7 @@
 }
 
 @media (max-width: 760px) {
-  .intro__prompt {
-    justify-items: center;
-  }
+  .intro__corner.is-bl,
   .intro__corner.is-tr,
   .intro__corner.is-br {
     display: none;
@@ -187,7 +181,7 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .intro__press.is-ready {
+  .intro__rec {
     animation: none;
   }
   .intro__glass {

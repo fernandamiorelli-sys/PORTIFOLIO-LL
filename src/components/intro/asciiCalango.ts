@@ -150,7 +150,7 @@ export class AsciiCalango {
     ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    ctx.font = `500 ${Math.max(4, ch * 0.92)}px "Martian Mono Variable", ui-monospace, monospace`;
+    ctx.font = `700 ${Math.max(4, ch * 0.98)}px "Courier Prime", "Courier New", monospace`;
 
     // ruído fora da silhueta: o "código" convergindo, some conforme o desenho fecha
     if (p < 1 && melt === 0) {

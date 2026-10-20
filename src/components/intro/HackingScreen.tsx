@@ -135,7 +135,7 @@ export function HackingScreen({ onDone }: { onDone: () => void }) {
       </div>
 
       <div className="hack__meta t-mono" aria-hidden="true">
-        <div className="hack__pct t-display">{String(pct).padStart(3, '0')}</div>
+        <div className="hack__pct t-led">{String(pct).padStart(3, '0')}</div>
         <div className="hack__pct-label">% descriptografado</div>
         <ul className="hack__groups">
           {GROUPS.map((g, i) => {
@@ -163,11 +163,11 @@ export function HackingScreen({ onDone }: { onDone: () => void }) {
       </div>
 
       <div className="hack__timeline t-mono" aria-hidden="true">
-        <span>00:{String(AUDIO.startAt).padStart(2, '0')}</span>
+        <span>00:{String(Math.floor(AUDIO.startAt)).padStart(2, '0')}</span>
         <span className="hack__track">
           <span style={{ transform: `scaleX(${k})` }} />
         </span>
-        <span>00:{String(AUDIO.dropAt).padStart(2, '0')}</span>
+        <span>00:{String(Math.floor(AUDIO.dropAt)).padStart(2, '0')}</span>
         <span className="hack__clock">T+{clock}</span>
       </div>
     </div>

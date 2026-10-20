@@ -35,7 +35,7 @@
 .hack__log {
   align-self: end;
   min-width: 0;
-  font-size: clamp(9px, 0.72vw, 11px);
+  font-size: clamp(10px, 0.8vw, 12.5px);
   line-height: 1.7;
   text-transform: none;
   letter-spacing: 0.02em;
@@ -97,10 +97,10 @@
   top: 50%;
   translate: -50% -50%;
   white-space: nowrap;
-  font-size: clamp(2.4rem, 7vw, 7rem);
+  font-size: clamp(2.6rem, 7.5vw, 7.5rem);
   color: var(--color-breu);
   background: var(--color-calango);
-  padding: 0.08em 0.22em 0.02em;
+  padding: 0.1em 0.2em 0.02em;
   opacity: 0;
   pointer-events: none;
 }
@@ -138,10 +138,12 @@
 }
 
 .hack__pct {
-  font-size: clamp(4.5rem, 11vw, 10rem);
-  font-stretch: 52%;
+  font-size: clamp(4.5rem, 10vw, 9rem);
+  font-weight: 900;
   line-height: 0.8;
-  color: var(--color-osso);
+  letter-spacing: -0.04em;
+  color: var(--color-calango);
+  text-shadow: 0 0 24px rgba(124, 217, 59, 0.35);
   font-variant-numeric: tabular-nums;
 }
 
@@ -183,7 +185,7 @@
 
 .hack__hex {
   color: color-mix(in oklab, var(--color-osso) 38%, transparent);
-  font-size: 9px;
+  font-size: 10px;
   line-height: 1.6;
 }
 

@@ -4,23 +4,39 @@ import { audio } from '../../lib/audio';
 import { bestFormat, imageUrl, loadImage } from '../../lib/media';
 import { experience, isTouch, reducedMotion, useExperience } from '../../lib/store';
 import { DataField } from './dataField';
-import { GlassRenderer } from './glass';
+import { TitleRenderer, type Framing } from './glass';
 import { HackingScreen } from './HackingScreen';
 import { createScratchTexture } from './scratches';
-import { drawTitleArt, type TitleLayout } from './titleArt';
+import { drawGlassPrint, NAO, TITLE_CHARS, type PrintLayout } from './titleArt';
 import './intro.css';
 
-// Abertura: boot (desfoque de 1 s) → title screen no vidro → hacking (0:09–0:14) → site.
+// Abertura: boot (desfoque de 1 s) → title screen (uma tela de vidro em 3/4) → hacking (0:09–0:14) → site.
 
 const IGNORED_KEYS = new Set(['Shift', 'Control', 'Alt', 'Meta', 'CapsLock', 'Tab', 'Escape']);
+const LADDER = [100, 70, 50, 35, 20, 0];
+
+const FONTS = [
+  '400 40px "Redaction"',
+  'italic 400 40px "Redaction"',
+  '400 40px "Redaction 20"',
+  '400 40px "Redaction 35"',
+  '400 40px "Redaction 50"',
+  '400 40px "Redaction 70"',
+  '400 40px "Redaction 100"',
+  'italic 400 40px "Redaction 100"',
+  '400 16px "Courier Prime"',
+  '700 16px "Courier Prime"',
+  'italic 400 16px "Courier Prime"',
+  '800 40px "Doto Variable"',
+];
+
+const loadFonts = () => Promise.all(FONTS.map((f) => document.fonts.load(f).catch(() => null)));
 
 async function preloadAll(onProgress: (k: number) => void) {
   const fmt = await bestFormat;
   const tasks: Promise<unknown>[] = [
     document.fonts.ready,
-    document.fonts.load('900 extra-condensed 80px "Anybody Variable"'),
-    document.fonts.load('400 12px "Martian Mono Variable"'),
-    document.fonts.load('italic 400 40px "Bodoni Moda Variable"'),
+    loadFonts(),
     audio.preload(),
     loadImage(imageUrl('lucas-lopes-dono', 900, fmt)),
     loadImage(imageUrl('lucas-lopes-dono-pb', 900, fmt)).catch(() => null),
@@ -37,16 +53,63 @@ async function preloadAll(onProgress: (k: number) => void) {
   );
 }
 
+const lerp = (a: number, b: number, k: number) => a + (b - a) * k;
+const clamp01 = (k: number) => Math.max(0, Math.min(1, k));
+
+/** O enquadramento em 3/4 se adapta ao formato da tela. */
+function frame(aspect: number): { framing: Omit<Framing, 'focusUv'>; portrait: boolean } {
+  if (aspect >= 0.95) {
+    const k = clamp01((aspect - 1) / 0.8);
+    return {
+      portrait: false,
+      framing: {
+        fovY: lerp(44, 35, k),
+        half: [1.6, 0.8],
+        center: [lerp(0.42, 0.34, k), lerp(0.02, -0.02, k), -2.9],
+        yaw: lerp(31, 35, k),
+        pitch: 3,
+        aperture: 0.032,
+        depth: 0.04,
+        active: [0.018, 0.035, 0.982, 0.965],
+      },
+    };
+  }
+  const k = clamp01((0.95 - aspect) / 0.45);
+  return {
+    portrait: true,
+    framing: {
+      fovY: lerp(46, 50, k),
+      half: [0.62, 1.24],
+      center: [lerp(0.02, -0.03, k), 0.0, lerp(-2.75, -2.95, k)],
+      yaw: lerp(28, 26, k),
+      pitch: 4,
+      aperture: 0.028,
+      depth: 0.03,
+      active: [0.035, 0.018, 0.965, 0.982],
+    },
+  };
+}
+
 export function Intro({ onEnterSite }: { onEnterSite: () => void }) {
   const phase = useExperience((s) => s.phase);
   const loaded = useExperience((s) => s.loaded);
   const sound = useExperience((s) => s.sound);
   const hostRef = useRef<HTMLDivElement>(null);
-  const rendererRef = useRef<GlassRenderer | null>(null);
-  const [layout, setLayout] = useState<TitleLayout | null>(null);
+  const rendererRef = useRef<TitleRenderer | null>(null);
+  const promptRef = useRef('CARREGANDO ACERVO 000%');
+  const dirtyRef = useRef(true);
   const [leaving, setLeaving] = useState(false);
   const [gone, setGone] = useState(false);
   const ready = loaded >= 1;
+
+  // a chamada impressa no vidro acompanha o carregamento
+  useEffect(() => {
+    const next = ready ? (isTouch ? 'TOQUE PARA ACESSAR' : 'APERTE QUALQUER BOTÃO PARA ACESSAR') : `CARREGANDO ACERVO ${String(Math.round(loaded * 100)).padStart(3, '0')}%`;
+    if (next !== promptRef.current) {
+      promptRef.current = next;
+      dirtyRef.current = true;
+    }
+  }, [loaded, ready]);
 
   // render loop da title screen
   useEffect(() => {
@@ -55,9 +118,9 @@ export function Intro({ onEnterSite }: { onEnterSite: () => void }) {
     const canvas = document.createElement('canvas');
     host.appendChild(canvas);
     let alive = true;
-    let renderer: GlassRenderer;
+    let renderer: TitleRenderer;
     try {
-      renderer = new GlassRenderer(canvas);
+      renderer = new TitleRenderer(canvas);
     } catch {
       host.classList.add('is-fallback');
       return () => canvas.remove();
@@ -65,11 +128,31 @@ export function Intro({ onEnterSite }: { onEnterSite: () => void }) {
     rendererRef.current = renderer;
     renderer.autoLight = isTouch;
     const data = new DataField();
-    const titleCanvas = document.createElement('canvas');
+    const print = document.createElement('canvas');
     let crest: HTMLImageElement | null = null;
+    let portrait = false;
+    let layout: PrintLayout | null = null;
+    let base: Omit<Framing, 'focusUv'> | null = null;
     let raf = 0;
     let last = performance.now();
-    let lastScratch = { w: 0, h: 0 };
+    let orient = '';
+
+    // cada letra do título com seu degrau; o "NÃO" já nasce em 100 e fica
+    const levels = new Array(TITLE_CHARS).fill(100);
+    const starts = levels.map((_, i) => 1.15 + (i / TITLE_CHARS) * 0.5 + Math.random() * 0.45);
+
+    const big = Math.min(window.innerWidth, window.innerHeight) > 700 && (window.devicePixelRatio || 1) >= 1;
+
+    const redraw = () => {
+      if (!alive) return;
+      const pw = portrait ? 1024 : big ? 4096 : 2048;
+      const ph = portrait ? 2048 : big ? 2048 : 1024;
+      layout = drawGlassPrint(print, { crest, width: pw, height: ph, portrait, levels, prompt: promptRef.current });
+      renderer.upload('title', print);
+      renderer.prompt = layout.prompt;
+      if (base) renderer.setFraming({ ...base, focusUv: layout.focus });
+      dirtyRef.current = false;
+    };
 
     const layoutAll = () => {
       if (!alive) return;
@@ -77,20 +160,22 @@ export function Intro({ onEnterSite }: { onEnterSite: () => void }) {
       const h = window.innerHeight;
       const dpr = Math.min(window.devicePixelRatio || 1, 1.5);
       renderer.resize(w * dpr, h * dpr);
-      data.resize(w, h);
-      if (Math.abs(lastScratch.w - w) > 120 || Math.abs(lastScratch.h - h) > 120) {
-        renderer.upload('scratch', createScratchTexture(Math.round(w * dpr), Math.round(h * dpr)));
-        lastScratch = { w, h };
+      const f = frame(w / h);
+      portrait = f.portrait;
+      base = f.framing;
+      const o = portrait ? 'p' : 'l';
+      if (o !== orient) {
+        orient = o;
+        data.resize(portrait ? 1024 : 2048, portrait ? 2048 : 1024, portrait);
+        renderer.upload('scratch', createScratchTexture(portrait ? 1024 : 2048, portrait ? 2048 : 1024));
       }
-      setLayout(drawTitleArt(titleCanvas, crest, w, h, dpr));
-      renderer.upload('title', titleCanvas);
+      redraw();
     };
 
     (async () => {
-      const fmt = await bestFormat;
-      crest = await loadImage(imageUrl('sangue-frio-novo-escudo', 960, fmt)).catch(() => null);
-      await document.fonts.load('900 extra-condensed 80px "Anybody Variable"').catch(() => null);
-      layoutAll();
+      crest = await loadImage(`/media/img/escudo-oficial-${big ? 1024 : 512}.webp`).catch(() => loadImage(`/media/img/escudo-oficial-${big ? 1024 : 512}.png`).catch(() => null));
+      await loadFonts();
+      dirtyRef.current = true;
     })();
     layoutAll();
 
@@ -107,22 +192,43 @@ export function Intro({ onEnterSite }: { onEnterSite: () => void }) {
     window.addEventListener('pointermove', onMove);
 
     // glitches ocasionais, como na title screen de Cyberpunk 2077
-    let nextGlitch = performance.now() + 1800;
+    let nextGlitch = performance.now() + 2600;
     const born = performance.now();
     const tick = (stamp: number) => {
       // o carimbo do rAF pode vir antes do performance.now() da montagem: nunca deixe dt negativo
       const now = Math.max(stamp, performance.now());
       const dt = Math.max(0, Math.min(0.1, (now - last) / 1000));
       last = now;
-      if (data.shouldDraw(now)) {
-        data.draw(dt * 2);
+      const age = (now - born) / 1000;
+
+      if (data.shouldDraw(now, portrait ? 24 : 30)) {
+        data.draw(dt * 2, { loaded: experience.get().loaded, quiet: layout?.quiet ?? [0, 0, 0.4, 1], portrait });
         renderer.upload('data', data.canvas);
       }
-      if (!reducedMotion && now > nextGlitch) {
-        renderer.glitch(0.35 + Math.random() * 0.5, 90 + Math.random() * 170);
-        nextGlitch = now + 2600 + Math.random() * 4200;
+
+      // o título resolve no vidro, letra a letra (com interferência)
+      let changed = false;
+      for (let i = 0; i < levels.length; i++) {
+        if (NAO.has(i)) continue;
+        const k = reducedMotion ? 99 : Math.floor((age - starts[i]) / 0.075);
+        let lv = k < 0 ? 100 : LADDER[Math.min(LADDER.length - 1, k)];
+        if (k >= 0 && k < LADDER.length - 1 && Math.random() < 0.02) lv = LADDER[Math.max(0, k - 1)];
+        if (lv !== levels[i]) {
+          levels[i] = lv;
+          changed = true;
+        }
       }
-      renderer.reveal = Math.max(0, Math.min(1, (now - born - 900) / 700));
+      if (changed || dirtyRef.current) redraw();
+
+      if (!reducedMotion && now > nextGlitch && experience.get().phase === 'title') {
+        renderer.glitch(0.3 + Math.random() * 0.45, 80 + Math.random() * 150);
+        nextGlitch = now + 3000 + Math.random() * 4200;
+      }
+      renderer.power = clamp01((age - 0.35) / 0.5) * (age < 0.9 ? (Math.random() < 0.3 ? 0.4 : 1) : 1);
+      renderer.reveal = clamp01((age - 0.9) / 0.6);
+      const ph = experience.get().phase;
+      renderer.promptOn = ph === 'title' && experience.get().loaded >= 1 ? (Math.floor(age / 0.7) % 2 ? 0.22 : 1) : 1;
+      if (ph !== 'title' && ph !== 'boot') renderer.dolly = Math.min(1, renderer.dolly + dt / 1.1);
       renderer.render(now);
       raf = requestAnimationFrame(tick);
     };
@@ -152,7 +258,7 @@ export function Intro({ onEnterSite }: { onEnterSite: () => void }) {
       if (experience.get().phase !== 'title' || !ready) return;
       if (silent) audio.setMuted(true);
       void audio.start();
-      rendererRef.current?.glitch(1.2, 420);
+      rendererRef.current?.glitch(1.3, 460);
       experience.set({ phase: 'hacking' });
     },
     [ready],
@@ -188,23 +294,18 @@ export function Intro({ onEnterSite }: { onEnterSite: () => void }) {
   if (gone) return null;
 
   const pct = String(Math.round(loaded * 100)).padStart(3, '0');
-  const promptStyle = layout
-    ? layout.align === 'left'
-      ? { left: layout.block.x, top: layout.promptY }
-      : { left: '50%', top: layout.promptY, transform: 'translateX(-50%)', textAlign: 'center' as const }
-    : undefined;
 
   return (
     <div className={`intro phase-${phase} ${leaving ? 'is-leaving' : ''}`}>
       <div ref={hostRef} className="intro__glass" aria-hidden="true" />
 
       <h1 className="sr-only">
-        {SITE.title} — {SITE.club}, por {SITE.author}
+        {SITE.title} — {SITE.club}, uma exposição de {SITE.author}
       </h1>
 
       <div className="intro__hud t-mono" aria-hidden="true">
         <span className="intro__corner is-tl">
-          ABIGOS_FR <i>//</i> {SITE.version}
+          <b className="intro__rec" /> ABIGOS_FR <i>//</i> {SITE.version}
         </span>
         <span className="intro__corner is-tr">
           © {SITE.year} LUCAS LOPES <i>//</i> POA 30°01′S
@@ -216,7 +317,7 @@ export function Intro({ onEnterSite }: { onEnterSite: () => void }) {
             </>
           ) : (
             <>
-              <b className="intro__dot is-busy" /> CARREGANDO ACERVO {pct}%
+              <b className="intro__dot is-busy" /> CARREGANDO {pct}%
             </>
           )}
         </span>
@@ -231,8 +332,9 @@ export function Intro({ onEnterSite }: { onEnterSite: () => void }) {
       </div>
 
       {phase === 'title' || phase === 'boot' ? (
-        <div className="intro__prompt" style={promptStyle}>
-          <button type="button" className={`intro__press t-mono ${ready ? 'is-ready' : ''}`} onClick={() => begin()} disabled={!ready}>
+        <div className="intro__prompt">
+          {/* a chamada visível está impressa no vidro; este botão é a versão acessível dela */}
+          <button type="button" className="intro__press sr-only" onClick={() => begin()} disabled={!ready}>
             {ready ? (isTouch ? 'Toque para acessar' : 'Aperte qualquer botão para acessar') : 'Carregando acervo…'}
           </button>
           {ready && sound && (
