@@ -1,6 +1,7 @@
 .manifesto {
   position: relative;
-  height: 560vh;
+  /* o palco fica preso por 1,4 tela: ali as frases passam (com a página parada) e depois entra o clube */
+  height: 240vh;
 }
 
 .manifesto__sticky {
@@ -29,29 +30,6 @@
 
 .manifesto__flash img.is-on {
   opacity: 0.42;
-}
-
-/* onde o calango se posta: à direita da frase, virado para ela */
-.manifesto__anchor {
-  position: absolute;
-  left: 71%;
-  top: 60%;
-  width: 2px;
-  height: 2px;
-}
-
-.manifesto__anchor--about {
-  display: none;
-  left: 79%;
-  top: 31%;
-}
-
-.manifesto.is-about .manifesto__anchor--main {
-  display: none;
-}
-
-.manifesto.is-about .manifesto__anchor--about {
-  display: block;
 }
 
 /* cabeçalho de documento */
@@ -114,7 +92,6 @@
     transform 1s var(--ease-out);
 }
 
-
 .mf-struck__t {
   display: block;
   font-size: inherit;
@@ -161,7 +138,6 @@
   transform-origin: left top;
   transition: transform 1.2s var(--ease-inout);
 }
-
 
 .mf-big {
   position: absolute;
@@ -244,8 +220,9 @@
   left: 50%;
   bottom: calc(var(--hud) * 1.2);
   translate: -50% 0;
-  display: flex;
-  gap: 6px;
+  display: grid;
+  justify-items: center;
+  gap: 0.7rem;
   transition: opacity 0.4s ease;
 }
 
@@ -253,20 +230,62 @@
   opacity: 0;
 }
 
-.manifesto__rail span {
-  width: 22px;
-  height: 2px;
-  background: var(--line);
-  transition: background 0.3s ease;
+/* um segmento por frase; o da vez enche no tempo de leitura (a página está parada enquanto isso) */
+.manifesto__rail-segs {
+  display: flex;
+  gap: 6px;
 }
 
-.manifesto__rail span.is-on {
+.manifesto__rail span {
+  position: relative;
+  width: 26px;
+  height: 2px;
+  background: var(--line);
+}
+
+.manifesto__rail i {
+  position: absolute;
+  inset: 0;
   background: var(--color-calango);
+  transform: scaleX(0);
+  transform-origin: left;
+}
+
+/* quando as frases acabam, a página solta e o convite para seguir aparece */
+.manifesto__next {
+  margin: 0;
+  color: var(--fg);
+  opacity: 0;
+  translate: 0 -4px;
+  transition:
+    opacity 0.6s ease,
+    translate 0.6s var(--ease-out);
+}
+
+.manifesto__next b {
+  display: inline-block;
+  font-weight: 400;
+  color: var(--color-calango);
+}
+
+.manifesto.is-done .manifesto__next {
+  opacity: 1;
+  translate: 0 0;
+}
+
+.manifesto.is-done .manifesto__next b {
+  animation: mf-next 1.6s var(--ease-inout) infinite;
+}
+
+@keyframes mf-next {
+  50% {
+    transform: translateY(4px);
+  }
 }
 
 @media (max-width: 760px) {
   .manifesto {
-    height: 480vh;
+    height: 230vh;
   }
   .manifesto__bar-mid {
     display: none;
@@ -293,15 +312,6 @@
   .manifesto.is-about .manifesto__stage {
     transform: translateY(-20vh) scale(0.62);
   }
-  .manifesto__anchor {
-    left: 46%;
-    top: 84%;
-  }
-  /* no vão entre a frase e o texto do clube */
-  .manifesto__anchor--about {
-    left: 56%;
-    top: 35%;
-  }
   .manifesto__about {
     top: 46svh;
     bottom: auto;
@@ -318,5 +328,8 @@
   .mf-struck__t > span[aria-hidden] > .rz-word::after,
   .mf-struck.is-redacted .mf-struck__t > span[aria-hidden] > .rz-word::after {
     transition: none;
+  }
+  .manifesto.is-done .manifesto__next b {
+    animation: none;
   }
 }

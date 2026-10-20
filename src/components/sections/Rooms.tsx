@@ -1,8 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { PIECES, ROOMS, type Match, type Piece, type RoomId } from '../../data/pieces';
-import { calangoBus } from '../../lib/calangoBus';
 import { hasMedia } from '../../lib/media';
-import { gsap, scrollToTarget, ScrollTrigger } from '../../lib/scroll';
+import { scrollToTarget, ScrollTrigger } from '../../lib/scroll';
 import { experience, reducedMotion } from '../../lib/store';
 import { PieceCard } from '../piece/PieceCard';
 import { Picture } from '../piece/Picture';
@@ -89,7 +88,6 @@ function BidEntry({ piece, index }: { piece: Piece; index: number }) {
           <small>Abigos FR · 2026</small>
         </span>
         <span className="sr-only">{stamped ? 'Registro regularizado.' : ''}</span>
-        <div className="bid-entry__anchor" data-calango={`bid-${piece.id}`} data-calango-size="0.085" data-calango-size-m="0.06" data-calango-tilt="42" data-calango-wander="0.7" aria-hidden="true" />
       </div>
     </li>
   );
@@ -251,7 +249,6 @@ export function Confrontos() {
         <aside className="confrontos__board">
           <div className="confrontos__board-sticky">
             <Board pieces={pieces} active={active} onPick={pick} />
-            <div className="confrontos__anchor" data-calango="confrontos" data-calango-size="0.1" data-calango-size-m="0.07" data-calango-tilt="40" data-calango-wander="0.8" aria-hidden="true" />
           </div>
         </aside>
         <div className="confrontos__posters">
@@ -278,35 +275,19 @@ export function Identidade() {
   const acervo = pieces.find((p) => p.id === 'acervo');
   const ref = useRef<HTMLElement>(null);
   const vitrineRef = useRef<HTMLDivElement>(null);
-  const [home, setHome] = useState(false);
   useRoomLabel(ref, 'Sala 04 — Identidade');
 
   useEffect(() => {
     const el = vitrineRef.current;
     if (!el) return;
-    // o calango chega ao patch e se "imprime" de volta na camisa Casa
-    const st = ScrollTrigger.create({
-      trigger: el,
-      start: 'center 58%',
-      end: 'center 36%',
-      scrub: true,
-      onUpdate: (self) => (calangoBus.vanish = self.progress),
-      onLeaveBack: () => (calangoBus.vanish = 0),
-    });
-    // a legenda muda quando o calango de fato chega (o palco 3D informa)
-    const onTick = () => setHome((h) => (h ? calangoBus.landed > 0.4 : calangoBus.landed > 0.97));
-    gsap.ticker.add(onTick);
+    // o reflexo do vidro da vitrine acompanha o mouse
     const onMove = (e: PointerEvent) => {
       const r = el.getBoundingClientRect();
       el.style.setProperty('--gx', `${((e.clientX - r.left) / r.width) * 100}%`);
       el.style.setProperty('--gy', `${((e.clientY - r.top) / r.height) * 100}%`);
     };
     el.addEventListener('pointermove', onMove);
-    return () => {
-      st.kill();
-      gsap.ticker.remove(onTick);
-      el.removeEventListener('pointermove', onMove);
-    };
+    return () => el.removeEventListener('pointermove', onMove);
   }, []);
 
   if (!acervo) return null;
@@ -320,16 +301,15 @@ export function Identidade() {
           </div>
         )}
         <figure className="identidade__main">
-          <div ref={vitrineRef} className={`vitrine ${home ? 'is-home' : ''}`}>
+          <div ref={vitrineRef} className="vitrine">
             <button type="button" className="vitrine__btn" onClick={() => experience.set({ sheet: acervo.id })} data-cursor="Ver processo" aria-label={`${acervo.title}: ver o processo criativo`}>
               <Picture slug={acervo.media} alt={acervo.alt} sizes="(max-width: 760px) 92vw, 46vw" className="vitrine__pic" />
             </button>
             <span className="vitrine__glass" aria-hidden="true" />
-            <span className="vitrine__patch" data-calango="patch" data-calango-mode="home" data-calango-layer="front" aria-hidden="true" />
           </div>
           <figcaption className="identidade__cap">
             <p className="t-mono">
-              <span>Nº {acervo.n}</span> {home ? 'O calango voltou para casa.' : 'Vitrine · camisa Casa'}
+              <span>Nº {acervo.n}</span> Vitrine · camisa Casa
             </p>
             <h3 className="t-serif">{acervo.title}</h3>
             <p className="t-mono identidade__lead">{acervo.lead}</p>

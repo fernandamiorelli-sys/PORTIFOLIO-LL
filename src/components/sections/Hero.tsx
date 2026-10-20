@@ -2,15 +2,14 @@ import { useEffect, useRef } from 'react';
 import { AsciiCalango } from '../intro/asciiCalango';
 import { Picture } from '../piece/Picture';
 import { Signature, type SignatureHandle } from '../piece/Signature';
-import { calangoBus } from '../../lib/calangoBus';
 import { handoff } from '../../lib/handoff';
 import { gsap, ScrollTrigger } from '../../lib/scroll';
-import { reducedMotion, useExperience } from '../../lib/store';
+import { experience, isTouch, reducedMotion, useExperience } from '../../lib/store';
 import { charsOf, Resolve, scrubResolve } from '../type/Resolve';
 import './hero.css';
 
 // Referência: landonorris.com. A foto ocupa a tela; ao rolar, encolhe para uma moldura de museu,
-// perde a cor e recebe a assinatura. Na saída, o calango de código vira o calango 3D.
+// perde a cor e recebe a assinatura. O calango de código, que veio do hacking, fica no canto.
 
 const clamp01 = (v: number) => Math.max(0, Math.min(1, v));
 const range = (p: number, a: number, b: number) => clamp01((p - a) / (b - a));
@@ -34,8 +33,6 @@ export function Hero() {
     const ascii = new AsciiCalango(canvas);
     ascii.progress = 1;
     asciiRef.current = ascii;
-    handoff.heroAscii = ascii;
-    handoff.heroCanvas = canvas;
     const fit = () => {
       const r = canvas.getBoundingClientRect();
       ascii.resize(r.width, r.height);
@@ -45,17 +42,20 @@ export function Hero() {
     let raf = 0;
     let last = 0;
     const loop = (now: number) => {
-      // depois de formado, 30 fps bastam para o brilho residual
-      if (now - last > 33) {
-        last = now;
-        // as partículas do palco 3D nascem exatamente sobre estes caracteres e levam o desenho embora
-        canvas.style.opacity = String(1 - Math.min(1, calangoBus.reveal / 0.04));
-        if (calangoBus.reveal < 0.04) ascii.draw(now);
-      }
       raf = requestAnimationFrame(loop);
+      // depois de formado, 30 fps bastam para o brilho residual
+      if (now - last < 33) return;
+      last = now;
+      ascii.draw(now);
     };
-    raf = requestAnimationFrame(loop);
+    // só desenha enquanto o hero está na tela
+    const io = new IntersectionObserver(([e]) => {
+      cancelAnimationFrame(raf);
+      raf = e.isIntersecting ? requestAnimationFrame(loop) : 0;
+    });
+    io.observe(canvas);
     return () => {
+      io.disconnect();
       cancelAnimationFrame(raf);
       window.removeEventListener('resize', fit);
     };
@@ -100,9 +100,10 @@ export function Hero() {
     const caption = section.querySelector<HTMLElement>('.hero__caption')!;
     const hint = section.querySelector<HTMLElement>('.hero__hint')!;
 
+    // o tamanho do palco só muda com a janela (medido no refresh, não a cada quadro de rolagem)
+    let vw = sticky.clientWidth;
+    let vh = sticky.clientHeight;
     const apply = (p: number) => {
-      const vw = sticky.clientWidth;
-      const vh = sticky.clientHeight;
       const mobile = vw < 760;
       // moldura final: retrato 9:16 centrado
       const fh = mobile ? Math.min(vh * 0.62, vw * 1.25) : vh * 0.7;
@@ -135,21 +136,21 @@ export function Hero() {
       end: 'bottom bottom',
       scrub: true,
       onUpdate: (self) => apply(self.progress),
-      onRefresh: (self) => apply(self.progress),
+      onRefresh: (self) => {
+        vw = sticky.clientWidth;
+        vh = sticky.clientHeight;
+        apply(self.progress);
+      },
     });
-    // saída: a moldura sobe e o calango ASCII vira 3D
-    const morph = ScrollTrigger.create({
+    const label = ScrollTrigger.create({
       trigger: section,
-      start: 'bottom bottom',
-      end: 'bottom 35%',
-      scrub: true,
-      onUpdate: (self) => (calangoBus.reveal = self.progress),
-      onLeave: () => (calangoBus.reveal = 1),
-      onLeaveBack: () => (calangoBus.reveal = 0),
+      start: 'top top',
+      end: 'bottom 45%',
+      onToggle: (self) => self.isActive && experience.set({ room: 'O idealizador' }),
     });
     return () => {
       pin.kill();
-      morph.kill();
+      label.kill();
     };
   }, []);
 
@@ -194,13 +195,18 @@ export function Hero() {
           <span>Porto Alegre, 2026.</span>
         </div>
 
-        <div ref={asciiWrapRef} className="hero__ascii" data-calango="hero" data-calango-mode="logo" aria-hidden="true">
+        <div ref={asciiWrapRef} className="hero__ascii" aria-hidden="true">
           <canvas ref={asciiCanvasRef} />
         </div>
 
-        <div className="hero__hint t-mono" aria-hidden="true">
-          <span>Role</span>
-          <i />
+        {/* o convite para rolar: aparece logo depois do ACESSO CONCEDIDO e some no primeiro movimento */}
+        <div className="hero__hint" aria-hidden="true">
+          <div className={`hero__hint-in ${isTouch ? 'is-touch' : ''} ${entered ? 'is-in' : ''}`}>
+            <span className="hero__scroll">
+              <i />
+            </span>
+            <span className="hero__hint-t t-mono">{isTouch ? 'Deslize para entrar' : 'Role para entrar'}</span>
+          </div>
         </div>
         <div className="hero__flash" aria-hidden="true" />
       </div>

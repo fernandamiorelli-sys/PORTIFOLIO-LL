@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { gsap } from '../../lib/scroll';
-import { experience, isTouch } from '../../lib/store';
+import { isTouch } from '../../lib/store';
 import './cursor.css';
 
 /** Cursor de mira: um ponto, um anel e um rótulo que muda conforme o que está embaixo ([data-cursor]). */
@@ -21,10 +21,8 @@ export function Cursor() {
 
     let lastTarget: HTMLElement | null = null;
     const paint = () => {
-      // o palco 3D pode pedir um rótulo (o calango sob o cursor) acima de qualquer elemento
-      const override = experience.get().cursor;
       const target = lastTarget?.closest?.('[data-cursor], a, button') as HTMLElement | null;
-      const text = override ?? target?.dataset.cursor ?? (target ? '' : null);
+      const text = target?.dataset.cursor ?? (target ? '' : null);
       const next = text === null ? '' : text || '·';
       if (next !== current) {
         current = next;
@@ -40,12 +38,13 @@ export function Cursor() {
       lastTarget = e.target as HTMLElement;
       paint();
     };
-    const unsub = experience.subscribe(paint);
     const onDown = () => ring.classList.add('is-down');
     const onUp = () => ring.classList.remove('is-down');
     const onLeave = () => ring.classList.add('is-gone');
     const onEnter = () => ring.classList.remove('is-gone');
     const tick = () => {
+      // parado (o anel já alcançou o ponto), não há o que escrever
+      if (Math.abs(pos.x - ringPos.x) < 0.05 && Math.abs(pos.y - ringPos.y) < 0.05) return;
       ringPos.x += (pos.x - ringPos.x) * 0.18;
       ringPos.y += (pos.y - ringPos.y) * 0.18;
       ring.style.transform = `translate(${ringPos.x}px, ${ringPos.y}px)`;
@@ -57,7 +56,6 @@ export function Cursor() {
     document.addEventListener('pointerenter', onEnter);
     gsap.ticker.add(tick);
     return () => {
-      unsub();
       document.documentElement.classList.remove('has-cursor');
       window.removeEventListener('pointermove', onMove);
       window.removeEventListener('pointerdown', onDown);

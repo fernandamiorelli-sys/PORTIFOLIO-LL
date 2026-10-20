@@ -212,15 +212,6 @@
   }
 }
 
-.bid-entry__anchor {
-  position: absolute;
-  left: 8%;
-  bottom: -6vh;
-  width: 30%;
-  height: 10vh;
-  pointer-events: none;
-}
-
 /* ───────── confrontos: o painel de partidas */
 .confrontos {
   display: grid;
@@ -237,13 +228,6 @@
 .confrontos__board-sticky {
   position: sticky;
   top: 20vh;
-}
-
-.confrontos__anchor {
-  width: 100%;
-  height: 26vh;
-  margin-top: 4vh;
-  pointer-events: none;
 }
 
 /* LED âmbar de estação: matriz de pontos, brilho e um vidro por cima */
@@ -462,43 +446,6 @@
   mix-blend-mode: screen;
 }
 
-/* posição do patch do calango dentro da foto (medida na imagem original) */
-.vitrine__patch {
-  position: absolute;
-  left: 45%;
-  top: 49.9%;
-  width: 16.5%;
-  height: 22.1%;
-  pointer-events: none;
-}
-
-.vitrine__patch::after {
-  content: '';
-  position: absolute;
-  inset: -30%;
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba(124, 217, 59, 0.45), transparent 62%);
-  opacity: 0;
-  transition: opacity 1.4s ease;
-  mix-blend-mode: screen;
-}
-
-.vitrine.is-home .vitrine__patch::after {
-  animation: home-glow 2.4s ease-out both;
-}
-
-@keyframes home-glow {
-  0% {
-    opacity: 0;
-  }
-  25% {
-    opacity: 1;
-  }
-  100% {
-    opacity: 0;
-  }
-}
-
 .identidade__cap {
   display: grid;
   gap: 0.35rem;
@@ -568,9 +515,7 @@
     position: relative;
     top: 0;
   }
-  .confrontos__anchor {
-    height: 14vh;
-  }
+
   .led {
     font-size: 11px;
   }

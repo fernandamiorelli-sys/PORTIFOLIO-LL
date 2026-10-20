@@ -76,15 +76,6 @@
   color: var(--fg);
 }
 
-/* onde o calango passeia ao entrar na sala: no vão à direita do subtítulo */
-.room-intro__anchor {
-  flex: 0 0 auto;
-  width: 30vw;
-  height: 16vh;
-  margin-right: 6vw;
-  pointer-events: none;
-}
-
 .room-intro__body {
   display: grid;
   grid-template-columns: repeat(12, minmax(0, 1fr));
@@ -142,14 +133,6 @@
   }
   .room-intro__sub {
     flex-direction: column;
-  }
-  .room-intro__anchor {
-    position: absolute;
-    right: 0;
-    top: -1vh;
-    width: 34vw;
-    height: 12vh;
-    margin: 0;
   }
   .room-intro__kicker {
     max-width: 62vw;

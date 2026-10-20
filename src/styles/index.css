@@ -134,6 +134,15 @@ html.lenis body {
   overflow: hidden;
 }
 
+/* o portão do manifesto corta a inércia do toque (no celular, o arremesso empurraria a página
+   adiante do ponto em que ela para) */
+@media (hover: none) and (pointer: coarse) {
+  html.is-gated,
+  html.is-gated body {
+    overflow: hidden;
+  }
+}
+
 .sr-only {
   position: absolute;
   width: 1px;
@@ -242,17 +251,6 @@ html.lenis body {
   background: var(--bg);
   transition: background-color 0.6s linear;
   pointer-events: none;
-}
-
-.stage-canvas {
-  position: fixed !important;
-  inset: 0;
-  z-index: 1;
-  pointer-events: none;
-}
-
-.stage-canvas.is-front {
-  z-index: 40;
 }
 
 main.site {

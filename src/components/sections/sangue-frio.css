@@ -345,6 +345,11 @@
 .day {
   position: relative;
   overflow-x: clip;
+  /* o céu (--bg, --fg) chega aqui em linha; as cores derivadas são refeitas com ele */
+  --fg-dim: color-mix(in oklab, var(--fg) 64%, var(--bg));
+  --fg-faint: color-mix(in oklab, var(--fg) 28%, transparent);
+  --line: color-mix(in oklab, var(--fg) 16%, transparent);
+  color: var(--fg);
 }
 
 .day__sticky {
@@ -417,14 +422,6 @@
   flex: 0 0 auto;
   width: clamp(240px, 41vh, 470px);
   transform-style: preserve-3d;
-}
-
-.day__walk {
-  position: absolute;
-  left: 6vw;
-  top: 89.5vh;
-  width: 16vh;
-  height: 9vh;
 }
 
 .day__progress {
@@ -505,10 +502,6 @@
   }
   .day__slot {
     width: 74vw;
-  }
-  .day__walk {
-    top: 91vh;
-    height: 6vh;
   }
 }
 

@@ -66,7 +66,6 @@ export function RoomIntro({ room, count }: { room: Room; count: number }) {
 
       <div className="room-intro__sub">
         <p className="room-intro__kicker t-serif">{room.kicker}</p>
-        <div className="room-intro__anchor" data-calango={`sala-${room.id}`} data-calango-size="0.1" data-calango-size-m="0.07" data-calango-tilt="40" data-calango-wander="0.9" aria-hidden="true" />
       </div>
 
       <div className="room-intro__body">

@@ -3,20 +3,21 @@ html.has-cursor * {
   cursor: none !important;
 }
 
+/* cada peça do cursor é sua própria camada fixa, com o blend só no tamanho dela
+   (um contêiner de tela cheia com blend obrigaria o navegador a recompor a tela inteira a cada quadro) */
 .cursor {
-  position: fixed;
-  inset: 0;
-  z-index: 200;
   pointer-events: none;
-  mix-blend-mode: difference;
   color: #fff;
 }
 
 .cursor__dot,
 .cursor__ring {
-  position: absolute;
+  position: fixed;
+  z-index: 200;
   left: 0;
   top: 0;
+  pointer-events: none;
+  mix-blend-mode: difference;
   will-change: transform;
 }
 

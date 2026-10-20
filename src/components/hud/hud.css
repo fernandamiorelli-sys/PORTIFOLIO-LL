@@ -1,15 +1,19 @@
+/* o HUD não é uma camada de tela cheia: cada peça é fixa, com o blend (difference) só no tamanho dela.
+   Assim o navegador não recompõe a tela inteira a cada quadro de rolagem. */
 .hud {
-  position: fixed;
-  inset: 0;
-  z-index: 60;
   pointer-events: none;
   color: #fff;
+}
+
+.hud > * {
+  position: fixed;
+  z-index: 60;
   mix-blend-mode: difference;
   animation: hud-in 1.2s var(--ease-out) 0.6s both;
   transition: opacity 0.4s ease;
 }
 
-.hud.is-hidden {
+.hud.is-hidden > * {
   opacity: 0;
 }
 
@@ -27,7 +31,6 @@
 }
 
 .hud__brand {
-  position: absolute;
   top: var(--hud);
   left: var(--hud);
   display: inline-flex;
@@ -49,7 +52,6 @@
 }
 
 .hud__right {
-  position: absolute;
   top: var(--hud);
   right: var(--hud);
   display: flex;
@@ -85,13 +87,11 @@
 }
 
 .hud__room {
-  position: absolute;
   left: var(--hud);
   bottom: var(--hud);
 }
 
 .hud__meta {
-  position: absolute;
   right: var(--hud);
   bottom: var(--hud);
   display: inline-flex;
@@ -105,7 +105,6 @@
 }
 
 .hud__rail {
-  position: absolute;
   right: calc(var(--hud) * 0.45);
   top: 22vh;
   bottom: 22vh;

@@ -146,43 +146,127 @@
   height: 100%;
 }
 
+/* convite para rolar: embaixo, no centro, grande o bastante para ser visto de primeira.
+   O de fora some com a rolagem (opacidade em linha); o de dentro faz a entrada e o pulso. */
 .hero__hint {
   position: absolute;
-  z-index: 3;
+  z-index: 5;
   left: 50%;
-  top: calc(var(--hud) * 3.2);
+  bottom: calc(var(--hud) * 2.4);
   translate: -50% 0;
+  color: var(--color-osso);
+  pointer-events: none;
+}
+
+.hero__hint-in {
   display: grid;
   justify-items: center;
-  gap: 8px;
-  color: var(--color-osso);
-  text-shadow: 0 1px 12px rgba(0, 0, 0, 0.5);
+  gap: 14px;
+  text-shadow: 0 1px 16px rgba(0, 0, 0, 0.65);
+  opacity: 0;
 }
 
-.hero__hint i {
-  display: block;
-  width: 1px;
+/* entra depois da virada do hacking para o site (a foto acende primeiro) */
+.hero__hint-in.is-in {
+  opacity: 1;
+  animation: hint-in 1.1s var(--ease-out) 1.5s both;
+}
+
+@keyframes hint-in {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+}
+
+/* a cápsula da rolagem: a bolinha verde desce (no toque, sobe, como o dedo) */
+.hero__scroll {
+  position: relative;
+  width: 26px;
   height: 42px;
-  background: linear-gradient(to bottom, var(--color-osso), transparent);
-  animation: hint 1.8s var(--ease-inout) infinite;
-  transform-origin: top;
+  border: 1.5px solid currentColor;
+  border-radius: 13px;
+  box-shadow:
+    0 0 18px rgba(0, 0, 0, 0.45),
+    inset 0 0 12px rgba(0, 0, 0, 0.25);
+  animation: hint-ring 2.6s ease-out 2.6s infinite;
 }
 
-@keyframes hint {
+.hero__scroll i {
+  position: absolute;
+  left: 50%;
+  top: 8px;
+  width: 4px;
+  height: 8px;
+  margin-left: -2px;
+  border-radius: 2px;
+  background: var(--color-calango);
+  box-shadow: 0 0 8px rgba(124, 217, 59, 0.8);
+  animation: hint-wheel 1.7s var(--ease-inout) infinite;
+}
+
+.is-touch .hero__scroll i {
+  top: auto;
+  bottom: 8px;
+  animation-name: hint-swipe;
+}
+
+@keyframes hint-wheel {
   0% {
-    transform: scaleY(0);
+    transform: translateY(0);
+    opacity: 0;
   }
-  50% {
-    transform: scaleY(1);
-    transform-origin: top;
+  15% {
+    opacity: 1;
   }
-  51% {
-    transform-origin: bottom;
+  70% {
+    transform: translateY(14px);
+    opacity: 0;
   }
   100% {
-    transform: scaleY(0);
-    transform-origin: bottom;
+    transform: translateY(14px);
+    opacity: 0;
   }
+}
+
+@keyframes hint-swipe {
+  0% {
+    transform: translateY(0);
+    opacity: 0;
+  }
+  15% {
+    opacity: 1;
+  }
+  70% {
+    transform: translateY(-14px);
+    opacity: 0;
+  }
+  100% {
+    transform: translateY(-14px);
+    opacity: 0;
+  }
+}
+
+/* um anel verde que se abre de tempos em tempos: chama o olho sem gritar */
+@keyframes hint-ring {
+  0% {
+    box-shadow:
+      0 0 18px rgba(0, 0, 0, 0.45),
+      inset 0 0 12px rgba(0, 0, 0, 0.25),
+      0 0 0 0 rgba(124, 217, 59, 0.55);
+  }
+  70%,
+  100% {
+    box-shadow:
+      0 0 18px rgba(0, 0, 0, 0.45),
+      inset 0 0 12px rgba(0, 0, 0, 0.25),
+      0 0 0 16px rgba(124, 217, 59, 0);
+  }
+}
+
+.hero__hint-t {
+  font-size: var(--step-0);
+  letter-spacing: 0.22em;
 }
 
 .hero__flash {
@@ -217,5 +301,22 @@
   }
   .hero__caption {
     display: none;
+  }
+  /* no celular, o convite fica acima do texto de abertura, à esquerda do calango de código */
+  .hero__hint {
+    left: 42%;
+    bottom: 31vh;
+    bottom: 31svh;
+  }
+  .hero__hint-t {
+    font-size: var(--step--1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero__hint-in.is-in,
+  .hero__scroll,
+  .hero__scroll i {
+    animation: none;
   }
 }

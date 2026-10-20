@@ -23,10 +23,12 @@ function SoundToggle() {
   const bars = useRef<HTMLSpanElement[]>([]);
   useEffect(() => {
     const levels = new Array(4).fill(0);
+    const shown = new Array(4).fill(-1);
     const tick = () => {
       audio.levels(levels);
       bars.current.forEach((b, i) => {
-        if (b) b.style.transform = `scaleY(${0.15 + levels[i] * 0.85})`;
+        const v = Math.round((0.15 + levels[i] * 0.85) * 1000) / 1000;
+        if (b && v !== shown[i]) b.style.transform = `scaleY(${(shown[i] = v)})`;
       });
     };
     gsap.ticker.add(tick);
@@ -80,10 +82,15 @@ export function Hud() {
   const railRef = useRef<HTMLSpanElement>(null);
 
   useEffect(() => {
+    // só escreve quando muda: parado, o HUD não toca no DOM (cada escrita custa estilo e pintura)
+    let pct = '';
+    let rail = -1;
     const tick = () => {
       const p = getLenis()?.progress ?? 0;
-      if (pctRef.current) pctRef.current.textContent = String(Math.round(p * 100)).padStart(3, '0');
-      if (railRef.current) railRef.current.style.transform = `scaleY(${p})`;
+      const next = String(Math.round(p * 100)).padStart(3, '0');
+      if (next !== pct && pctRef.current) pctRef.current.textContent = pct = next;
+      const r = Math.round(p * 2000) / 2000;
+      if (r !== rail && railRef.current) railRef.current.style.transform = `scaleY(${(rail = r)})`;
     };
     gsap.ticker.add(tick);
     return () => gsap.ticker.remove(tick);

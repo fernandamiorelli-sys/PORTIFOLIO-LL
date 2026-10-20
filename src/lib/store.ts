@@ -11,8 +11,6 @@ export interface ExperienceState {
   sheet: string | null;
   /** sala atual, para o HUD */
   room: string;
-  /** rótulo do cursor customizado */
-  cursor: string | null;
   /** a trilha existe e pode tocar */
   sound: boolean;
 }
@@ -58,7 +56,6 @@ export const experience = createStore<ExperienceState>({
   muted: prefersMute,
   sheet: null,
   room: '',
-  cursor: null,
   sound: false,
 });
 

@@ -18,11 +18,17 @@ const FILM = PIECES.find((p) => p.id === 'alvi-verde');
 const OSSO = '#e8e3d7';
 const BREU = '#070807';
 
-function applySky(sky: Sky, sun: HTMLElement | null) {
-  const root = document.documentElement;
-  root.style.setProperty('--bg', sky.bg);
-  // o texto escolhe o tom de maior contraste com o céu (o ponto de virada fica perto de L = 0,16)
-  root.style.setProperty('--fg', luminance(sky.bg) > 0.16 ? BREU : OSSO);
+// O céu vale só onde ele aparece: a galeria (que ocupa a tela inteira enquanto o dia passa) e o fundo
+// fixo. Trocar as cores no :root obrigaria o navegador a recalcular o estilo da página inteira a
+// cada quadro de rolagem; aqui, só o pedaço da galeria. Antes e depois dela o céu é o breu de sempre.
+function applySky(sky: Sky, sun: HTMLElement | null, day: HTMLElement) {
+  const fg = luminance(sky.bg) > 0.16 ? BREU : OSSO;
+  for (const el of [day, document.querySelector<HTMLElement>('.backdrop')]) {
+    if (!el) continue;
+    el.style.setProperty('--bg', sky.bg);
+    // o texto escolhe o tom de maior contraste com o céu (o ponto de virada fica perto de L = 0,16)
+    el.style.setProperty('--fg', fg);
+  }
   if (sun) {
     sun.style.setProperty('--sun', sky.sun);
     sun.style.opacity = String(sky.alpha);
@@ -31,10 +37,11 @@ function applySky(sky: Sky, sun: HTMLElement | null) {
   }
 }
 
-function resetSky() {
-  const root = document.documentElement;
-  root.style.setProperty('--bg', BREU);
-  root.style.setProperty('--fg', OSSO);
+function resetSky(day: HTMLElement) {
+  for (const el of [day, document.querySelector<HTMLElement>('.backdrop')]) {
+    el?.style.removeProperty('--bg');
+    el?.style.removeProperty('--fg');
+  }
 }
 
 const FPS = 24;
@@ -309,7 +316,7 @@ function DayGallery({ pieces }: { pieces: Piece[] }) {
         const t = c - i;
         sky = mixSky(skies[i], skies[Math.min(skies.length - 1, i + 1)], t);
       }
-      applySky(sky, sun);
+      applySky(sky, sun, outer);
       const i = Math.max(0, Math.min(pieces.length - 1, Math.round(c)));
       const a = pieces[Math.max(0, Math.floor(c))];
       const b = pieces[Math.min(pieces.length - 1, Math.max(0, Math.floor(c)) + 1)];
@@ -334,8 +341,8 @@ function DayGallery({ pieces }: { pieces: Piece[] }) {
           },
           onEnter: () => experience.set({ room: 'Sala 01 — Sangue-Frio' }),
           onEnterBack: () => experience.set({ room: 'Sala 01 — Sangue-Frio' }),
-          onLeave: () => resetSky(),
-          onLeaveBack: () => resetSky(),
+          onLeave: () => resetSky(outer),
+          onLeaveBack: () => resetSky(outer),
         },
       });
 
@@ -364,7 +371,7 @@ function DayGallery({ pieces }: { pieces: Piece[] }) {
     return () => {
       ro.disconnect();
       ctx.revert();
-      resetSky();
+      resetSky(outer);
     };
   }, [pieces]);
 
@@ -387,7 +394,6 @@ function DayGallery({ pieces }: { pieces: Piece[] }) {
             </div>
           ))}
         </div>
-        <div className="day__walk" data-calango="sangue-frio" data-calango-size="0.1" data-calango-tilt="28" data-calango-heading="90" data-calango-wander="1.4" aria-hidden="true" />
         <div className="day__progress" aria-hidden="true">
           <span ref={barRef} />
         </div>

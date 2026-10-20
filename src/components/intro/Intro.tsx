@@ -40,8 +40,9 @@ async function preloadAll(onProgress: (k: number) => void) {
     audio.preload(),
     loadImage(imageUrl('lucas-lopes-dono', 900, fmt)),
     loadImage(imageUrl('lucas-lopes-dono-pb', 900, fmt)).catch(() => null),
-    import('../three/Stage'),
-    import('../three/calango/asset').then((m) => m.loadCalango()),
+    // o calango de vidro do manifesto: malha, mapa de campo e o código do vidro
+    import('../glass/asset').then((m) => m.loadGlassCalango()).catch(() => null),
+    import('../glass/glassRenderer'),
   ];
   let done = 0;
   onProgress(0.04);

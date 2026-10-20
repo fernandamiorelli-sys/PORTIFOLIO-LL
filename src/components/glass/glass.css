@@ -1,0 +1,15 @@
+/* o calango de vidro e o overlay ocupam o palco inteiro, por cima das frases e por baixo do HUD */
+.glass {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+}
+
+.glass canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+}
