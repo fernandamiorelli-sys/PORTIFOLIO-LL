@@ -98,7 +98,7 @@ export function Manifesto() {
           ))}
         </div>
 
-        <div className="manifesto__anchor" data-calango="manifesto" data-calango-spin="0.5" data-calango-tilt="1" aria-hidden="true" />
+        <div className="manifesto__anchor" data-calango="manifesto" data-calango-mode="stage" data-calango-size="0.22" data-calango-tilt="54" data-calango-wander="0" aria-hidden="true" />
 
         <h2 id="manifesto-h" className="sr-only">
           Manifesto

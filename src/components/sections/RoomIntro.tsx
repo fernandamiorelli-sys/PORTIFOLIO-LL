@@ -35,7 +35,7 @@ export function RoomIntro({ room, count }: { room: Room; count: number }) {
       <p className="room-intro__kicker t-mono">
         Sala {room.n} <span>—</span> {room.kicker} <span>—</span> {String(count).padStart(2, '0')} {count === 1 ? 'peça' : 'peças'}
       </p>
-      <div className="room-intro__anchor" data-calango={`sala-${room.id}`} data-calango-rot="-24" data-calango-tilt="0.5" aria-hidden="true" />
+      <div className="room-intro__anchor" data-calango={`sala-${room.id}`} data-calango-size="0.12" data-calango-tilt="40" data-calango-wander="0.8" aria-hidden="true" />
       <h2 ref={titleRef} className="room-intro__title t-display" style={{ '--chars': room.title.length } as CSSProperties}>
         {room.title}
       </h2>

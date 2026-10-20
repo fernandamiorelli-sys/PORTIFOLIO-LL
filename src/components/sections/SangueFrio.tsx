@@ -252,7 +252,7 @@ function DayGallery({ pieces }: { pieces: Piece[] }) {
             </div>
           ))}
         </div>
-        <div className="day__walk" data-calango="sangue-frio" data-calango-rot="-90" data-calango-tilt="0.15" aria-hidden="true" />
+        <div className="day__walk" data-calango="sangue-frio" data-calango-size="0.1" data-calango-tilt="28" data-calango-heading="90" data-calango-wander="1.4" aria-hidden="true" />
         <div className="day__progress" aria-hidden="true">
           <span ref={barRef} />
         </div>

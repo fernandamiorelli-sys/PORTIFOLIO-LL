@@ -41,6 +41,7 @@ async function preloadAll(onProgress: (k: number) => void) {
     loadImage(imageUrl('lucas-lopes-dono', 900, fmt)),
     loadImage(imageUrl('lucas-lopes-dono-pb', 900, fmt)).catch(() => null),
     import('../three/Stage'),
+    import('../three/calango/asset').then((m) => m.loadCalango()),
   ];
   let done = 0;
   onProgress(0.04);

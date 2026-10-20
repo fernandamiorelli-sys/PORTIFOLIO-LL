@@ -36,7 +36,7 @@ export function Reforcos() {
     <section ref={ref} className="room room--reforcos" aria-label="Sala 02, Reforços">
       <RoomIntro room={room} count={pieces.length} />
       <div className={`reforcos ${pieces.length === 1 ? 'is-single' : ''}`}>
-        <div className="reforcos__anchor" data-calango="reforcos" data-calango-rot="18" data-calango-tilt="0.5" aria-hidden="true" />
+        <div className="reforcos__anchor" data-calango="reforcos" data-calango-size="0.12" data-calango-tilt="40" aria-hidden="true" />
         {pieces.map((p, i) => (
           <div key={p.id} className="reforcos__item">
             <p className="reforcos__tag t-mono" aria-hidden="true">
@@ -96,7 +96,7 @@ export function Confrontos() {
               Próximo confronto <span>·</span> {String(active + 1).padStart(2, '0')}/{String(pieces.length).padStart(2, '0')}
             </p>
             <SplitFlap rows={rows} columns={26} label={rows.filter(Boolean).join(', ')} />
-            <div className="confrontos__anchor" data-calango="confrontos" data-calango-rot="-8" data-calango-tilt="0.4" aria-hidden="true" />
+            <div className="confrontos__anchor" data-calango="confrontos" data-calango-size="0.12" data-calango-tilt="40" aria-hidden="true" />
           </div>
         </aside>
         <div className="confrontos__posters">
@@ -166,7 +166,7 @@ export function Identidade() {
               <Picture slug={acervo.media} alt={acervo.alt} sizes="(max-width: 760px) 92vw, 46vw" className="vitrine__pic" />
             </button>
             <span className="vitrine__glass" aria-hidden="true" />
-            <span className="vitrine__patch" data-calango="patch" data-calango-layer="front" data-calango-tilt="0" data-calango-rot="0" aria-hidden="true" />
+            <span className="vitrine__patch" data-calango="patch" data-calango-mode="home" data-calango-layer="front" aria-hidden="true" />
           </div>
           <figcaption className="identidade__cap">
             <p className="t-mono">

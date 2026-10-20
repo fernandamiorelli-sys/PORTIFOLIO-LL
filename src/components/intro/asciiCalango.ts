@@ -22,6 +22,17 @@ interface Cell {
   final: string;
   glyph: string;
   flash: number;
+  /** posição ao longo da espinha (0 focinho → 1 ponta da cauda) */
+  spine: number;
+}
+
+export interface Glyph {
+  /** centro da célula em px da tela */
+  x: number;
+  y: number;
+  ch: string;
+  spine: number;
+  gap: boolean;
 }
 
 function seeded(seed: number) {
@@ -120,6 +131,7 @@ export class AsciiCalango {
           final,
           glyph: NOISE[Math.floor(r() * NOISE.length)],
           flash: 0,
+          spine: s,
         });
       }
     }
@@ -134,6 +146,22 @@ export class AsciiCalango {
     this.canvas.height = Math.max(1, Math.round(cssHeight * dpr));
     this.cw = this.canvas.width / this.cols;
     this.ch = this.canvas.height / this.rows;
+  }
+
+  /** Células do desenho com o centro em px da tela: a passagem de bastão para o calango 3D. */
+  glyphs(rect: DOMRect): Glyph[] {
+    return this.cells.map((c) => ({
+      x: rect.left + ((c.x + 0.5) / this.cols) * rect.width,
+      y: rect.top + ((c.y + 0.5) / this.rows) * rect.height,
+      ch: c.final === ' ' ? '·' : c.final,
+      spine: c.spine,
+      gap: c.gap,
+    }));
+  }
+
+  /** Altura de uma célula em px CSS, para as partículas nascerem do mesmo tamanho. */
+  cellHeight(rect: DOMRect) {
+    return rect.height / this.rows;
   }
 
   /** Proporção largura/altura do desenho. */

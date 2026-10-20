@@ -33,6 +33,8 @@ export function Hero() {
     const ascii = new AsciiCalango(canvas);
     ascii.progress = 1;
     asciiRef.current = ascii;
+    handoff.heroAscii = ascii;
+    handoff.heroCanvas = canvas;
     const fit = () => {
       const r = canvas.getBoundingClientRect();
       ascii.resize(r.width, r.height);
@@ -45,8 +47,9 @@ export function Hero() {
       // depois de formado, 30 fps bastam para o brilho residual
       if (now - last > 33) {
         last = now;
-        ascii.dissolve = calangoBus.reveal;
-        if (calangoBus.reveal < 1) ascii.draw(now);
+        // as partículas do palco 3D nascem exatamente sobre estes caracteres e levam o desenho embora
+        canvas.style.opacity = String(1 - Math.min(1, calangoBus.reveal / 0.04));
+        if (calangoBus.reveal < 0.04) ascii.draw(now);
       }
       raf = requestAnimationFrame(loop);
     };
@@ -188,7 +191,7 @@ export function Hero() {
           <span>Porto Alegre, 2026.</span>
         </div>
 
-        <div ref={asciiWrapRef} className="hero__ascii" data-calango="hero" data-calango-tilt="0" aria-hidden="true">
+        <div ref={asciiWrapRef} className="hero__ascii" data-calango="hero" data-calango-mode="logo" aria-hidden="true">
           <canvas ref={asciiCanvasRef} />
         </div>
 

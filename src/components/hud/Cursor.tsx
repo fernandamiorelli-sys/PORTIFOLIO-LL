@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { gsap } from '../../lib/scroll';
-import { isTouch } from '../../lib/store';
+import { experience, isTouch } from '../../lib/store';
 import './cursor.css';
 
 /** Cursor de mira: um ponto, um anel e um rótulo que muda conforme o que está embaixo ([data-cursor]). */
@@ -19,12 +19,12 @@ export function Cursor() {
     const ringPos = { ...pos };
     let current = '';
 
-    const onMove = (e: PointerEvent) => {
-      pos.x = e.clientX;
-      pos.y = e.clientY;
-      dot.style.transform = `translate(${pos.x}px, ${pos.y}px)`;
-      const target = (e.target as HTMLElement)?.closest?.('[data-cursor], a, button') as HTMLElement | null;
-      const text = target?.dataset.cursor ?? (target ? '' : null);
+    let lastTarget: HTMLElement | null = null;
+    const paint = () => {
+      // o palco 3D pode pedir um rótulo (o calango sob o cursor) acima de qualquer elemento
+      const override = experience.get().cursor;
+      const target = lastTarget?.closest?.('[data-cursor], a, button') as HTMLElement | null;
+      const text = override ?? target?.dataset.cursor ?? (target ? '' : null);
       const next = text === null ? '' : text || '·';
       if (next !== current) {
         current = next;
@@ -33,6 +33,14 @@ export function Cursor() {
         ring.classList.toggle('has-label', next !== '' && next !== '·');
       }
     };
+    const onMove = (e: PointerEvent) => {
+      pos.x = e.clientX;
+      pos.y = e.clientY;
+      dot.style.transform = `translate(${pos.x}px, ${pos.y}px)`;
+      lastTarget = e.target as HTMLElement;
+      paint();
+    };
+    const unsub = experience.subscribe(paint);
     const onDown = () => ring.classList.add('is-down');
     const onUp = () => ring.classList.remove('is-down');
     const onLeave = () => ring.classList.add('is-gone');
@@ -49,6 +57,7 @@ export function Cursor() {
     document.addEventListener('pointerenter', onEnter);
     gsap.ticker.add(tick);
     return () => {
+      unsub();
       document.documentElement.classList.remove('has-cursor');
       window.removeEventListener('pointermove', onMove);
       window.removeEventListener('pointerdown', onDown);
