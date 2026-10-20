@@ -10,10 +10,10 @@
 
 .screening__player {
   position: relative;
-  grid-column: 2 / 7;
+  grid-column: 1 / -1;
+  width: min(100%, calc(84vh * 16 / 9));
   justify-self: center;
-  height: min(84vh, 150vw);
-  aspect-ratio: 9 / 16;
+  aspect-ratio: 16 / 9;
   background: #000;
   box-shadow:
     0 0 0 1px var(--line),
@@ -54,7 +54,8 @@
 }
 
 .screening__text {
-  grid-column: 8 / 12;
+  grid-column: 2 / 9;
+  margin-top: 6vh;
   display: grid;
   gap: 1rem;
 }
@@ -210,9 +211,6 @@
   .screening__player,
   .screening__text {
     grid-column: 1 / -1;
-  }
-  .screening__player {
-    height: min(78vh, 140vw);
   }
   .day__track {
     gap: 12vw;

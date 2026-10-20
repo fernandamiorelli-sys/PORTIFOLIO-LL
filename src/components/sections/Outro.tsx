@@ -138,13 +138,6 @@ export function Closing() {
         <li>
           <a href={`mailto:${CONTACT.email}`}>{CONTACT.email}</a>
         </li>
-        {CONTACT.instagram ? (
-          <li>
-            <a href={CONTACT.instagram} target="_blank" rel="noopener noreferrer">
-              {CONTACT.instagramLabel}
-            </a>
-          </li>
-        ) : null}
         <li>
           <a href={CONTACT.whatsapp} target="_blank" rel="noopener noreferrer">
             WhatsApp

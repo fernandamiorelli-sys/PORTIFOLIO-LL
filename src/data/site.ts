@@ -13,19 +13,16 @@ export const SITE = {
 export const CONTACT = {
   whatsapp: 'https://w.app/phbaih',
   email: 'trabalhecomlucas07@gmail.com',
-  /** Preencha com o link do Instagram do Abigos (ex.: https://instagram.com/abigosfr). Vazio = link oculto. */
-  instagram: '',
-  instagramLabel: 'Instagram do Abigos',
 } as const;
 
 export const AUDIO = {
-  /** Instrumental de "New Person, Same Old Mistakes" (Tame Impala). */
-  src: '/media/audio/new-person-same-old-mistakes.mp3',
+  /** Instrumental de "New Person, Same Old Mistakes" (Tame Impala). Sem extensão: o site escolhe .webm (Opus) ou .mp3. */
+  src: '/media/audio/new-person-same-old-mistakes',
   /** A música entra em fade a partir deste segundo... */
   startAt: 9,
-  /** ...e estabiliza aqui, na virada do instrumental. A tela de hacking dura exatamente esse intervalo. */
-  dropAt: 14,
+  /** ...e estabiliza aqui, no bumbo do 0:14 (14,19 s). A tela de hacking dura exatamente esse intervalo. */
+  dropAt: 14.19,
   /** Ao chegar ao fim, volta para este ponto (a virada) em vez do silêncio do começo. */
-  loopFrom: 14,
+  loopFrom: 14.19,
   volume: 0.85,
 } as const;

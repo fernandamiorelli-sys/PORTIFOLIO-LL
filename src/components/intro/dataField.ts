@@ -36,7 +36,7 @@ const FILES = [
   'reforcos/13_bagagem.jpg',
   'confrontos/14_reticula.jpg',
   'confrontos/15_preparamento.jpg',
-  'confrontos/16_miragem.png',
+  'confrontos/16_proxima-estacao.png',
   'identidade/17_essencial.jpg',
   'identidade/18_acervo.jpg',
 ];

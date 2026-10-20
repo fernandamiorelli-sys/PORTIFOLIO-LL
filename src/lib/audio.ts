@@ -26,7 +26,8 @@ class AudioDirector {
       const el = new Audio();
       el.preload = 'auto';
       el.crossOrigin = 'anonymous';
-      el.src = AUDIO.src;
+      // Opus (WebM) é menor; o MP3 cobre os navegadores sem Opus
+      el.src = `${AUDIO.src}.${el.canPlayType('audio/webm; codecs="opus"') ? 'webm' : 'mp3'}`;
       let settled = false;
       const done = (ok: boolean) => {
         if (settled) return;

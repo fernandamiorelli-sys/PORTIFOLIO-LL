@@ -43,17 +43,6 @@
     "lqip": "data:image/webp;base64,UklGRnAAAABXRUJQVlA4IGQAAABQBACdASoYAB4APu1ur1IppiQiqAgBMB2JZQAAPPSBqWswpNWLMyqpFCkAAP7vD50PLxSrl7n4UtHRNvlBqqi+VuZvP2WnU6t606FSF4Nc+ymIbSGhfGPCWYg+oX1uvp6+GZAA",
     "color": "#080808"
   },
-  "logo-abigos-principal": {
-    "width": 1080,
-    "height": 1120,
-    "widths": [
-      480,
-      960,
-      1080
-    ],
-    "lqip": "data:image/webp;base64,UklGRo4AAABXRUJQVlA4IIIAAAAQBQCdASoYABkAPu1urVGppqQiqAqpMB2JZACdMoABXK9+W9SCzmUhJaUnt5843AwAAP7o8D8mGYEI9u4WD50k3DolVUW7EcTPMjxPHbw7zVbMZv9VhqEKABYaa206b5zJlcISAVj6XR0BsIISe2CUXRczoF69ERyQHlgAsz3+gAAA",
-    "color": "#389848"
-  },
   "lucas-lopes-dono": {
     "width": 900,
     "height": 1600,
@@ -191,6 +180,50 @@
       900
     ],
     "lqip": "data:image/webp;base64,UklGRpYAAABXRUJQVlA4IIoAAACQBgCdASoYACsAPu1ysVMppqSipWmZMB2JaQAAWumDXDAcd3CwP0k+rOpd0tSFRL81pc066X5InNmnhq4AAP7lnTcCb6SNbs5LeROF4xvVZA7IikHFQE/4ZmLnSJ8iOD798G0nPRFXeHX8v7OVRMRmAAaMIOYlYVjDTl4Sg97+zOfVS2kDW8U4AAA=",
+    "color": "#080808"
+  },
+  "confrontos-pucrs": {
+    "width": 1728,
+    "height": 2304,
+    "widths": [
+      480,
+      960,
+      1600
+    ],
+    "lqip": "data:image/webp;base64,UklGRr4AAABXRUJQVlA4ILIAAABQBQCdASoYACAAPu1mqU4ppaOiMAgBMB2JQBOgAwUtYa8toLRW/DUMeKrVUVYePykY1AAA/tApnamdknu8AHzLgK9zf+7i6al9amot7OvitNa59stn//Br+AEr9o6TRn+S4Lx+YkGmPUUyE6qOZkhvPHU8FbPKDB6LNAOE8fVvxWZz0dedRvnQje2qKwl3UdGmmVxeTglM34dXwFK4vw1lNuZsjkUpyDbnNadJDGmGisAA",
+    "color": "#080808"
+  },
+  "reforcos-leo": {
+    "width": 2170,
+    "height": 2898,
+    "widths": [
+      480,
+      960,
+      1600
+    ],
+    "lqip": "data:image/webp;base64,UklGRsoAAABXRUJQVlA4IL4AAACwBQCdASoYACAAPu1qq1EppaOiqAqpMB2JaACdMoMzGB1Ltt4mdY25QUMgFAOOjaTFKaJXE8AA/vDfeladJtlChA2DZ1bW9RjL0Dv2b52hCYikNND0ZUaT7dwH1Q1zHCcnMpCO2HgDrNfV07BHW4tImTEQrkpDgoyW70vV53R28FdiDzafnsi0be7ulR1d5mIP9A/miuOuxyRkjEdMzMJb8RYjdLP95kdKD+1cUl2MIKKSc+8ym1h/HTcu3yAA",
+    "color": "#080808"
+  },
+  "alvi-verde-poster": {
+    "width": 1920,
+    "height": 1080,
+    "widths": [
+      480,
+      960,
+      1600
+    ],
+    "lqip": "data:image/webp;base64,UklGRlwAAABXRUJQVlA4IFAAAABQBACdASoYAA4APu1yrU+pp6QiMAgBMB2JZQC7ACEoclzDkaAFuQx6WHuAAP7r51SZRoTXnQXVQG6zixmdZh+4SHFh72VUYSlfRQH1d/yAAA==",
+    "color": "#080808"
+  },
+  "escudo-oficial": {
+    "width": 1254,
+    "height": 1254,
+    "widths": [
+      480,
+      960,
+      1254
+    ],
+    "lqip": "data:image/webp;base64,UklGRmoAAABXRUJQVlA4IF4AAACwBACdASoYABgAPuFcp02opSOiMAwBEBwJQBkahDv7kfGnrrZgx0ug6Vo6zwAAAP71eVn/OVjfzkKS0wfpLgJogbYbsYPpxIzacB0EUam4108ivnMJF3sufHbDYAAA",
     "color": "#080808"
   }
 }
