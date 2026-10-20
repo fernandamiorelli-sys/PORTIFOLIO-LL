@@ -91,7 +91,7 @@ export function Manifesto() {
     });
     const seen = ScrollTrigger.create({
       trigger: section,
-      start: 'top 70%',
+      start: 'top 45%',
       end: 'bottom 30%',
       onToggle: (self) => setLive(self.isActive),
     });

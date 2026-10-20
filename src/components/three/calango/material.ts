@@ -97,6 +97,47 @@ vec3 cPerturb(vec3 surfPos, vec3 surfNorm, vec2 dHdxy, float faceDirection) {
 }
 `;
 
+/**
+ * Íris do calango, para a esfera do olho (mapa equirretangular: o polo +Y é o centro da pupila).
+ * Pupila redonda e preta, um anel dourado fino em volta dela e a íris marrom-escura com estrias,
+ * como no Tropidurus. O resto da esfera fica escondido na órbita.
+ */
+function irisTexture() {
+  const w = 256;
+  const h = 512;
+  const c = document.createElement('canvas');
+  c.width = w;
+  c.height = h;
+  const g = c.getContext('2d')!;
+  const row = (deg: number) => (deg / 180) * h;
+  g.fillStyle = '#030303';
+  g.fillRect(0, 0, w, h);
+  // íris: marrom-escura, mais quente perto da pupila, com estrias radiais (colunas no mapa)
+  const iris = g.createLinearGradient(0, row(17), 0, row(44));
+  iris.addColorStop(0, '#6b4420');
+  iris.addColorStop(0.35, '#3d2614');
+  iris.addColorStop(1, '#1a110a');
+  g.fillStyle = iris;
+  g.fillRect(0, row(17), w, row(44) - row(17));
+  for (let x = 0; x < w; x += 2) {
+    const k = Math.sin(x * 0.37) * 0.5 + Math.sin(x * 1.31 + 1.7) * 0.5;
+    g.fillStyle = k > 0 ? `rgba(160, 110, 55, ${0.12 * k})` : `rgba(0, 0, 0, ${-0.22 * k})`;
+    g.fillRect(x, row(19), 2, row(42) - row(19));
+  }
+  // anel dourado em volta da pupila e o contorno escuro da íris
+  g.fillStyle = '#c99a3e';
+  g.fillRect(0, row(15), w, row(18.5) - row(15));
+  g.fillStyle = '#0b0805';
+  g.fillRect(0, row(41), w, row(46) - row(41));
+  // pupila
+  g.fillStyle = '#010101';
+  g.fillRect(0, 0, w, row(15));
+  const t = new THREE.CanvasTexture(c);
+  t.colorSpace = THREE.SRGBColorSpace;
+  t.anisotropy = 4;
+  return t;
+}
+
 export function createCalangoMaterials(opts: { scales: boolean }) {
   const uniforms: CalangoUniforms = {
     uReveal: { value: 1 },
@@ -169,7 +210,8 @@ export function createCalangoMaterials(opts: { scales: boolean }) {
   body.customProgramCacheKey = () => 'calango-body-v1';
 
   const eye = new THREE.MeshPhysicalMaterial({
-    color: new THREE.Color('#020403'),
+    color: new THREE.Color('#ffffff'),
+    map: irisTexture(),
     metalness: 0,
     roughness: 0.035,
     clearcoat: 1,

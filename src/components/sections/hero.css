@@ -104,8 +104,11 @@
   line-height: 1.08;
 }
 
+/* no alto, à direita: embaixo fica o calango de código */
 .hero__overlay--right {
   right: var(--gutter);
+  top: calc(var(--hud) * 3.2);
+  bottom: auto;
   display: grid;
   gap: 4px;
   text-align: right;

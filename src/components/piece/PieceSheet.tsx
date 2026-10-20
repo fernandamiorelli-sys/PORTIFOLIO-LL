@@ -116,13 +116,13 @@ export function PieceSheet() {
       </div>
 
       <nav className="sheet__nav t-mono" aria-label="Navegação do acervo">
-        <button type="button" onClick={() => go(-1)} aria-label="Peça anterior">
+        <button type="button" className="t-mono" onClick={() => go(-1)} aria-label="Peça anterior">
           ← Anterior
         </button>
         <span aria-hidden="true">
           {String(index + 1).padStart(2, '0')} / {String(VISIBLE.length).padStart(2, '0')}
         </span>
-        <button type="button" onClick={() => go(1)} aria-label="Próxima peça">
+        <button type="button" className="t-mono" onClick={() => go(1)} aria-label="Próxima peça">
           Próxima →
         </button>
       </nav>

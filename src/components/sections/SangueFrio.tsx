@@ -374,7 +374,11 @@ function DayGallery({ pieces }: { pieces: Piece[] }) {
         <div ref={sunRef} className="day__sun" aria-hidden="true" />
         <div className="day__ground" aria-hidden="true" />
         <p className="day__clock t-mono" aria-hidden="true">
-          Hora solar <b ref={clockRef}>04:50</b> <i>·</i> <span ref={phaseRef}>Amanhecer</span>
+          Hora solar{' '}
+          <b ref={clockRef} className="t-led">
+            04:50
+          </b>{' '}
+          <i>·</i> <span ref={phaseRef}>Amanhecer</span>
         </p>
         <div ref={trackRef} className="day__track">
           {pieces.map((p, i) => (

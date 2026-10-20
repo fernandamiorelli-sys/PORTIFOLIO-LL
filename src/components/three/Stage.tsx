@@ -145,6 +145,8 @@ function CalangoActor({ asset, wrapperRef, high }: { asset: CalangoAsset; wrappe
       const c = new THREE.Vector3(...e.center).sub(headRest);
       const eye = new THREE.Mesh(new THREE.SphereGeometry(e.radius, 32, 24), mats.eye);
       eye.position.copy(c);
+      // a pupila (polo +Y da esfera) olha para fora da órbita
+      eye.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), new THREE.Vector3(...e.axis).normalize());
       eye.frustumCulled = false;
       head.add(eye);
       const lid = new THREE.Mesh(new THREE.SphereGeometry(e.radius * 1.1, 28, 20), mats.lid);
@@ -219,6 +221,7 @@ function CalangoActor({ asset, wrapperRef, high }: { asset: CalangoAsset; wrappe
   useEffect(
     () => () => {
       build.mats.body.dispose();
+      build.mats.eye.map?.dispose();
       build.mats.eye.dispose();
       build.mats.lid.dispose();
     },

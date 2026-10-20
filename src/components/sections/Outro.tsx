@@ -233,7 +233,7 @@ export function Closing() {
         </span>
         <span>Direção de arte e geração: Lucas Lopes, com Higgsfield</span>
         <span>Trilha da exposição: Tame Impala, “New Person, Same Old Mistakes” (instrumental)</span>
-        <button type="button" onClick={() => scrollToTarget(0)}>
+        <button type="button" className="t-mono" onClick={() => scrollToTarget(0)}>
           Voltar ao início ↑
         </button>
       </footer>

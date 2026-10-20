@@ -313,7 +313,6 @@
   padding: 0.42em 0;
   color: var(--led-dim);
   cursor: pointer;
-  transition: color 0.2s steps(2);
 }
 
 .led__row.is-on {

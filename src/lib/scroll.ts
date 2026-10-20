@@ -1,10 +1,9 @@
 import Lenis from 'lenis';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { ScrambleTextPlugin } from 'gsap/ScrambleTextPlugin';
 import { reducedMotion } from './store';
 
-gsap.registerPlugin(ScrollTrigger, ScrambleTextPlugin);
+gsap.registerPlugin(ScrollTrigger);
 
 let lenis: Lenis | null = null;
 
