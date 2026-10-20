@@ -30,7 +30,8 @@
 :root {
   --bg: var(--color-breu);
   --fg: var(--color-osso);
-  --fg-dim: color-mix(in oklab, var(--fg) 62%, transparent);
+  /* opaca (misturada ao fundo, não à transparência): continua legível quando o calango passa por trás */
+  --fg-dim: color-mix(in oklab, var(--fg) 64%, var(--bg));
   --fg-faint: color-mix(in oklab, var(--fg) 28%, transparent);
   --line: color-mix(in oklab, var(--fg) 16%, transparent);
   --accent: var(--color-calango);
@@ -166,6 +167,9 @@ html.lenis body {
   font-stretch: 92%;
   font-weight: 300;
   color: var(--fg-dim);
+  text-shadow:
+    0 0 10px var(--bg),
+    0 0 2px var(--bg);
 }
 
 .t-body strong {
