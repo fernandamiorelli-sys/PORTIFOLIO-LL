@@ -2,6 +2,8 @@
 
 Exposição digital da direção de arte de **Lucas Lopes** para o **Abigos FR**: a campanha Sangue-Frio, os reforços, os confrontos e a identidade do clube, criados com IA no Higgsfield.
 
+**No ar:** https://portifolio-ll.vercel.app
+
 > *Everything I'm not made me everything I am.*
 
 ## A experiência, em atos
@@ -57,12 +59,14 @@ Atalhos de desenvolvimento (só no `npm run dev`):
 
 ## Publicar na Vercel
 
-1. Entre em [vercel.com](https://vercel.com) com sua conta do GitHub.
-2. **Add New → Project** e importe este repositório.
-3. A Vercel detecta Vite sozinha (`npm run build`, pasta `dist`). Clique em **Deploy**.
-4. Em **Settings → Domains**, troque o endereço para algo como `tudoquenaosomos.vercel.app` ou conecte um domínio próprio.
+O site já está publicado em https://portifolio-ll.vercel.app. A cada commit na branch de produção (a branch padrão do repositório, `claude/abigos-portfolio-site-xd71so`), a Vercel gera o site de novo e troca a versão no ar em um ou dois minutos. Commits em outras branches viram links de prévia, sem mexer no site principal.
 
-A cada atualização no GitHub, a Vercel publica de novo automaticamente.
+Para publicar do zero em outra conta:
+
+1. No GitHub, deixe como branch padrão a branch que tem o site (**Settings → General → Default branch**).
+2. Entre em [vercel.com](https://vercel.com) com a conta do GitHub, **Add New → Project** e importe o repositório.
+3. A Vercel detecta Vite sozinha (`npm run build`, pasta `dist`; veja `vercel.json`). Clique em **Deploy**.
+4. Em **Settings → Domains**, troque o endereço ou conecte um domínio próprio. Se trocar, atualize o endereço nas tags `og:` do `index.html` (a prévia de compartilhamento usa o link completo).
 
 ## Onde mexer
 
