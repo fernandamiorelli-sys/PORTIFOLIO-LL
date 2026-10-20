@@ -1,10 +1,12 @@
 import { useEffect, useMemo, useRef } from 'react';
 import { PIECES, ROOMS } from '../../data/pieces';
+import { SITE } from '../../data/site';
 import { hasMedia } from '../../lib/media';
 import { getLenis, gsap } from '../../lib/scroll';
 import { experience, reducedMotion, useExperience } from '../../lib/store';
 import { Compare } from './Compare';
 import { Loupe } from './Loupe';
+import { Resolve } from '../type/Resolve';
 import { Picture } from './Picture';
 import './sheet.css';
 
@@ -86,25 +88,29 @@ export function PieceSheet() {
         <p className="sheet__k t-mono">
           Sala {room.n} · {room.title} <span>/</span> Nº {piece.n}
         </p>
-        <h2 id="sheet-title" className="sheet__title t-serif">
-          {piece.title}
+        {piece.slug ? <p className="sheet__slug t-mono">{piece.slug}</p> : null}
+        <h2 id="sheet-title" className="sheet__title t-display">
+          <Resolve key={piece.id} text={piece.title} upper trigger="mount" spread={0.5} step={0.06} />
         </h2>
-        <p className="sheet__lead t-mono">{piece.lead}</p>
+        <p className="sheet__lead t-serif">{piece.lead}</p>
+        {/* o processo é a voz do diretor sobre a peça: no roteiro, uma fala em off */}
         <div className="sheet__process">
-          <p className="sheet__label t-mono">Processo</p>
+          <p className="sheet__cue t-mono">
+            {SITE.author} <span>(V.O.)</span>
+          </p>
           {piece.process.map((p) => (
-            <p key={p} className="t-body">
+            <p key={p} className="sheet__line">
               {p}
             </p>
           ))}
         </div>
         <div className="sheet__ficha">
-          <p className="sheet__label t-mono">Ficha técnica</p>
+          <p className="sheet__label t-mono">Notas de produção</p>
           <ul className="t-mono">
             {piece.ficha.map((f) => (
               <li key={f}>{f}</li>
             ))}
-            <li>Direção de arte: Lucas Lopes</li>
+            <li>Direção de arte: {SITE.author}</li>
           </ul>
         </div>
       </div>

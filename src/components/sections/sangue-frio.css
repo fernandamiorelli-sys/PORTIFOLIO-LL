@@ -1,18 +1,54 @@
 /* ───────── sala de projeção */
 .screening {
+  padding: 4vh var(--gutter) 20vh;
+  color: var(--fg);
+}
+
+.screening__head {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  margin: 0 0 1.2rem;
+  padding-top: 0.7rem;
+  border-top: 1px solid var(--line);
+  color: var(--fg-dim);
+}
+
+.screening__head i {
+  font-style: normal;
+  color: var(--color-calango);
+  padding: 0 0.3em;
+}
+
+.screening__live b {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  margin-right: 0.5em;
+  border-radius: 50%;
+  background: #e5484d;
+  box-shadow: 0 0 10px rgba(229, 72, 77, 0.7);
+  animation: rec 1.6s steps(1) infinite;
+}
+
+@keyframes rec {
+  50% {
+    opacity: 0.2;
+  }
+}
+
+.screening__grid {
   display: grid;
   grid-template-columns: repeat(12, minmax(0, 1fr));
+  grid-template-rows: auto auto;
   column-gap: var(--gutter);
-  align-items: center;
-  padding: 6vh var(--gutter) 18vh;
-  color: var(--fg);
+  row-gap: 1rem;
 }
 
 .screening__player {
   position: relative;
-  grid-column: 1 / -1;
-  width: min(100%, calc(84vh * 16 / 9));
-  justify-self: center;
+  grid-column: 1 / 9;
+  grid-row: 1;
   aspect-ratio: 16 / 9;
   background: #000;
   box-shadow:
@@ -26,19 +62,79 @@
   object-fit: cover;
 }
 
-.screening__sound {
+/* régua de montagem: timecode, os cortes de cada cena e a cabeça de leitura */
+.screening__bar {
+  grid-column: 1 / 9;
+  grid-row: 2;
+  display: flex;
+  align-items: center;
+  gap: 1.2rem;
+}
+
+.screening__tc {
+  flex: 0 0 auto;
+  font-size: clamp(1rem, 1.5vw, 1.4rem);
+  font-variant-numeric: tabular-nums;
+  color: var(--color-calango);
+  text-shadow: 0 0 10px rgba(124, 217, 59, 0.45);
+}
+
+.screening__track {
+  position: relative;
+  flex: 1;
+  height: 26px;
+  cursor: pointer;
+}
+
+.screening__track::before {
+  content: '';
   position: absolute;
-  left: 50%;
-  bottom: 20px;
-  translate: -50% 0;
+  left: 0;
+  right: 0;
+  top: 50%;
+  height: 1px;
+  background: var(--line);
+}
+
+.screening__track i {
+  position: absolute;
+  top: 6px;
+  bottom: 6px;
+  width: 1px;
+  background: var(--fg-faint);
+  transition: background 0.3s ease;
+}
+
+.screening__track i.is-on {
+  background: var(--color-calango);
+}
+
+.screening__head-bar {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: calc(50% - 1px);
+  height: 2px;
+  background: var(--color-calango);
+  transform: scaleX(0);
+  transform-origin: left;
+}
+
+.screening__sound {
+  flex: 0 0 auto;
   display: inline-flex;
   align-items: center;
   gap: 0.6em;
-  padding: 0.75em 1.2em;
+  padding: 0.65em 1.1em;
   color: var(--color-breu);
   background: var(--color-osso);
   cursor: pointer;
   white-space: nowrap;
+  transition: background 0.3s ease;
+}
+
+.screening__sound:hover {
+  background: var(--color-calango);
 }
 
 .screening__dot {
@@ -49,51 +145,197 @@
 }
 
 .screening__dot.is-on {
-  background: var(--color-calango);
-  box-shadow: 0 0 0 3px rgba(124, 217, 59, 0.3);
+  background: #e5484d;
+  box-shadow: 0 0 0 3px rgba(229, 72, 77, 0.3);
 }
 
+/* a decupagem impressa: papel de roteiro, Courier, o marca-texto no plano da vez */
+.screening__page {
+  position: relative;
+  grid-column: 9 / -1;
+  grid-row: 1 / 3;
+  align-self: stretch;
+  /* o roteiro não dita a altura: a página tem a altura da tela + régua, e o rolo corre dentro dela */
+  contain: size;
+  overflow: hidden;
+  padding: 0 clamp(16px, 1.8vw, 30px);
+  color: #141612;
+  background:
+    radial-gradient(120% 80% at 30% 0%, rgba(255, 255, 255, 0.35), transparent 60%),
+    linear-gradient(#ebe6da, #e2dccd);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.4) inset,
+    0 50px 120px -40px rgba(0, 0, 0, 0.9);
+  font-family: var(--font-mono);
+  font-size: clamp(11.5px, 0.86vw, 14px);
+  line-height: 1.45;
+}
+
+/* o papel some nas bordas de cima e de baixo, como um rolo de teleprompter */
+.screening__page::before,
+.screening__page::after {
+  content: '';
+  position: absolute;
+  z-index: 2;
+  left: 0;
+  right: 0;
+  height: 14%;
+  pointer-events: none;
+}
+
+.screening__page::before {
+  top: 0;
+  background: linear-gradient(#e9e4d8, rgba(233, 228, 216, 0));
+}
+
+.screening__page::after {
+  bottom: 0;
+  background: linear-gradient(rgba(226, 220, 205, 0), #e2dccd);
+}
+
+.screening__roll {
+  padding: clamp(18px, 2.2vw, 34px) 0 40%;
+  transition: transform 0.8s var(--ease-inout);
+}
+
+.sp-top {
+  display: flex;
+  justify-content: space-between;
+  margin: 0 0 1.6em;
+  color: rgba(20, 22, 18, 0.55);
+  text-transform: uppercase;
+}
+
+.sp-cut {
+  margin: 0 0 1.4em;
+  text-align: right;
+  text-transform: uppercase;
+  color: rgba(20, 22, 18, 0.72);
+}
+
+.sp-cut.is-in {
+  text-align: left;
+}
+
+.sp-cut.is-on {
+  color: #141612;
+  font-weight: 700;
+}
+
+.sp-shot {
+  display: block;
+  width: 100%;
+  margin: 0 0 1.4em;
+  text-align: left;
+  color: rgba(20, 22, 18, 0.6);
+  transition: color 0.4s ease;
+}
+
+.sp-shot.is-on,
+.sp-shot:hover {
+  color: #141612;
+}
+
+.sp-slug {
+  display: flex;
+  justify-content: space-between;
+  gap: 1em;
+  margin-bottom: 0.5em;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.sp-tc {
+  font-weight: 400;
+  color: rgba(20, 22, 18, 0.5);
+}
+
+.sp-action mark {
+  color: inherit;
+  background-color: transparent;
+  /* marca-texto: um traço de caneta verde, com começo e fim irregulares */
+  background-image: linear-gradient(100deg, rgba(124, 217, 59, 0) 0.6%, rgba(124, 217, 59, 0.78) 2%, rgba(124, 217, 59, 0.55) 7%, rgba(124, 217, 59, 0.42) 92%, rgba(124, 217, 59, 0.72) 97%, rgba(124, 217, 59, 0) 99%);
+  background-repeat: no-repeat;
+  background-size: 0% 82%;
+  background-position: 0 70%;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+  padding: 0 0.15em;
+  transition: background-size 0.7s var(--ease-out);
+}
+
+.sp-shot.is-on .sp-action mark {
+  background-size: 100% 82%;
+}
+
+/* texto do filme: título, a voz do diretor (V.O.) em formato de fala de roteiro e as notas de produção */
 .screening__text {
-  grid-column: 2 / 9;
-  margin-top: 6vh;
   display: grid;
-  gap: 1rem;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  column-gap: var(--gutter);
+  row-gap: 4vh;
+  margin-top: 12vh;
 }
 
-.screening__k {
-  margin: 0;
-  color: var(--fg-dim);
-}
-
-.screening__k span {
-  color: var(--color-calango);
+.screening__titles {
+  grid-column: 1 / 6;
 }
 
 .screening__title {
   margin: 0;
-  font-size: var(--step-4);
-  line-height: 0.9;
+  font-size: min(10.4vw, 15rem);
+  line-height: 0.82;
 }
 
 .screening__lead {
-  margin: 0 0 0.6rem;
-  text-transform: none;
-  letter-spacing: 0.01em;
+  margin: 1.6rem 0 0;
+  max-width: 24ch;
+  font-size: var(--step-2);
+  line-height: 1.08;
+}
+
+.screening__vo {
+  grid-column: 6 / 10;
+  padding-top: 0.8rem;
+}
+
+.screening__cue {
+  margin: 0 0 1rem;
+  padding-left: 22%;
   color: var(--fg);
+  font-size: var(--step-0);
 }
 
-.screening__text .t-body {
-  margin: 0;
+.screening__cue span {
+  color: var(--color-calango);
 }
 
-.screening__ficha {
+.screening__line {
+  margin: 0 0 1.1rem;
+  font-family: var(--font-mono);
+  font-size: var(--step-0);
+  line-height: 1.62;
+  color: var(--fg-dim);
+}
+
+.screening__notes {
+  grid-column: 10 / -1;
+  padding-top: 0.8rem;
+}
+
+.screening__notes-k {
+  margin: 0 0 0.6rem;
+  color: var(--color-calango);
+}
+
+.screening__notes ul {
   list-style: none;
-  margin: 0.8rem 0 0;
+  margin: 0;
   padding: 0;
   border-top: 1px solid var(--line);
 }
 
-.screening__ficha li {
+.screening__notes li {
   padding: 0.55rem 0;
   border-bottom: 1px solid var(--line);
   color: var(--fg-dim);
@@ -203,14 +445,60 @@
   transform-origin: left;
 }
 
+@media (max-width: 1100px) {
+  .screening__titles {
+    grid-column: 1 / -1;
+  }
+  .screening__vo {
+    grid-column: 1 / 8;
+  }
+  .screening__notes {
+    grid-column: 9 / -1;
+  }
+}
+
 @media (max-width: 900px) {
-  .screening {
-    grid-template-columns: 1fr;
-    gap: 2.5rem;
+  .screening__grid,
+  .screening__text {
+    grid-template-columns: minmax(0, 1fr);
   }
   .screening__player,
-  .screening__text {
+  .screening__bar,
+  .screening__page,
+  .screening__titles,
+  .screening__vo,
+  .screening__notes {
     grid-column: 1 / -1;
+    grid-row: auto;
+  }
+  .screening__bar {
+    flex-wrap: wrap;
+    gap: 0.6rem 1rem;
+  }
+  .screening__track {
+    order: 3;
+    flex-basis: 100%;
+  }
+  .screening__sound {
+    margin-left: auto;
+  }
+  .screening__page {
+    contain: none;
+    margin-top: 1.4rem;
+    font-size: 12px;
+  }
+  .screening__title {
+    font-size: min(24vw, 9rem);
+  }
+  .screening__page::before,
+  .screening__page::after {
+    display: none;
+  }
+  .screening__roll {
+    padding-bottom: 1.2em;
+  }
+  .screening__cue {
+    padding-left: 0;
   }
   .day__track {
     gap: 12vw;
@@ -222,5 +510,15 @@
   .day__walk {
     top: 91vh;
     height: 6vh;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .screening__live b {
+    animation: none;
+  }
+  .screening__roll,
+  .sp-action mark {
+    transition: none;
   }
 }

@@ -22,6 +22,7 @@ import { CalangoRig, type LogoPose } from './calango/rig';
 //                                      roam: passeia em volta · stage: em destaque, grande
 //                                      logo: assume a pose do mascote (hero) · home: volta ao patch (fim)
 //   data-calango-size="0.12"          · CRC em fração da altura da tela (ou "fit" para logo/home)
+//   data-calango-size-m / -heading-m  · os mesmos, para telas estreitas (< 760 px)
 //   data-calango-tilt="40"            · inclinação da vista em graus (0 = visto de cima)
 //   data-calango-heading="90"         · rumo quando parado, em graus de tela (0 = para cima, 90 = direita)
 //   data-calango-wander="0.6"         · raio do passeio, em CRC
@@ -51,17 +52,21 @@ interface Anchor {
 }
 
 function readAnchors(): Anchor[] {
+  // em telas estreitas, a âncora pode pedir outro tamanho e outro rumo (data-calango-size-m, -heading-m)
+  const narrow = window.innerWidth < 760;
   return Array.from(document.querySelectorAll<HTMLElement>('[data-calango]')).map((el) => {
     const d = el.dataset;
     const mode = (d.calangoMode as Mode) || 'roam';
-    const size = d.calangoSize === 'fit' || mode === 'logo' || mode === 'home' ? 'fit' : Number(d.calangoSize ?? 0.12);
+    const sizeAttr = (narrow && d.calangoSizeM) || d.calangoSize;
+    const headingAttr = (narrow && d.calangoHeadingM) || d.calangoHeading;
+    const size = sizeAttr === 'fit' || mode === 'logo' || mode === 'home' ? 'fit' : Number(sizeAttr ?? 0.12);
     return {
       el,
       id: d.calango ?? '',
       mode,
       size,
       tilt: Number(d.calangoTilt ?? (mode === 'logo' || mode === 'home' ? 0 : 40)),
-      heading: d.calangoHeading != null ? Number(d.calangoHeading) : null,
+      heading: headingAttr != null ? Number(headingAttr) : null,
       wander: Number(d.calangoWander ?? 0.6),
       front: d.calangoLayer === 'front',
       carry: d.calangoCarry !== 'false',
@@ -173,6 +178,7 @@ function CalangoActor({ asset, wrapperRef, high }: { asset: CalangoAsset; wrappe
     carry: new THREE.Vector3(),
     reveal: 0,
     awake: false,
+    cue: 0,
     frames: 0,
   });
 
@@ -390,6 +396,12 @@ function CalangoActor({ asset, wrapperRef, high }: { asset: CalangoAsset; wrappe
       // passou rápido demais perto da cabeça: ele dispara para longe
       rig.startle(pf, s.svl * 2.2);
       s.pointerVel = 0;
+    }
+
+    // ── as seções podem pedir uma exibição (ex.: a cada frase do manifesto)
+    if (calangoBus.cue !== s.cue) {
+      s.cue = calangoBus.cue;
+      if (rig.mode === 'live' && !reducedMotion && s.reveal > 0.6 && !rig.fleeing) rig.display();
     }
 
     // ── simulação

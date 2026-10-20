@@ -4,7 +4,9 @@ import { audio } from '../../lib/audio';
 import { hasMedia } from '../../lib/media';
 import { gsap, ScrollTrigger } from '../../lib/scroll';
 import { experience, reducedMotion } from '../../lib/store';
+import { SITE } from '../../data/site';
 import { PieceCard } from '../piece/PieceCard';
+import { Resolve } from '../type/Resolve';
 import { luminance, mixClock, mixSky, PHASE_LABEL, PRE, SKIES, type Sky } from './dayCycle';
 import { RoomIntro } from './RoomIntro';
 import './sangue-frio.css';
@@ -19,7 +21,8 @@ const BREU = '#070807';
 function applySky(sky: Sky, sun: HTMLElement | null) {
   const root = document.documentElement;
   root.style.setProperty('--bg', sky.bg);
-  root.style.setProperty('--fg', luminance(sky.bg) > 0.4 ? BREU : OSSO);
+  // o texto escolhe o tom de maior contraste com o céu (o ponto de virada fica perto de L = 0,16)
+  root.style.setProperty('--fg', luminance(sky.bg) > 0.16 ? BREU : OSSO);
   if (sun) {
     sun.style.setProperty('--sun', sky.sun);
     sun.style.opacity = String(sky.alpha);
@@ -34,17 +37,55 @@ function resetSky() {
   root.style.setProperty('--fg', OSSO);
 }
 
-/** Sala de projeção do filme Alvi-Verde: toca mudo em loop; com som, a trilha do site abaixa. */
+const FPS = 24;
+const pad = (n: number) => String(n).padStart(2, '0');
+/** timecode de montagem: HH:MM:SS:QQ (quadros a 24 qps) */
+const timecode = (t: number) => {
+  const f = Math.floor(t * FPS);
+  return `${pad(Math.floor(f / (FPS * 3600)))}:${pad(Math.floor(f / (FPS * 60)) % 60)}:${pad(Math.floor(f / FPS) % 60)}:${pad(f % FPS)}`;
+};
+const shortTc = (t: number) => `${pad(Math.floor(t / 60))}:${pad(Math.floor(t % 60))}`;
+
+/**
+ * Sala de projeção do filme Alvi-Verde. Ao lado da tela, a decupagem impressa (o roteiro de montagem):
+ * o marca-texto acompanha o plano que está passando, e cada plano leva o filme até ele.
+ * O filme toca mudo em loop; com som, a trilha do site abaixa.
+ */
 function Screening({ piece }: { piece: Piece }) {
   const videoRef = useRef<HTMLVideoElement>(null);
+  const pageRef = useRef<HTMLDivElement>(null);
+  const rollRef = useRef<HTMLDivElement>(null);
+  const headRef = useRef<HTMLSpanElement>(null);
+  const tcRef = useRef<HTMLSpanElement>(null);
   const [withSound, setWithSound] = useState(false);
+  const [duration, setDuration] = useState(26.5);
+  const [shot, setShot] = useState(0);
+  const shots = useMemo(() => piece.shots ?? [], [piece]);
+  const scenes = useMemo(() => shots.map((s, i) => ({ ...s, i })).filter((s) => !s.cut), [shots]);
 
   useEffect(() => {
     const v = videoRef.current!;
+    // timecode, cabeça de leitura e plano ativo, a cada quadro, só enquanto a sala está na tela
+    let raf = 0;
+    let last = -1;
+    const tick = () => {
+      raf = requestAnimationFrame(tick);
+      const t = v.currentTime;
+      if (t === last) return;
+      last = t;
+      if (tcRef.current) tcRef.current.textContent = timecode(t);
+      if (headRef.current) headRef.current.style.transform = `scaleX(${Math.min(1, t / (v.duration || 26.5))})`;
+      let k = 0;
+      for (let i = 0; i < shots.length; i++) if (shots[i].t <= t + 0.02) k = i;
+      setShot(k);
+    };
     const io = new IntersectionObserver(
       ([e]) => {
-        if (e.isIntersecting) void v.play().catch(() => {});
-        else {
+        cancelAnimationFrame(raf);
+        if (e.isIntersecting) {
+          void v.play().catch(() => {});
+          raf = requestAnimationFrame(tick);
+        } else {
           v.pause();
           if (!v.muted) {
             v.muted = true;
@@ -53,7 +94,7 @@ function Screening({ piece }: { piece: Piece }) {
           }
         }
       },
-      { threshold: 0.35 },
+      { threshold: 0.2 },
     );
     io.observe(v);
     const onEnd = () => {
@@ -65,12 +106,44 @@ function Screening({ piece }: { piece: Piece }) {
         void v.play().catch(() => {});
       }
     };
+    const onMeta = () => Number.isFinite(v.duration) && v.duration > 0 && setDuration(v.duration);
     v.addEventListener('ended', onEnd);
+    v.addEventListener('loadedmetadata', onMeta);
+    onMeta();
     return () => {
       io.disconnect();
+      cancelAnimationFrame(raf);
       v.removeEventListener('ended', onEnd);
+      v.removeEventListener('loadedmetadata', onMeta);
     };
-  }, []);
+  }, [shots]);
+
+  // o rolo do roteiro sobe para manter o plano da vez no terço de cima da página (só na tela larga)
+  useEffect(() => {
+    const page = pageRef.current;
+    const roll = rollRef.current;
+    if (!page || !roll) return;
+    if (window.matchMedia('(max-width: 900px)').matches) {
+      roll.style.transform = '';
+      return;
+    }
+    const el = roll.querySelector<HTMLElement>(`[data-shot="${shot}"]`);
+    if (!el) return;
+    const max = Math.max(0, roll.scrollHeight - page.clientHeight);
+    const y = Math.min(max, Math.max(0, el.offsetTop - page.clientHeight * 0.28));
+    roll.style.transform = `translateY(${-y}px)`;
+  }, [shot]);
+
+  const seek = (t: number) => {
+    const v = videoRef.current!;
+    v.currentTime = Math.max(0, Math.min(t + 0.01, (v.duration || duration) - 0.05));
+    if (v.paused) void v.play().catch(() => {});
+  };
+
+  const onTrack = (e: React.MouseEvent<HTMLDivElement>) => {
+    const r = e.currentTarget.getBoundingClientRect();
+    seek(((e.clientX - r.left) / r.width) * duration);
+  };
 
   const toggleSound = () => {
     const v = videoRef.current!;
@@ -91,34 +164,92 @@ function Screening({ piece }: { piece: Piece }) {
 
   return (
     <section className="screening" aria-labelledby="screening-title">
-      <div className="screening__player">
-        <video ref={videoRef} poster={`${piece.video!.base}-poster.jpg`} muted loop playsInline preload="metadata" aria-label={piece.alt}>
-          <source src={`${piece.video!.base}.webm`} type="video/webm" />
-          <source src={`${piece.video!.base}.mp4`} type="video/mp4" />
-        </video>
-        <button type="button" className="screening__sound t-mono" onClick={toggleSound} data-cursor={withSound ? 'Silenciar' : 'Ouvir'}>
-          <span className={`screening__dot ${withSound ? 'is-on' : ''}`} aria-hidden="true" />
-          {withSound ? 'Tirar o som' : 'Assistir com som'}
-        </button>
+      <header className="screening__head t-mono">
+        <span>
+          Nº {piece.n} <i>·</i> Filme <i>·</i> {shortTc(duration)}
+        </span>
+        <span className="screening__live">
+          <b aria-hidden="true" /> Projeção contínua
+        </span>
+      </header>
+
+      <div className="screening__grid">
+        <div className="screening__player">
+          <video ref={videoRef} poster={`${piece.video!.base}-poster.jpg`} muted loop playsInline preload="metadata" aria-label={piece.alt}>
+            <source src={`${piece.video!.base}.webm`} type="video/webm" />
+            <source src={`${piece.video!.base}.mp4`} type="video/mp4" />
+          </video>
+        </div>
+
+        <div className="screening__bar">
+          <span ref={tcRef} className="screening__tc t-led" aria-hidden="true">
+            00:00:00:00
+          </span>
+          <div className="screening__track" onClick={onTrack} data-cursor="Ir para" aria-hidden="true">
+            {scenes.map((s) => (
+              <i key={s.i} style={{ left: `${(s.t / duration) * 100}%` }} className={s.i === shot ? 'is-on' : undefined} />
+            ))}
+            <span ref={headRef} className="screening__head-bar" />
+          </div>
+          <button type="button" className="screening__sound t-mono" onClick={toggleSound} data-cursor={withSound ? 'Silenciar' : 'Ouvir'} aria-pressed={withSound}>
+            <span className={`screening__dot ${withSound ? 'is-on' : ''}`} aria-hidden="true" />
+            {withSound ? 'Tirar o som' : 'Assistir com som'}
+          </button>
+        </div>
+
+        <div ref={pageRef} className="screening__page">
+          <div ref={rollRef} className="screening__roll">
+            <p className="sp-top">
+              <span>{piece.title.toUpperCase()} — roteiro de montagem</span>
+              <span>1.</span>
+            </p>
+            <p className="sp-cut is-in">FADE IN:</p>
+            {shots.map((s, i) =>
+              s.cut ? (
+                <p key={i} data-shot={i} className={`sp-cut ${i === shot ? 'is-on' : ''}`}>
+                  {s.cut}
+                </p>
+              ) : (
+                <button key={i} type="button" data-shot={i} className={`sp-shot ${i === shot ? 'is-on' : ''}`} onClick={() => seek(s.t)} aria-label={`Ir para ${shortTc(s.t)}: ${s.slug}`}>
+                  <span className="sp-slug">
+                    <span>{s.slug}</span>
+                    <span className="sp-tc">{shortTc(s.t)}</span>
+                  </span>
+                  <span className="sp-action">
+                    <mark>{s.action}</mark>
+                  </span>
+                </button>
+              ),
+            )}
+          </div>
+        </div>
       </div>
+
       <div className="screening__text">
-        <p className="t-mono screening__k">
-          Nº {piece.n} <span>·</span> Filme
-        </p>
-        <h3 id="screening-title" className="t-serif screening__title">
-          {piece.title}
-        </h3>
-        <p className="screening__lead t-mono">{piece.lead}</p>
-        {piece.process.map((p) => (
-          <p key={p} className="t-body">
-            {p}
+        <div className="screening__titles">
+          <h3 id="screening-title" className="screening__title t-display">
+            <Resolve text={piece.title} upper />
+          </h3>
+          <p className="screening__lead t-serif">{piece.lead}</p>
+        </div>
+        <div className="screening__vo">
+          <p className="screening__cue t-mono">
+            {SITE.author} <span>(V.O.)</span>
           </p>
-        ))}
-        <ul className="screening__ficha t-mono">
-          {piece.ficha.map((f) => (
-            <li key={f}>{f}</li>
+          {piece.process.map((p) => (
+            <p key={p} className="screening__line">
+              {p}
+            </p>
           ))}
-        </ul>
+        </div>
+        <div className="screening__notes">
+          <p className="t-mono screening__notes-k">Notas de produção</p>
+          <ul className="t-mono">
+            {piece.ficha.map((f) => (
+              <li key={f}>{f}</li>
+            ))}
+          </ul>
+        </div>
       </div>
     </section>
   );

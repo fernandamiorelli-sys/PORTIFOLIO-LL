@@ -9,14 +9,11 @@
   height: 100vh;
   height: 100svh;
   overflow: hidden;
-  display: grid;
-  place-items: center;
 }
 
 .manifesto__flash {
   position: absolute;
   inset: 0;
-  background: transparent;
   pointer-events: none;
 }
 
@@ -34,68 +31,173 @@
   opacity: 0.42;
 }
 
+/* onde o calango se posta: à direita da frase, virado para ela */
 .manifesto__anchor {
   position: absolute;
-  left: 50%;
-  top: 50%;
-  height: 76vh;
-  aspect-ratio: 408 / 642;
-  translate: -50% -50%;
-  transition:
-    left 1.2s var(--ease-inout),
-    top 1.2s var(--ease-inout),
-    height 1.2s var(--ease-inout);
+  left: 71%;
+  top: 60%;
+  width: 2px;
+  height: 2px;
 }
 
-.manifesto.is-about .manifesto__anchor {
-  left: 78%;
-  top: 46%;
-  height: 52vh;
+.manifesto__anchor--about {
+  display: none;
+  left: 79%;
+  top: 31%;
 }
 
-.manifesto__kicker {
+.manifesto.is-about .manifesto__anchor--main {
+  display: none;
+}
+
+.manifesto.is-about .manifesto__anchor--about {
+  display: block;
+}
+
+/* cabeçalho de documento */
+.manifesto__bar {
   position: absolute;
-  top: calc(var(--hud) * 3.4);
-  left: 50%;
-  translate: -50% 0;
-  color: var(--fg-dim);
-  white-space: nowrap;
-}
-
-.manifesto__kicker b {
-  color: var(--color-calango);
-  font-weight: 500;
-}
-
-.manifesto__title {
-  position: relative;
   z-index: 2;
-  margin: 0;
-  max-width: 13ch;
-  padding: 0 var(--gutter);
-  text-align: center;
-  font-size: clamp(2.7rem, 8.6vw, 10rem);
-  line-height: 0.86;
-  color: var(--color-osso);
-  text-shadow:
-    0 2px 30px rgba(0, 0, 0, 0.55),
-    0 0 2px rgba(0, 0, 0, 0.4);
-  transition:
-    transform 1.2s var(--ease-inout),
-    color 0.6s ease;
-  font-stretch: 62%;
+  top: calc(var(--hud) * 3.3);
+  left: var(--gutter);
+  right: var(--gutter);
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 1rem;
+  padding-top: 0.7rem;
+  border-top: 1px solid var(--line);
+  color: var(--fg-dim);
 }
 
-.manifesto__title.is-truth {
+.manifesto__bar i {
+  font-style: normal;
+  color: var(--color-calango);
+  padding: 0 0.3em;
+}
+
+.manifesto__bar b {
+  color: var(--color-calango);
+  font-weight: 400;
+}
+
+.manifesto__bar-mid {
+  padding: 0.05em 0.6em;
+  border: 1px solid currentColor;
+  letter-spacing: 0.18em;
+  transition:
+    color 0.4s ease,
+    background 0.4s ease;
+}
+
+.manifesto.is-truth .manifesto__bar-mid {
+  color: var(--color-breu);
+  background: var(--color-calango);
+  border-color: var(--color-calango);
+}
+
+/* a pilha: o que já passou, em letra miúda e tarjado */
+.manifesto__stack {
+  position: absolute;
+  z-index: 2;
+  top: calc(var(--hud) * 3.3 + 3.2rem);
+  left: var(--gutter);
+  width: min(62vw, 1000px);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 0.55em;
+  font-size: clamp(13px, 1.45vw, 23px);
+  transition:
+    opacity 0.8s ease,
+    transform 1s var(--ease-out);
+}
+
+
+.mf-struck__t {
+  display: block;
+  font-size: inherit;
+  line-height: 1;
+  white-space: nowrap;
+  color: var(--fg);
+}
+
+.mf-struck .rz-no {
   color: var(--color-calango);
 }
 
-.manifesto.is-about .manifesto__title {
-  transform: translate(-14vw, -20vh) scale(0.56);
+.mf-struck .rz-word {
+  position: relative;
 }
 
+/* a tarja: entra palavra por palavra, como um marcador passando; o "não" fica de fora */
+.mf-struck__t > span[aria-hidden] > .rz-word::after {
+  content: '';
+  position: absolute;
+  left: -0.07em;
+  right: -0.07em;
+  /* alto o bastante para cobrir os acentos (É, Ó) */
+  top: -0.2em;
+  bottom: -0.08em;
+  background: var(--color-osso);
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform 0.2s cubic-bezier(0.7, 0, 0.3, 1);
+}
+
+.mf-struck.is-redacted .mf-struck__t > span[aria-hidden] > .rz-word::after {
+  transform: scaleX(1);
+  transition-delay: calc(var(--i, 0) * 0.07s);
+}
+
+/* a frase da vez */
+.manifesto__stage {
+  position: absolute;
+  z-index: 2;
+  left: var(--gutter);
+  width: min(57vw, 1040px);
+  top: 40vh;
+  transform-origin: left top;
+  transition: transform 1.2s var(--ease-inout);
+}
+
+
+.mf-big {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  margin: 0;
+  font-size: clamp(2.5rem, 6vw, 7.2rem);
+  line-height: 0.9;
+  color: var(--fg);
+  text-shadow: 0 2px 30px rgba(0, 0, 0, 0.45);
+  pointer-events: none;
+}
+
+.mf-big .rz-no {
+  color: var(--color-calango);
+}
+
+.mf-big.is-truth {
+  font-size: clamp(2.7rem, 6.6vw, 8rem);
+}
+
+/* sem animação: a frase da vez simplesmente aparece */
+.mf-big.is-static {
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+
+.mf-big.is-static.is-on {
+  opacity: 1;
+}
+
+/* sobre o clube */
 .manifesto__about {
   position: absolute;
+  z-index: 2;
   left: var(--gutter);
   right: var(--gutter);
   bottom: calc(var(--hud) * 3.2);
@@ -103,6 +205,8 @@
   grid-template-columns: repeat(12, minmax(0, 1fr));
   column-gap: var(--gutter);
   row-gap: 0.8rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--line);
   opacity: 0;
   transform: translateY(24px);
   transition:
@@ -119,27 +223,30 @@
 
 .manifesto__about-k {
   grid-column: 1 / 4;
-  color: var(--color-calango);
   margin: 0;
+  color: var(--fg);
+}
+
+.manifesto__about-k i {
+  font-style: normal;
+  color: var(--color-calango);
 }
 
 .manifesto__about .t-body {
-  margin: 0;
   grid-column: span 3;
-  color: var(--fg-dim);
-}
-
-.manifesto__about .t-body:nth-of-type(2) {
-  grid-column: 4 / 7;
+  margin: 0;
+  font-size: var(--step--1);
 }
 
 .manifesto__rail {
   position: absolute;
+  z-index: 2;
   left: 50%;
   bottom: calc(var(--hud) * 1.2);
   translate: -50% 0;
   display: flex;
   gap: 6px;
+  transition: opacity 0.4s ease;
 }
 
 .manifesto.is-about .manifesto__rail {
@@ -161,26 +268,54 @@
   .manifesto {
     height: 480vh;
   }
+  .manifesto__bar-mid {
+    display: none;
+  }
+  .manifesto__stack {
+    width: auto;
+    right: var(--gutter);
+    font-size: 3.15vw;
+  }
+  .manifesto__stage {
+    top: 34vh;
+    width: auto;
+    right: var(--gutter);
+  }
+  .mf-big {
+    font-size: 11vw;
+  }
+  .mf-big.is-truth {
+    font-size: 11.4vw;
+  }
+  .manifesto.is-about .manifesto__stack {
+    opacity: 0;
+  }
+  .manifesto.is-about .manifesto__stage {
+    transform: translateY(-20vh) scale(0.62);
+  }
   .manifesto__anchor {
-    height: 54vh;
+    left: 46%;
+    top: 84%;
   }
-  .manifesto.is-about .manifesto__anchor {
-    left: 82%;
-    top: 15%;
-    height: 17vh;
-  }
-  .manifesto__title {
-    font-size: 13vw;
-  }
-  .manifesto.is-about .manifesto__title {
-    transform: translate(-6vw, -27vh) scale(0.58);
+  .manifesto__anchor--about {
+    left: 50%;
+    top: 87%;
   }
   .manifesto__about {
-    grid-template-columns: 1fr;
+    top: 46svh;
+    bottom: auto;
+    grid-template-columns: minmax(0, 1fr);
+    row-gap: 0.6rem;
   }
   .manifesto__about-k,
-  .manifesto__about .t-body,
-  .manifesto__about .t-body:nth-of-type(2) {
+  .manifesto__about .t-body {
     grid-column: 1 / -1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mf-struck__t > span[aria-hidden] > .rz-word::after,
+  .mf-struck.is-redacted .mf-struck__t > span[aria-hidden] > .rz-word::after {
+    transition: none;
   }
 }

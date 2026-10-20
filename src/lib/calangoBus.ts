@@ -9,4 +9,6 @@ export const calangoBus = {
   landed: 0,
   /** velocidade do scroll (px/frame), para o calango andar mais rápido quando a página corre */
   velocity: 0,
+  /** contador: cada incremento pede ao calango uma exibição territorial (flexões), se ele estiver livre */
+  cue: 0,
 };

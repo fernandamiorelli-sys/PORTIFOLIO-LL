@@ -13,6 +13,21 @@ export interface Match {
   place?: string;
 }
 
+/** Plano da decupagem do filme (sala de projeção). `t` em segundos. */
+export interface Shot {
+  t: number;
+  slug?: string;
+  action?: string;
+  /** transição de roteiro (CORTA PARA:, FADE OUT.) */
+  cut?: string;
+}
+
+/** Registro no BID (Boletim Informativo Diário), na sala Reforços. */
+export interface Signing {
+  athlete: string;
+  fields: [string, string][];
+}
+
 export interface Piece {
   id: string;
   n: string;
@@ -31,6 +46,10 @@ export interface Piece {
   loupe?: boolean;
   compare?: { before: string; after: string; labels: [string, string] };
   match?: Match;
+  /** cabeçalho de cena (roteiro), na legenda da peça */
+  slug?: string;
+  shots?: Shot[];
+  signing?: Signing;
   /** imagem ainda não enviada: a peça fica fora da exposição até chegar */
   pending?: boolean;
 }
@@ -99,6 +118,19 @@ export const PIECES: Piece[] = [
     room: 'sangue-frio',
     media: 'alvi-verde-poster',
     video: { base: '/media/video/alvi-verde' },
+    shots: [
+      { t: 0, slug: 'INT. ATELIÊ — DIA', action: 'POV: a camisa, ainda em pedaços. A tesoura abre caminho no tecido branco, passa rente ao escudo; um disco corta o resto.' },
+      { t: 1.96, slug: 'INT. ATELIÊ, MÁQUINA DE COSTURA — CONTÍNUO', action: 'Pesponto verde sobre o branco. A gola ganha forma sob o calcador.' },
+      { t: 3.88, slug: 'INT. ATELIÊ, MANEQUIM — DIA', action: 'Pela primeira vez, ela ganha um corpo: listras alvi-verdes, ajuste na gola, a costura lateral de perto.' },
+      { t: 6.92, slug: 'INT. PRENSA TÉRMICA — DIA', action: 'A prensa desce. Vapor. Quando sobe, o patrocínio está gravado no peito.' },
+      { t: 8.79, slug: 'INT. BANCADA — DIA', action: 'Mãos dobram a camisa. Papel de seda, um cartão preto, a tampa da caixa.' },
+      { t: 10.54, cut: 'CORTA PARA O PRETO.' },
+      { t: 11.25, slug: 'INT. VAZIO — NOITE', action: 'Um único spot. Ela flutua no cabide, pronta. O escudo e o patrocínio, de perto.' },
+      { t: 13.25, slug: 'INT. VESTIÁRIO — NOITE', action: 'No armário, ela espera o jogador. A luz baixa devagar.' },
+      { t: 18, cut: 'FUSÃO PARA O PRETO.' },
+      { t: 19, slug: 'INSERT — O ESCUDO SANGUE-FRIO', action: 'O calango abraça a bola. Três estrelas. 2026.' },
+      { t: 25.6, cut: 'FADE OUT.' },
+    ],
     alt: 'Filme da campanha Sangue-Frio: a camisa alvi-verde do Abigos FR vista em primeira pessoa, do corte do tecido à prensa.',
     lead: 'O processo industrial da camisa, visto pelos olhos dela mesma.',
     ficha: [
@@ -121,6 +153,7 @@ export const PIECES: Piece[] = [
     title: 'Cordel',
     room: 'sangue-frio',
     media: 'sangue-frio-pendurado',
+    slug: 'EXT. VARAL NO SERTÃO — AMANHECER',
     alt: 'Camisa listrada em verde e branco do Abigos FR presa por pregadores num varal, em contraluz contra o sol nascente e o céu azul do Nordeste.',
     lead: 'Uma camisa que ainda não entorta o varal.',
     ficha: ['Still de produto em contraluz', 'Céu limpo do Nordeste ao amanhecer', 'Higgsfield'],
@@ -137,6 +170,7 @@ export const PIECES: Piece[] = [
     title: 'Tração nas Quatro-Patas',
     room: 'sangue-frio',
     media: 'sangue-frio-resenha',
+    slug: 'EXT. CAATINGA, NO BUGGY — MEIO-DIA',
     alt: 'Jogador do Abigos FR sentado num buggy branco chamado Resenhex 3000, no deserto, estendendo para a câmera uma chave com chaveiro de pele de calango, em grande-angular com flash.',
     lead: 'O flash editorial das revistas de moda, levado para o sol a pino da caatinga.',
     ficha: ['Flash editorial', 'Grande-angular 18 mm', 'Sol do meio-dia', 'Modelo: jogador do elenco', 'Higgsfield'],
@@ -152,6 +186,7 @@ export const PIECES: Piece[] = [
     title: 'Pé-Duro',
     room: 'sangue-frio',
     media: 'sangue-frio-cavalo',
+    slug: 'INSERT — O PELO DO PÉ-DURO',
     alt: 'Plano detalhe em preto e branco da pelagem escura de um cavalo, com fios claros da crina e o escudo do Abigos FR gravado no pelo.',
     lead: 'O escudo marcado no pelo do animal que tornou o sertão habitável.',
     ficha: ['Plano detalhe em preto e branco', 'Textura de pelagem e crina', 'Higgsfield'],
@@ -167,6 +202,7 @@ export const PIECES: Piece[] = [
     title: 'Juazeiro',
     room: 'sangue-frio',
     media: 'sangue-frio-posing',
+    slug: 'EXT. CERCA SOB O JUAZEIRO — CREPÚSCULO',
     alt: 'Retrato de Lucas Lopes de chapéu de palha e camisa listrada do Abigos FR, apoiado numa cerca de madeira ao crepúsculo, sob um juazeiro com um calango no galho.',
     lead: 'Um retrato que começou como foto de flash e terminou como fotopintura.',
     ficha: [
@@ -189,6 +225,7 @@ export const PIECES: Piece[] = [
     title: 'Insônia',
     room: 'sangue-frio',
     media: 'sangue-frio-noite',
+    slug: 'EXT. CAMPO ABERTO — NOITE',
     alt: 'Homem de camisa listrada do Abigos FR num campo escuro à noite, rosto borrado pelo movimento e iluminado por flash, com céu azul profundo e silhueta de montanha ao fundo.',
     lead: 'Motion blur e flash numa noite de deserto: o rosto se desfaz, a camisa permanece.',
     ficha: ['Flash direto + obturador lento', 'Motion blur em retrato', 'Alto contraste noturno', 'Higgsfield'],
@@ -204,6 +241,7 @@ export const PIECES: Piece[] = [
     title: 'Epiderme',
     room: 'sangue-frio',
     media: 'sangue-frio-close',
+    slug: 'INSERT — ESCAMAS, EM MACRO',
     alt: 'Macro das escamas de um calango em degradê de verde-turquesa, oliva e creme, com pequenos grãos de terra entre elas.',
     lead: 'Escamas, grãos de terra, imperfeição. Use a lupa.',
     ficha: ['Macro em plano detalhe', 'Textura orgânica', 'Direção rumo à imperfeição', 'Higgsfield'],
@@ -220,6 +258,7 @@ export const PIECES: Piece[] = [
     title: 'Rural',
     room: 'sangue-frio',
     media: 'sangue-frio-tecido',
+    slug: 'INSERT — A GOLA INACABADA',
     alt: 'Macro da gola verde e branca da camisa do Abigos FR, com areia sobre o tecido, pontas de costura soltas e fios saltados, sob luz lateral.',
     lead: 'A gola inacabada, com areia e fios soltos: o avesso do perfeito.',
     ficha: ['Macro de tecido', 'Luz lateral rasante', 'Gola inacabada, fios soltos e areia', 'Higgsfield'],
@@ -236,6 +275,7 @@ export const PIECES: Piece[] = [
     title: 'Bioma',
     room: 'sangue-frio',
     media: 'sangue-frio-dobrado',
+    slug: 'INT. ESTÚDIO, MESA RÚSTICA — MADRUGADA',
     alt: 'Camisa listrada do Abigos FR dobrada sobre mesa de madeira rústica, ao lado de um bowl de terracota, um mandacaru, uma garrafa de vidro verde-escuro e uma taça de cristal, em fundo preto.',
     lead: 'A crueza da caatinga encontra a sofisticação da fotografia de estúdio.',
     ficha: [
@@ -256,6 +296,7 @@ export const PIECES: Piece[] = [
     title: 'Trademark',
     room: 'sangue-frio',
     media: 'sangue-frio-brand',
+    slug: 'INSERT — CALANGO, CALANGO, CALANGO',
     alt: 'Padrão de calangos minimalistas brancos repetidos em diagonal sobre fundo verde-mata.',
     lead: 'Calango. Calango. Calango.',
     ficha: ['Padrão de marca', 'Repetição do mascote minimalista', 'Verde-mata e osso'],
@@ -268,6 +309,7 @@ export const PIECES: Piece[] = [
     title: 'Gume',
     room: 'sangue-frio',
     media: 'sangue-frio-novo-escudo',
+    slug: 'INSERT — O ESCUDO, AFIADO',
     alt: 'Novo escudo do Abigos FR: calango verde em traço chapado abraçando uma bola, sobre listras verdes e pretas, com o nome do clube, três estrelas e o ano 2026.',
     lead: 'O escudo redesenhado para a campanha: mais afiado, mais imponente.',
     ficha: ['Redesign de escudo', 'Vetor, traço chapado', 'Preto profundo e verde Abigos', '2026'],
@@ -286,6 +328,15 @@ export const PIECES: Piece[] = [
     title: 'Telemetria',
     room: 'reforcos',
     media: 'reforcos-leo',
+    signing: {
+      athlete: 'Leo Gluher',
+      fields: [
+        ['Idade', '21 anos'],
+        ['Clube', 'Abigos FR'],
+        ['Temporada', '2026'],
+        ['Rastreio', 'x: 496 · y: 702 · club: Abigos FR'],
+      ],
+    },
     alt: 'Anúncio do reforço Leo Gluher, 21 anos: de óculos escuros e agasalho, ele atravessa o quadro em disparada, desfeito em motion blur sobre um azul elétrico; caixas de rastreamento com coordenadas e trajetórias tracejadas marcam o corpo, uma delas enquadrando o calango no peito. No topo, “Bem-vindo, Leo Gluher, 21”; no canto, o escudo do Abigos em branco.',
     lead: 'Velocidade, rastreamento e um azul elétrico: o atleta lido como dado.',
     ficha: [
@@ -307,6 +358,15 @@ export const PIECES: Piece[] = [
     title: 'Bagagem',
     room: 'reforcos',
     media: 'reforcos-filipe',
+    signing: {
+      athlete: 'Filipe Freitas',
+      fields: [
+        ['Camisa', '13'],
+        ['Clube', 'Abigos FR'],
+        ['Temporada', '2026'],
+        ['Bagagem', 'PSG · Grêmio · Inter · Stanford · Brasil · EUA · RS'],
+      ],
+    },
     alt: 'Anúncio do reforço Filipe Freitas: jogador de costas com a camisa preta 13, puxando uma mala coberta de adesivos de clubes e bandeiras, entrando num estádio sob fogos de artifício.',
     lead: 'A linguagem da 433: estádio, fogos e uma mala cheia de história.',
     ficha: [

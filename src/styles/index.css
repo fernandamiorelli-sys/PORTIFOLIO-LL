@@ -7,7 +7,6 @@
    O que "não somos" fica em baixa resolução; o que somos entra em foco. */
 @import '@fontsource/redaction/400.css';
 @import '@fontsource/redaction/400-italic.css';
-@import '@fontsource/redaction/700.css';
 @import '@fontsource/redaction-20/400.css';
 @import '@fontsource/redaction-35/400.css';
 @import '@fontsource/redaction-50/400.css';
@@ -215,6 +214,11 @@ html.lenis body {
 .rz[data-l='100'] {
   font-family: 'Redaction 100', var(--font-display);
 }
+/* ainda não chegou (ou já foi embora): ocupa o lugar, mas não aparece */
+.rz[data-l='off'] {
+  font-family: 'Redaction 100', var(--font-display);
+  opacity: 0;
+}
 .rz-word {
   display: inline-block;
   white-space: nowrap;
@@ -222,7 +226,7 @@ html.lenis body {
 /* durante a resolução, cada letra ocupa a largura da versão limpa */
 .rz-c {
   display: inline-block;
-  width: calc(var(--a) * 1em + var(--ls, 0em));
+  width: calc(var(--adv) * 1em + var(--ls, 0em));
   letter-spacing: 0;
   text-align: center;
 }
@@ -254,6 +258,12 @@ html.lenis body {
 main.site {
   position: relative;
   z-index: 2;
+}
+
+/* nenhuma sala pode alargar a página (carimbos, letreiros e títulos gigantes ficam dentro dela);
+   clip não cria área de rolagem, então os elementos sticky continuam funcionando */
+main.site > section {
+  overflow-x: clip;
 }
 
 @keyframes grain {

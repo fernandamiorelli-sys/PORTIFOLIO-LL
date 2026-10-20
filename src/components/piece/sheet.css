@@ -68,17 +68,22 @@
   padding: 0 0.3em;
 }
 
+.sheet__slug {
+  margin: 0.4rem 0 0;
+  font-weight: 700;
+  color: var(--color-osso);
+}
+
 .sheet__title {
-  margin: 0;
-  font-size: clamp(2.8rem, 5vw, 5.5rem);
-  line-height: 0.92;
+  margin: 0.2rem 0 0;
+  font-size: clamp(2.6rem, 4.6vw, 5.4rem);
+  line-height: 0.86;
 }
 
 .sheet__lead {
-  margin: 0;
-  text-transform: none;
-  letter-spacing: 0.01em;
-  font-size: var(--step--1);
+  margin: 0.3rem 0 0;
+  font-size: var(--step-1);
+  line-height: 1.2;
   color: var(--color-osso);
 }
 
@@ -87,13 +92,29 @@
   color: var(--color-calango);
 }
 
+/* a fala em off, com as margens de diálogo do roteiro */
 .sheet__process {
   display: grid;
   gap: 0.9rem;
+  margin-top: 1.4rem;
+  padding: 0 6% 0 9%;
 }
 
-.sheet__process .t-body {
+.sheet__cue {
+  margin: 0 0 0.1rem;
+  padding-left: 24%;
+  color: var(--color-osso);
+}
+
+.sheet__cue span {
+  color: var(--color-calango);
+}
+
+.sheet__line {
   margin: 0;
+  font-family: var(--font-mono);
+  font-size: var(--step-0);
+  line-height: 1.62;
   color: color-mix(in oklab, var(--color-osso) 78%, transparent);
 }
 
@@ -237,7 +258,7 @@
 
 @media (max-width: 900px) {
   .sheet {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
     grid-template-rows: 46vh 1fr auto;
   }
   .sheet__media {
@@ -250,6 +271,12 @@
   }
   .sheet__text {
     padding: 1.6rem var(--gutter);
+  }
+  .sheet__process {
+    padding: 0;
+  }
+  .sheet__cue {
+    padding-left: 0;
   }
   .sheet__nav {
     padding-left: var(--gutter);

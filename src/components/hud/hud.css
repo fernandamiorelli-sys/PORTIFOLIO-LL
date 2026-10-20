@@ -35,6 +35,13 @@
   gap: 0.7em;
 }
 
+.hud__nao {
+  font-family: 'Redaction 100', var(--font-display);
+  font-style: italic;
+  font-size: 1.12em;
+  letter-spacing: 0;
+}
+
 .hud__brand svg {
   width: 11px;
   height: auto;
@@ -170,15 +177,12 @@
 
 .index__label {
   font-size: clamp(1.8rem, 5.4vh, 4rem);
-  font-stretch: 62%;
-  transition:
-    font-stretch 0.5s var(--ease-out),
-    color 0.3s ease;
+  line-height: 1;
+  transition: color 0.3s ease;
 }
 
 .index button:hover .index__label,
 .index button:focus-visible .index__label {
-  font-stretch: 110%;
   color: var(--color-calango);
 }
 

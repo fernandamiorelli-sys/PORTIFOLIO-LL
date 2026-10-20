@@ -1,159 +1,287 @@
-/* ───────── sobre */
+/* ───────── sobre: a entrada do personagem */
 .about {
-  display: grid;
-  grid-template-columns: repeat(12, minmax(0, 1fr));
-  gap: var(--gutter);
   padding: 22vh var(--gutter) 20vh;
   border-top: 1px solid var(--line);
 }
 
-.about__head {
-  grid-column: 1 / 6;
-  align-self: start;
-  position: sticky;
-  top: 16vh;
+.about__slug {
+  display: flex;
+  align-items: center;
+  gap: 1.2rem;
+  margin: 0 0 3vh;
+  color: var(--fg-dim);
 }
 
-.about__k {
-  margin: 0 0 1rem;
-  color: var(--color-calango);
+.about__slug span:first-child {
+  color: var(--fg);
+  font-weight: 700;
+}
+
+.about__slug i {
+  flex: 1;
+  height: 1px;
+  background: var(--line);
 }
 
 .about__name {
-  margin: 0;
-  font-size: clamp(3.6rem, 10vw, 11rem);
-  font-stretch: 58%;
+  margin: 0 0 9vh;
+  font-size: min(15vw, 15rem);
   line-height: 0.8;
 }
 
+/* a idade, como no roteiro: "LUCAS LOPES (21)" */
+.about__age {
+  display: inline-block;
+  vertical-align: top;
+  margin: 0.1em 0 0 0.2em;
+  font-size: max(0.9rem, 0.12em);
+  letter-spacing: 0;
+  color: var(--color-calango);
+}
+
+.about__grid {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  column-gap: var(--gutter);
+  align-items: start;
+}
+
 .about__portrait {
-  width: min(16vw, 220px);
-  aspect-ratio: 9 / 16;
-  margin-top: 2.4rem;
-  overflow: hidden;
+  grid-column: 1 / 4;
+  position: sticky;
+  top: 16vh;
+  margin: 0;
 }
 
 .about__portrait picture,
 .about__portrait img {
+  display: block;
   width: 100%;
-  height: 100%;
+  aspect-ratio: 9 / 16;
+  object-fit: cover;
 }
 
-.about__body {
-  grid-column: 7 / 12;
+.about__portrait figcaption {
+  display: flex;
+  gap: 1em;
+  margin-top: 0.8rem;
+  color: var(--fg-dim);
+}
+
+.about__portrait figcaption span {
+  color: var(--color-calango);
+  white-space: nowrap;
+}
+
+.about__action {
+  grid-column: 4 / 9;
   display: grid;
   gap: 1.3rem;
+  padding-left: 2vw;
 }
 
-.about__lede {
-  margin: 0 0 0.8rem;
-  font-size: var(--step-2);
-  line-height: 1.15;
+.about__scene {
+  margin: 0 0 1rem;
+  padding-left: 1.2rem;
+  border-left: 1px solid var(--color-calango);
   color: var(--fg);
 }
 
-.about__body .t-body {
+.about__scene b {
+  font-weight: 700;
+}
+
+.about__lede {
+  margin: 0 0 0.6rem;
+  font-size: clamp(1.35rem, 1rem + 1.05vw, 2rem);
+  line-height: 1.14;
+  color: var(--fg);
+}
+
+.about__action .t-body {
   margin: 0;
 }
 
+.about__sheet {
+  grid-column: 9 / -1;
+  padding-left: 1vw;
+}
+
+.about__k {
+  margin: 0 0 0.6rem;
+  color: var(--color-calango);
+}
+
 .about__facts {
-  margin: 1.6rem 0 0;
-  border-top: 1px solid var(--line);
+  margin: 0 0 3rem;
 }
 
 .about__facts div {
-  display: grid;
-  grid-template-columns: 9em 1fr;
-  gap: 1rem;
-  padding: 0.65rem 0;
-  border-bottom: 1px solid var(--line);
+  display: flex;
+  align-items: baseline;
+  gap: 0.6em;
+  padding: 0.45rem 0;
 }
 
 .about__facts dt {
-  color: var(--fg-faint);
+  color: var(--fg-dim);
+  white-space: nowrap;
+}
+
+.about__facts i {
+  flex: 1 1 1em;
+  min-width: 1em;
+  border-bottom: 1px dotted var(--fg-faint);
+  translate: 0 -0.3em;
 }
 
 .about__facts dd {
   margin: 0;
+  text-align: right;
 }
 
-.about__rep {
-  margin-top: 2.4rem;
-}
-
-.about__rep-list {
+.about__refs {
+  list-style: none;
   margin: 0;
+  padding: 0;
   font-family: var(--font-serif);
   font-style: italic;
   font-size: var(--step-1);
-  line-height: 1.5;
+  line-height: 1.3;
 }
 
-.about__rep-list i {
-  font-style: normal;
-  color: var(--color-calango);
-  font-family: var(--font-mono);
-  font-size: 0.8em;
+.about__refs li {
+  padding: 0.3rem 0;
+  border-bottom: 1px solid var(--line);
 }
 
 /* ───────── fechamento */
 .closing {
   position: relative;
-  min-height: 100vh;
   display: grid;
-  align-content: center;
   justify-items: center;
-  gap: 8vh;
-  padding: 22vh var(--gutter) 6vh;
-  text-align: center;
+  gap: 12vh;
+  padding: 24vh var(--gutter) 6vh;
 }
 
 .closing__phrase {
-  margin: 0;
   display: grid;
-  gap: 0.15em;
-  font-size: clamp(2.6rem, 8.6vw, 10.5rem);
+  gap: 0.18em;
+  margin: 0;
+  width: 100%;
+  font-size: clamp(2.4rem, 8.2vw, 10rem);
   line-height: 0.86;
+  text-align: center;
 }
 
-.closing__first {
-  color: transparent;
-  -webkit-text-stroke: 1px var(--fg-faint);
-  font-stretch: 70%;
+/* o que não somos: uma linha só, menor, perdendo a resolução */
+.closing__l1 {
+  justify-self: center;
+  font-size: 0.66em;
+  white-space: nowrap;
+  color: var(--fg-dim);
 }
 
-.closing__nao {
-  position: relative;
-  display: inline-block;
+.closing__l1 .rz-no {
+  color: var(--color-calango);
 }
 
-.closing__strike {
-  position: absolute;
-  left: -4%;
-  right: -4%;
-  top: 48%;
-  height: max(3px, 0.06em);
-  background: var(--color-calango);
-  transform: scaleX(0);
-  transform-origin: left;
-}
-
-.closing__final {
-  display: block;
-  min-height: 0.86em;
+.closing__l2 {
   color: var(--fg);
-  font-stretch: 70%;
 }
 
+/* o contrato: papel, Courier, duas linhas de assinatura */
+.contract {
+  position: relative;
+  width: min(100%, 900px);
+  padding: clamp(28px, 5vw, 72px) clamp(20px, 5vw, 76px) clamp(28px, 4vw, 56px);
+  color: #141612;
+  background:
+    radial-gradient(120% 70% at 20% 0%, rgba(255, 255, 255, 0.42), transparent 60%),
+    linear-gradient(#ece7db, #e2dccd);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.5) inset,
+    0 70px 140px -50px rgba(0, 0, 0, 0.95);
+  font-family: var(--font-mono);
+  font-size: clamp(13px, 1vw, 15.5px);
+  line-height: 1.6;
+}
+
+.contract__top {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.4rem 1rem;
+  padding-bottom: 0.8rem;
+  border-bottom: 3px double rgba(20, 22, 18, 0.5);
+  color: rgba(20, 22, 18, 0.6);
+}
+
+.contract__title {
+  margin: 1.6em 0 0.9em;
+  font-size: clamp(2.2rem, 5.4vw, 4.8rem);
+  line-height: 0.86;
+  color: #141612;
+}
+
+.contract__pre,
+.contract__date {
+  margin: 0 0 1.4em;
+}
+
+.contract__clauses {
+  list-style: none;
+  margin: 0 0 1.6em;
+  padding: 0;
+  display: grid;
+  gap: 1em;
+}
+
+.contract b {
+  font-weight: 700;
+}
+
+.contract__sign {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 4vw;
+  margin-top: 3.2em;
+}
+
+.contract__ink {
+  position: relative;
+  display: grid;
+  align-items: end;
+  justify-items: start;
+  min-height: 150px;
+  border-bottom: 1px solid #141612;
+}
+
+.contract__sig {
+  width: min(100%, 300px);
+  color: #16201a;
+  translate: 0 18%;
+}
+
+.contract__who {
+  margin: 0.7em 0 0;
+  color: #141612;
+}
+
+.contract__who span {
+  color: rgba(20, 22, 18, 0.55);
+}
+
+/* a chamada ocupa a linha do contratante: é a assinatura que falta */
 .closing__cta {
   position: relative;
   display: grid;
-  justify-items: center;
-  gap: 0.7rem;
-  padding: clamp(1.6rem, 3vw, 2.6rem) clamp(2rem, 5vw, 4.4rem);
+  gap: 0.5rem;
+  width: 100%;
+  margin-bottom: 0.8rem;
+  padding: 1.1rem 1.2rem 1rem;
   color: var(--color-breu);
   text-decoration: none;
-  background: var(--color-calango);
   isolation: isolate;
   overflow: hidden;
 }
@@ -162,9 +290,9 @@
 .closing__cta::before {
   content: '';
   position: absolute;
-  inset: -40%;
+  inset: -60%;
   z-index: -2;
-  background: conic-gradient(from var(--a, 0deg), #e8e3d7, #7cd93b, #a8c4b0, #ffffff, #6a7c96, #e8e3d7);
+  background: conic-gradient(from var(--spin, 0deg), #e8e3d7, #7cd93b, #a8c4b0, #ffffff, #6a7c96, #e8e3d7);
   animation: chrome 5s linear infinite;
 }
 
@@ -179,10 +307,15 @@
 
 .closing__cta:hover::after,
 .closing__cta:focus-visible::after {
-  background: var(--color-osso);
+  background: #141612;
 }
 
-@property --a {
+.closing__cta:hover,
+.closing__cta:focus-visible {
+  color: var(--color-calango);
+}
+
+@property --spin {
   syntax: '<angle>';
   inherits: false;
   initial-value: 0deg;
@@ -190,17 +323,21 @@
 
 @keyframes chrome {
   to {
-    --a: 360deg;
+    --spin: 360deg;
   }
 }
 
 .closing__cta-label {
-  font-size: clamp(1.9rem, 4.6vw, 4.6rem);
-  font-stretch: 64%;
+  font-size: clamp(1.6rem, 2.9vw, 2.7rem);
   line-height: 0.9;
 }
 
+.closing__cta-label::after {
+  content: ' →';
+}
+
 .closing__cta-sub {
+  font-size: 0.7rem;
   opacity: 0.75;
 }
 
@@ -232,7 +369,6 @@
   justify-content: space-between;
   gap: 0.8rem 2rem;
   width: 100%;
-  margin-top: 10vh;
   padding-top: 1.2rem;
   border-top: 1px solid var(--line);
   color: var(--fg-faint);
@@ -249,17 +385,31 @@
 }
 
 @media (max-width: 900px) {
-  .about {
-    grid-template-columns: 1fr;
+  .closing__l1 {
+    white-space: normal;
   }
-  .about__head,
-  .about__body {
+  .about__name {
+    font-size: 17vw;
+    margin-bottom: 6vh;
+  }
+  .about__grid {
+    grid-template-columns: minmax(0, 1fr);
+    row-gap: 3rem;
+  }
+  .about__portrait,
+  .about__action,
+  .about__sheet {
     grid-column: 1 / -1;
     position: relative;
     top: 0;
+    padding-left: 0;
   }
   .about__portrait {
-    width: 40vw;
+    width: 62vw;
+  }
+  .contract__sign {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 2.4rem;
   }
   .closing__foot {
     flex-direction: column;

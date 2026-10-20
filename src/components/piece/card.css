@@ -80,6 +80,14 @@
   gap: 0.35rem;
 }
 
+/* cabeçalho de cena, como no roteiro */
+.card__slug {
+  margin: 0;
+  font-weight: 700;
+  color: var(--fg);
+  letter-spacing: 0.01em;
+}
+
 .card__meta {
   display: flex;
   justify-content: space-between;

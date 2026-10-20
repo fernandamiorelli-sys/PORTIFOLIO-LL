@@ -6,6 +6,7 @@ import { calangoBus } from '../../lib/calangoBus';
 import { handoff } from '../../lib/handoff';
 import { gsap, ScrollTrigger } from '../../lib/scroll';
 import { reducedMotion, useExperience } from '../../lib/store';
+import { charsOf, Resolve, scrubResolve } from '../type/Resolve';
 import './hero.css';
 
 // Referência: landonorris.com. A foto ocupa a tela; ao rolar, encolhe para uma moldura de museu,
@@ -95,6 +96,7 @@ export function Hero() {
     const sticky = section.querySelector<HTMLElement>('.hero__sticky')!;
     const overlay = section.querySelectorAll<HTMLElement>('.hero__overlay');
     const names = section.querySelectorAll<HTMLElement>('.hero__name');
+    const nameChars = Array.from(names).map((el) => charsOf(el));
     const caption = section.querySelector<HTMLElement>('.hero__caption')!;
     const hint = section.querySelector<HTMLElement>('.hero__hint')!;
 
@@ -116,9 +118,10 @@ export function Hero() {
       sigRef.current?.set(range(p, 0.48, 0.9));
       const n = ease(range(p, 0.3, 0.7));
       names.forEach((el, i) => {
-        el.style.opacity = String(n);
+        el.style.opacity = String(Math.min(1, n * 3));
         el.style.transform = `translateX(${(1 - n) * (i ? 6 : -6)}vw)`;
-        el.style.fontStretch = `${60 + n * 32}%`;
+        // o nome entra em foco junto com a moldura: do bitmap à serifa
+        scrubResolve(nameChars[i], n, { band: 0.45, seed: i + 7 });
       });
       overlay.forEach((el) => (el.style.opacity = String(1 - range(p, 0.0, 0.14))));
       caption.style.opacity = String(ease(range(p, 0.62, 0.88)));
@@ -154,8 +157,8 @@ export function Hero() {
     <section ref={sectionRef} className="hero" id="idealizador" aria-label="O idealizador">
       <div className="hero__sticky">
         <div className="hero__names t-display" aria-hidden="true">
-          <span className="hero__name">Lucas</span>
-          <span className="hero__name">Lopes</span>
+          <Resolve className="hero__name" text="Lucas" upper trigger="none" />
+          <Resolve className="hero__name" text="Lopes" upper trigger="none" />
         </div>
 
         <div ref={frameRef} className="hero__frame">

@@ -250,7 +250,7 @@ export function Intro({ onEnterSite }: { onEnterSite: () => void }) {
   // boot: 1 s de desfoque e depois a title screen
   useEffect(() => {
     void preloadAll((k) => experience.set({ loaded: k }));
-    const t = window.setTimeout(() => experience.set({ phase: 'title' }), reducedMotion ? 0 : 1000);
+    const t = window.setTimeout(() => experience.get().phase === 'boot' && experience.set({ phase: 'title' }), reducedMotion ? 0 : 1000);
     return () => window.clearTimeout(t);
   }, []);
 
@@ -291,6 +291,17 @@ export function Intro({ onEnterSite }: { onEnterSite: () => void }) {
     onEnterSite();
     window.setTimeout(() => setGone(true), 1400);
   }, [onEnterSite]);
+
+  // só em desenvolvimento: ?direto pula a abertura, para revisar as salas
+  useEffect(() => {
+    if (!import.meta.env.DEV || !new URLSearchParams(location.search).has('direto')) return;
+    // depois do efeito do App, que cria o scroll suave e o trava durante a abertura
+    const t = window.setTimeout(() => {
+      audio.setMuted(true);
+      finishHacking();
+    }, 0);
+    return () => window.clearTimeout(t);
+  }, [finishHacking]);
 
   if (gone) return null;
 

@@ -3,6 +3,7 @@ import { CALANGO_SILHOUETTE, CALANGO_VIEWBOX } from '../../assets/calango';
 import { audio } from '../../lib/audio';
 import { getLenis, gsap, scrollToTarget } from '../../lib/scroll';
 import { useExperience } from '../../lib/store';
+import { charsOf, Resolve, runTo } from '../type/Resolve';
 import './hud.css';
 
 const INDEX = [
@@ -54,6 +55,23 @@ function Clock() {
   return <span>POA {time}</span>;
 }
 
+/** Item do índice: fora de foco (em bitmap) até o cursor ou o teclado chegar nele. */
+function IndexItem({ n, label, onGo }: { n: string; label: string; onGo: () => void }) {
+  const ref = useRef<HTMLButtonElement>(null);
+  const cancel = useRef<() => void>(() => {});
+  const to = (level: 0 | 70) => {
+    cancel.current();
+    cancel.current = runTo(charsOf(ref.current), level, { spread: 0.18, step: 0.035, jitter: 0 });
+  };
+  useEffect(() => () => cancel.current(), []);
+  return (
+    <button ref={ref} type="button" onClick={onGo} onPointerEnter={() => to(0)} onPointerLeave={() => to(70)} onFocus={() => to(0)} onBlur={() => to(70)}>
+      <span className="t-mono">{n}</span>
+      <Resolve className="index__label t-display" text={label} upper trigger="none" from={70} />
+    </button>
+  );
+}
+
 export function Hud() {
   const room = useExperience((s) => s.room);
   const sheet = useExperience((s) => s.sheet);
@@ -94,7 +112,9 @@ export function Hud() {
           <svg viewBox={`0 0 ${CALANGO_VIEWBOX.width} ${CALANGO_VIEWBOX.height}`} aria-hidden="true">
             <path d={CALANGO_SILHOUETTE} fill="currentColor" />
           </svg>
-          <span>Tudo o que não somos</span>
+          <span>
+            Tudo o que <em className="hud__nao">não</em> somos
+          </span>
         </a>
         <div className="hud__right">
           <SoundToggle />
@@ -120,10 +140,7 @@ export function Hud() {
         <ol>
           {INDEX.map((item) => (
             <li key={item.target}>
-              <button type="button" onClick={() => go(item.target)}>
-                <span className="t-mono">{item.n}</span>
-                <span className="index__label t-display">{item.label}</span>
-              </button>
+              <IndexItem n={item.n} label={item.label} onGo={() => go(item.target)} />
             </li>
           ))}
         </ol>

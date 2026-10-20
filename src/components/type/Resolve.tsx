@@ -1,4 +1,4 @@
-import { Fragment, useEffect, useRef, useState, type CSSProperties, type ElementType } from 'react';
+import { Fragment, memo, useEffect, useRef, useState, type CSSProperties, type ElementType } from 'react';
 import { reducedMotion } from '../../lib/store';
 import { ADV } from './advances';
 
@@ -8,11 +8,28 @@ import { ADV } from './advances';
  */
 export const LADDER = [100, 70, 50, 35, 20, 0] as const;
 export type Level = (typeof LADDER)[number];
+/** degrau extra, antes do 100: a letra ainda não chegou (ou já foi embora) */
+export type Rung = Level | 'off';
+
+/** acaso fixo por letra: o mesmo índice sempre dá o mesmo número */
+export const hash = (i: number, seed = 1) => {
+  const x = Math.sin(i * 127.1 + seed * 311.7) * 43758.5453;
+  return x - Math.floor(x);
+};
+
+/** Os degraus entre dois pontos da escada (com 'off' antes do 100). */
+export function rungs(from: Rung, to: Rung): Rung[] {
+  const full: Rung[] = ['off', ...LADDER];
+  const a = full.indexOf(from);
+  const b = full.indexOf(to);
+  const out: Rung[] = [];
+  if (a <= b) for (let i = a; i <= b; i++) out.push(full[i]);
+  else for (let i = a; i >= b; i--) out.push(full[i]);
+  return out;
+}
 
 interface RunOptions {
-  from?: Level;
-  to?: Level;
-  /** janela (s) em que as letras começam a resolver */
+  /** janela (s) em que as letras começam a andar */
   spread?: number;
   /** duração (s) de cada degrau */
   step?: number;
@@ -22,12 +39,8 @@ interface RunOptions {
   onDone?: () => void;
 }
 
-/** Anima um conjunto de letras (.rz) pela escada. Devolve uma função que cancela. */
-export function runResolve(chars: HTMLElement[], opts: RunOptions = {}) {
-  const from = LADDER.indexOf(opts.from ?? 100);
-  const to = LADDER.indexOf(opts.to ?? 0);
-  const dir = to >= from ? 1 : -1;
-  const steps = Math.abs(to - from);
+/** Leva cada letra pela sua sequência de degraus, cada uma no seu tempo. Devolve uma função que cancela. */
+function runSeqs(chars: HTMLElement[], seqs: Rung[][], opts: RunOptions = {}) {
   const step = opts.step ?? 0.07;
   const spread = opts.spread ?? 0.6;
   const delay = opts.delay ?? 0;
@@ -37,36 +50,115 @@ export function runResolve(chars: HTMLElement[], opts: RunOptions = {}) {
   const starts = chars.map((_, i) => delay + (i / n) * spread * 0.55 + Math.random() * spread * 0.45);
   const t0 = performance.now();
   let raf = 0;
+  let finished = false;
   const tick = (now: number) => {
     const t = (now - t0) / 1000;
     let done = true;
     for (let i = 0; i < chars.length; i++) {
+      const seq = seqs[i];
+      const steps = seq.length - 1;
       const k = Math.floor((t - starts[i]) / step);
       let idx: number;
-      if (k < 0) {
-        idx = from;
+      if (steps <= 0) idx = 0;
+      else if (k < 0) {
+        idx = 0;
         done = false;
       } else if (k >= steps) {
-        idx = to;
+        idx = steps;
       } else {
-        idx = from + dir * k;
+        idx = k;
         done = false;
-        if (Math.random() < jitter) idx = Math.max(0, Math.min(LADDER.length - 1, idx - dir));
+        if (k > 0 && Math.random() < jitter) idx = k - 1;
       }
-      const l = String(LADDER[idx]);
+      const l = String(seq[idx]);
       if (chars[i].dataset.l !== l) chars[i].dataset.l = l;
     }
-    if (done) opts.onDone?.();
-    else raf = requestAnimationFrame(tick);
+    if (done) {
+      finished = true;
+      opts.onDone?.();
+    } else raf = requestAnimationFrame(tick);
   };
   raf = requestAnimationFrame(tick);
-  return () => cancelAnimationFrame(raf);
+  return () => {
+    if (!finished) cancelAnimationFrame(raf);
+  };
 }
 
+/** Leva todas as letras pela mesma sequência de degraus. */
+export function runLadder(chars: HTMLElement[], seq: Rung[], opts: RunOptions = {}) {
+  return runSeqs(
+    chars,
+    chars.map(() => seq),
+    opts,
+  );
+}
+
+/** Anima um conjunto de letras (.rz) pela escada. Devolve uma função que cancela. */
+export function runResolve(chars: HTMLElement[], opts: RunOptions & { from?: Rung; to?: Rung } = {}) {
+  return runLadder(chars, rungs(opts.from ?? 100, opts.to ?? 0), opts);
+}
+
+const rungOf = (el: HTMLElement): Rung => {
+  const v = el.dataset.l;
+  return v == null || v === 'off' ? 'off' : (Number(v) as Level);
+};
+
+/** Leva cada letra do degrau em que está até o alvo (que pode variar por letra, ex.: o "não" fica em 100). */
+export function runTo(chars: HTMLElement[], target: Rung | ((el: HTMLElement) => Rung), opts: RunOptions = {}) {
+  return runSeqs(
+    chars,
+    chars.map((c) => rungs(rungOf(c), typeof target === 'function' ? target(c) : target)),
+    opts,
+  );
+}
+
+/** O degrau em que a letra descansa (data-rest), para usar como alvo de runTo. */
+export const restOf = (el: HTMLElement): Rung => Number(el.dataset.rest ?? 0) as Level;
+
 /** Coloca todas as letras num degrau, sem animar. */
-export function setLevel(chars: HTMLElement[], level: Level) {
+export function setLevel(chars: HTMLElement[], level: Rung) {
   const l = String(level);
-  for (const c of chars) c.dataset.l = l;
+  for (const c of chars) if (c.dataset.l !== l) c.dataset.l = l;
+}
+
+/**
+ * Resolução guiada (pelo scroll, por exemplo): com `p` indo de 0 a 1, uma faixa de foco atravessa as
+ * letras da esquerda para a direita. O acaso é fixo por letra, então o mesmo `p` sempre dá o mesmo quadro.
+ * `positions` (0..1, uma por letra) permite ordenar pela posição real na tela.
+ */
+export function scrubResolve(chars: HTMLElement[], p: number, opts: { from?: Rung; to?: Rung; band?: number; seed?: number; positions?: number[] } = {}) {
+  const seq = rungs(opts.from ?? 100, opts.to ?? 0);
+  const steps = seq.length - 1;
+  const band = opts.band ?? 0.35;
+  const seed = opts.seed ?? 1;
+  const n = chars.length;
+  for (let i = 0; i < n; i++) {
+    const x = opts.positions?.[i] ?? (n > 1 ? i / (n - 1) : 0.5);
+    const s = (x * 0.72 + hash(i, seed) * 0.28) * (1 - band);
+    const local = Math.min(1, Math.max(0, (p - s) / band));
+    const l = String(seq[Math.round(local * steps)]);
+    if (chars[i].dataset.l !== l) chars[i].dataset.l = l;
+  }
+}
+
+/** As letras animáveis de um <Resolve />, na ordem do texto. */
+export const charsOf = (root: Element | null) => (root ? Array.from(root.querySelectorAll<HTMLElement>('.rz-c')) : []);
+
+/** Posição horizontal (0..1) de cada letra dentro do bloco, para varrer o foco pela tela e não pela ordem. */
+export function positionsOf(chars: HTMLElement[]) {
+  if (!chars.length) return [];
+  const rects = chars.map((c) => c.getBoundingClientRect());
+  const left = Math.min(...rects.map((r) => r.left));
+  const right = Math.max(...rects.map((r) => r.right));
+  const w = Math.max(1, right - left);
+  return rects.map((r) => (r.left + r.width / 2 - left) / w);
+}
+
+/** Largura (em em) de um texto na Redaction limpa, com o espaçamento da classe. */
+export function measureEm(text: string, ls = -0.035) {
+  let w = 0;
+  for (const ch of text) w += (ADV[ch] ?? 0.55) + ls;
+  return w - ls;
 }
 
 interface Segment {
@@ -101,9 +193,13 @@ interface ResolveProps {
   /** degrau final */
   rest?: Level;
   /** degrau inicial */
-  from?: Level;
-  /** 'view': quando entra na tela · 'mount': ao montar · 'none': controlado por fora */
+  from?: Rung;
+  /** 'view': quando entra na tela · 'mount': ao montar · 'none': controlado por fora (nunca assenta) */
   trigger?: 'view' | 'mount' | 'none';
+  /** o texto aparece em caixa alta: as larguras precisam ser as das maiúsculas */
+  upper?: boolean;
+  /** mantém as letras separadas mesmo com movimento reduzido (quando o estilo depende delas) */
+  split?: boolean;
   delay?: number;
   spread?: number;
   step?: number;
@@ -114,10 +210,25 @@ interface ResolveProps {
  * Texto que entra em foco. Enquanto resolve, cada letra ocupa a largura exata da versão limpa
  * (nada se mexe); quando termina, volta a ser texto corrido, com kerning.
  */
-export function Resolve({ text, as: Tag = 'span', className, id, rest = 0, from = 100, trigger = 'view', delay = 0, spread = 0.6, step = 0.07, style }: ResolveProps) {
+export const Resolve = memo(function Resolve({
+  text,
+  as: Tag = 'span',
+  className,
+  id,
+  rest = 0,
+  from = 100,
+  trigger = 'view',
+  upper = false,
+  split = false,
+  delay = 0,
+  spread = 0.6,
+  step = 0.07,
+  style,
+}: ResolveProps) {
   const ref = useRef<HTMLElement>(null);
-  const segments = parseSegments(text, rest);
-  const [settled, setSettled] = useState(reducedMotion);
+  const shown = upper ? text.toLocaleUpperCase('pt-BR') : text;
+  const segments = parseSegments(shown, rest);
+  const [settled, setSettled] = useState(reducedMotion && !split);
 
   useEffect(() => {
     if (reducedMotion) return;
@@ -188,7 +299,8 @@ export function Resolve({ text, as: Tag = 'span', className, id, rest = 0, from 
               <Fragment key={si}>{seg.text}</Fragment>
             );
           }
-          const words = seg.text.split(/(\s+)/);
+          // palavras (e as partes de palavras hifenizadas, para a linha poder quebrar depois do hífen)
+          const words = seg.text.split(/(\s+)/).flatMap((w) => (/^\s+$/.test(w) ? [w] : w.split(/(?<=-)/)));
           const Wrap = seg.italic ? 'em' : Fragment;
           return (
             <Wrap key={si} {...(seg.italic ? { className: 'rz-no' } : {})}>
@@ -198,7 +310,7 @@ export function Resolve({ text, as: Tag = 'span', className, id, rest = 0, from 
                 ) : w ? (
                   <span key={wi} className="rz-word">
                     {[...w].map((ch, ci) => (
-                      <span key={ci} className="rz rz-c" data-l={from} data-rest={seg.rest} style={{ '--a': ADV[ch] ?? 0.55 } as CSSProperties}>
+                      <span key={ci} className="rz rz-c" data-l={from} data-rest={seg.rest} style={{ '--adv': ADV[ch] ?? 0.55 } as CSSProperties}>
                         {ch}
                       </span>
                     ))}
@@ -211,4 +323,4 @@ export function Resolve({ text, as: Tag = 'span', className, id, rest = 0, from 
       </span>
     </Tag>
   );
-}
+});
