@@ -1,4 +1,6 @@
 @import 'tailwindcss';
+/* As skills do Claude Code em .claude/ não são o site: sem esta linha o Tailwind tira classes dos textos delas. */
+@source not "../../.claude";
 /* A voz do curador: a Courier que o Lucas ama, na versão refeita para roteiros (Courier Prime, OFL). */
 @import '@fontsource/courier-prime/400.css';
 @import '@fontsource/courier-prime/400-italic.css';
