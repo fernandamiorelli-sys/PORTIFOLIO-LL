@@ -14,7 +14,7 @@ Exposição digital da direção de arte de **Lucas Lopes** para o **Abigos FR**
 | Title screen | Um painel de vidro em 3/4, com o escudo oficial e o título impressos nele; atrás, um terminal de dados animado em paralaxe (log, espécime, radar, ondas); a luz segue o mouse e revela os riscos | Title screen de Cyberpunk 2077 |
 | Hacking | A música entra em fade no 0:09 e estabiliza no 0:14; nesses 5 s o acervo é "descriptografado" e o calango minimalista se forma em caracteres | — |
 | O idealizador | O calango de código voa do hacking para o canto da tela e um convite pulsante pede para rolar; a foto do Lucas encolhe para uma moldura de museu, vira P&B e recebe a assinatura; o nome entra em foco | landonorris.com |
-| Manifesto | A página para (só na primeira vez, e só para baixo) e as frases passam sozinhas, 2,5 s cada: tudo o que o time *não* é chega em baixa resolução e é tarjado, como num documento sigiloso; só a última frase entra em foco. Ao lado, sempre no mesmo lugar, o logo do calango em vidro grosso gira devagar no próprio eixo, refratando as letras, com um data overlay lendo a forma dele; com o cursor em cima, ele vira para o visitante e a luz acompanha o ponteiro; no fundo, o acervo pisca | kinoria.studio · a letra S de vidro do Panter Vision |
+| Manifesto | As frases trocam com a rolagem, sem trava: cada uma pede bastante rolagem e, ali dentro, a roda do mouse anda mais devagar. Tudo o que o time *não* é chega em baixa resolução e é tarjado, como num documento sigiloso; só a última frase entra em foco. No campo vazio à direita, sempre no mesmo lugar, o logo do calango em vidro grosso gira devagar no próprio eixo, refratando a página, com um data overlay lendo a forma dele; com o cursor em cima, ele vira para o visitante e a luz acompanha o ponteiro; no fundo, o acervo pisca em rajadas rápidas de fotos emendadas | kinoria.studio · a letra S de vidro do Panter Vision |
 | Sala 01 · Sangue-Frio | O filme ao lado da decupagem impressa (o marca-texto acompanha o plano que está passando); depois, as peças entram pela lateral enquanto o céu passa por um dia inteiro no sertão, cada uma com seu cabeçalho de cena | — |
 | Sala 02 · Reforços | Cada anúncio é um registro do BID (Boletim Informativo Diário); o carimbo "Regularizado" bate quando a ficha aparece | — |
 | Sala 03 · Confrontos | Painel de LED de estação: "Próximas partidas" (partida é jogo e é embarque), com a situação calculada pela data | O letreiro do pôster *Próxima Estação* |
@@ -60,7 +60,7 @@ Atalhos de desenvolvimento (só no `npm run dev`):
 
 - `?direto` pula a abertura e vai direto ao site.
 
-No console do navegador (também só no `npm run dev`): `__gate(null)` libera o portão do manifesto, `__glass.freeze(1.2)` congela o calango num ângulo, em radianos (`__glass.freeze(null)` solta), e `__scan.fire()` faz a próxima parada gerar uma leitura mesmo sem a página ter andado.
+No console do navegador (também só no `npm run dev`): `__glass.freeze(1.2)` congela o calango num ângulo, em radianos (`__glass.freeze(null)` solta), e `__scan.fire()` faz a próxima parada gerar uma leitura mesmo sem a página ter andado.
 
 ## Publicar na Vercel
 
@@ -76,7 +76,7 @@ Para publicar do zero em outra conta:
 ## Onde mexer
 
 - **Textos das peças, salas, manifesto e sobre** (inclusive os cabeçalhos de cena, a decupagem do filme e os registros do BID): `src/data/pieces.ts`
-- **Tempo das frases do manifesto** (`STEP`, `TRUTH_HOLD`) e lugar do calango de vidro: `src/components/sections/Manifesto.tsx`
+- **Ritmo do manifesto** (rolagem por frase: `ABOUT_SHARE` e a altura da seção em `manifesto.css`; roda mais lenta: `WHEEL_SLOW`; flashes: `FLASH_HOLD`, `flashBurst`, `flashGap`) e lugar do calango de vidro: `src/components/sections/Manifesto.tsx`
 - **Contato (WhatsApp, e-mail), música e tempos da abertura:** `src/data/site.ts`
 - **Novas imagens:** coloque o original em `media-src/img/` e rode `npm run media`. O script gera AVIF, WebP e JPG em três tamanhos e atualiza `src/data/media-manifest.json`.
 - **Novo filme:** `npm run video media-src/video/arquivo.mp4 15.6` (gera WebM, MP4 e o pôster no segundo indicado; precisa de ffmpeg).

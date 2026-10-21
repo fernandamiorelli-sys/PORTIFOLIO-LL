@@ -134,15 +134,6 @@ html.lenis body {
   overflow: hidden;
 }
 
-/* o portão do manifesto corta a inércia do toque (no celular, o arremesso empurraria a página
-   adiante do ponto em que ela para) */
-@media (hover: none) and (pointer: coarse) {
-  html.is-gated,
-  html.is-gated body {
-    overflow: hidden;
-  }
-}
-
 .sr-only {
   position: absolute;
   width: 1px;

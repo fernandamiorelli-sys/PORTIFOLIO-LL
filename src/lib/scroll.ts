@@ -7,29 +7,15 @@ gsap.registerPlugin(ScrollTrigger);
 
 let lenis: Lenis | null = null;
 
-// ───────────────────────────── portão de rolagem
-// Uma seção pode segurar a página num ponto (o manifesto, enquanto as frases passam): a rolagem para
-// baixo para ali; para cima continua livre. Navegação pelo índice nunca é barrada.
-let gateY: number | null = null;
-let navigating = false;
-let lastScroll = 0;
-let killMomentumUntil = 0;
+// ───────────────────────────── trecho lento
+// Uma seção pode pedir que a roda do mouse (e o trackpad) andem mais devagar dentro dela: o manifesto,
+// onde as frases trocam com a rolagem. Nada trava; só cada giro da roda anda menos. O toque no celular
+// segue nativo (ali, a seção é mais longa).
+let slow: { start: number; end: number; factor: number } | null = null;
 
-/** y absoluto em que a página para ao descer (null libera). */
-export function setScrollGate(y: number | null) {
-  gateY = y;
-}
-
-/** a página está parada no portão (ou acima dele, prestes a chegar) */
-export const atGate = () => gateY != null && lenis != null && lenis.targetScroll >= gateY - 1;
-
-const DOWN_KEYS = new Set(['ArrowDown', 'PageDown', 'End', ' ', 'Spacebar']);
-
-function blocks(deltaY: number) {
-  if (gateY == null || navigating || !lenis) return false;
-  // só barra quem está acima ou no portão (quem chegou por baixo, pelo índice, rola livre)
-  if (lenis.targetScroll > gateY + 1) return false;
-  return deltaY > 0 && lenis.targetScroll + deltaY > gateY - 0.5;
+/** Entre start e end (rolagem absoluta, px), a roda anda `factor` do normal (null desfaz). */
+export function setSlowZone(zone: { start: number; end: number; factor: number } | null) {
+  slow = zone;
 }
 
 export function initScroll() {
@@ -42,48 +28,20 @@ export function initScroll() {
     lerp: reducedMotion ? 1 : 0.09,
     wheelMultiplier: 0.95,
     touchMultiplier: 1.1,
-    virtualScroll: ({ deltaY, event }) => {
-      if (!blocks(deltaY)) return true;
-      if (event.cancelable) event.preventDefault();
-      // chega ao portão com a mesma suavidade de sempre e fica
-      if (lenis && lenis.targetScroll < gateY! - 0.5) lenis.scrollTo(gateY!);
-      return false;
+    virtualScroll: (data) => {
+      // o Lenis usa o delta depois desta chamada: dentro do trecho lento, a roda anda menos
+      if (slow && lenis && data.event.type === 'wheel' && lenis.targetScroll >= slow.start - 1 && lenis.targetScroll <= slow.end + 1) {
+        data.deltaY *= slow.factor;
+      }
+      return true;
     },
   });
   lenis.on('scroll', ScrollTrigger.update);
-  // barra de rolagem, teclado e inércia do toque passam por fora do Lenis: aqui eles batem no portão
-  lenis.on('scroll', () => {
-    // a posição que o Lenis já tem (na rolagem nativa ele acabou de ler do navegador): ler de novo
-    // a rolagem da janela aqui forçaria um layout a cada quadro
-    const y = lenis!.animatedScroll;
-    if (gateY != null && !navigating && lastScroll <= gateY + 1 && y > gateY + 1) {
-      if (performance.now() > killMomentumUntil) {
-        // corta a inércia do toque (no celular, o arremesso continuaria empurrando)
-        killMomentumUntil = performance.now() + 400;
-        document.documentElement.classList.add('is-gated');
-        window.setTimeout(() => document.documentElement.classList.remove('is-gated'), 320);
-      }
-      lenis!.scrollTo(gateY, { immediate: true, force: true });
-      lastScroll = gateY;
-      return;
-    }
-    lastScroll = y;
-  });
-  window.addEventListener(
-    'keydown',
-    (e) => {
-      if (!DOWN_KEYS.has(e.key) || gateY == null || navigating || !lenis) return;
-      const t = e.target as HTMLElement | null;
-      if (t?.closest?.('input, textarea, select, button, [contenteditable]')) return;
-      if (lenis.targetScroll >= gateY - 1 && lenis.targetScroll <= gateY + 1) e.preventDefault();
-    },
-    { capture: true },
-  );
   gsap.ticker.add((time) => lenis?.raf(time * 1000));
   gsap.ticker.lagSmoothing(0);
   lenis.stop();
-  // só em desenvolvimento: os testes pulam direto para uma sala (o portão do manifesto seguraria o pulo)
-  if (import.meta.env.DEV) Object.assign(window, { __lenis: lenis, __gate: setScrollGate });
+  // só em desenvolvimento: os testes pulam direto para uma sala
+  if (import.meta.env.DEV) Object.assign(window, { __lenis: lenis });
   return lenis;
 }
 
@@ -103,22 +61,7 @@ export function scrollToTarget(target: string | HTMLElement | number, offset = 0
     if (typeof target === 'number') window.scrollTo(0, target);
     return;
   }
-  navigating = true;
-  lenis.scrollTo(target, {
-    offset,
-    duration: reducedMotion ? 0 : 1.6,
-    onComplete: () => {
-      navigating = false;
-      lastScroll = lenis!.actualScroll;
-    },
-  });
-  // garantia: se o destino não pedir animação (já está lá), libera mesmo assim
-  window.setTimeout(() => {
-    if (navigating && lenis && !lenis.isScrolling) {
-      navigating = false;
-      lastScroll = lenis.actualScroll;
-    }
-  }, 2200);
+  lenis.scrollTo(target, { offset, duration: reducedMotion ? 0 : 1.6 });
 }
 
 export function getLenis() {

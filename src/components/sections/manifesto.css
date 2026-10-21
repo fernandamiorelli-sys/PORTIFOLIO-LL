@@ -1,7 +1,15 @@
 .manifesto {
   position: relative;
-  /* o palco fica preso por 1,4 tela: ali as frases passam (com a página parada) e depois entra o clube */
-  height: 240vh;
+  /* o palco fica preso por 3,7 telas: as frases trocam com a rolagem (cerca de 0,63 tela cada, com a
+     roda do mouse mais lenta ali dentro) e, no fim, entra o texto do clube */
+  height: 470vh;
+}
+
+/* no toque a rolagem é nativa (a roda lenta não vale): cada frase pede cerca de 0,9 tela */
+@media (hover: none) and (pointer: coarse) {
+  .manifesto {
+    height: 630vh;
+  }
 }
 
 .manifesto__sticky {
@@ -28,6 +36,9 @@
   filter: grayscale(1) contrast(1.35) brightness(0.62) sepia(0.25) hue-rotate(55deg) saturate(1.6);
 }
 
+/* escura de propósito: com este filtro e esta opacidade, nenhuma foto passa de ~7% de luminância. Os
+   flashes trocam várias vezes por segundo; acima de 10%, o piscar viraria um risco para quem tem
+   fotossensibilidade */
 .manifesto__flash img.is-on {
   opacity: 0.42;
 }
@@ -229,7 +240,7 @@
   opacity: 0;
 }
 
-/* um segmento por frase; o da vez enche no tempo de leitura (a página está parada enquanto isso) */
+/* um segmento por frase; o da vez enche com a rolagem */
 .manifesto__rail-segs {
   display: flex;
   gap: 6px;
@@ -250,29 +261,16 @@
   transform-origin: left;
 }
 
-/* quando as frases acabam, a página solta e o convite para seguir aparece */
+/* o convite para seguir rolando (some com o trilho, no texto do clube) */
 .manifesto__next {
   margin: 0;
   color: var(--fg);
-  opacity: 0;
-  translate: 0 -4px;
-  transition:
-    opacity 0.6s ease,
-    translate 0.6s var(--ease-out);
 }
 
 .manifesto__next b {
   display: inline-block;
   font-weight: 400;
   color: var(--color-calango);
-}
-
-.manifesto.is-done .manifesto__next {
-  opacity: 1;
-  translate: 0 0;
-}
-
-.manifesto.is-done .manifesto__next b {
   animation: mf-next 1.6s var(--ease-inout) infinite;
 }
 
@@ -283,9 +281,6 @@
 }
 
 @media (max-width: 760px) {
-  .manifesto {
-    height: 230vh;
-  }
   .manifesto__bar-mid {
     display: none;
   }
@@ -333,7 +328,7 @@
   .mf-struck.is-redacted .mf-struck__t > span[aria-hidden] > .rz-word::after {
     transition: none;
   }
-  .manifesto.is-done .manifesto__next b {
+  .manifesto__next b {
     animation: none;
   }
 }

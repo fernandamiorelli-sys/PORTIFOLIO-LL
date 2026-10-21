@@ -46,6 +46,8 @@ export function GlassCalango({ place, compact }: { place: GlassPlace; compact: b
     let dirtyUntil = 0;
     /** o trilho de progresso mudou (a cada quadro, durante as frases): basta repintar devagar */
     let slowDirty = false;
+    /** um flash do acervo acendeu ou apagou: uma repintura basta (troca seca, sem transição) */
+    let flashDirty = false;
     let lastPaint = -1e9;
     let shownAt = -1;
     let lastNow = 0;
@@ -143,11 +145,12 @@ export function GlassCalango({ place, compact }: { place: GlassPlace; compact: b
       // a réplica só é redesenhada quando a página muda: 24 vezes por segundo enquanto as letras e as
       // tarjas se mexem (atrás do vidro, distorcido, não se vê diferença para 60) e 4 por segundo para
       // o trilho de progresso, que anda o tempo todo mas quase nunca fica atrás da peça
-      if ((now < dirtyUntil && now - lastPaint > 41) || (slowDirty && now - lastPaint > 250)) {
+      if ((now < dirtyUntil && now - lastPaint > 41) || (flashDirty && now - lastPaint > 50) || (slowDirty && now - lastPaint > 250)) {
         painter.paint();
         glass.bgTexture.needsUpdate = true;
         lastPaint = now;
         slowDirty = false;
+        flashDirty = false;
         needsRender = true;
       }
       const engaged = updateHover();
@@ -244,13 +247,18 @@ export function GlassCalango({ place, compact }: { place: GlassPlace; compact: b
       pointer = null;
     };
 
-    // a página atrás do vidro mudou (letras subindo a escada, tarjas, flashes, troca de estado):
-    // pinta de novo enquanto durarem as transições do CSS que a mudança disparou
+    // a página atrás do vidro mudou (letras subindo a escada, tarjas, troca de estado): pinta de novo
+    // enquanto durarem as transições do CSS que a mudança disparou. Os flashes trocam seco, várias vezes
+    // por segundo: para eles, uma repintura por troca
     const mo = new MutationObserver((records) => {
       for (const r of records) {
         const el = r.target instanceof Element ? r.target : r.target.parentElement;
         if (el?.closest('.manifesto__rail')) {
           slowDirty = true;
+          continue;
+        }
+        if (el?.closest('.manifesto__flash')) {
+          flashDirty = true;
           continue;
         }
         dirtyUntil = performance.now() + 1400;

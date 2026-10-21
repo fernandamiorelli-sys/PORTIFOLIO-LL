@@ -259,7 +259,7 @@ export function Intro({ onEnterSite }: { onEnterSite: () => void }) {
     (silent = false) => {
       if (experience.get().phase !== 'title' || !ready) return;
       if (silent) audio.setMuted(true);
-      void audio.start();
+      audio.start();
       rendererRef.current?.glitch(1.3, 460);
       experience.set({ phase: 'hacking' });
     },
@@ -275,14 +275,19 @@ export function Intro({ onEnterSite }: { onEnterSite: () => void }) {
       begin();
     };
     const onPointer = (e: PointerEvent) => {
+      // o navegador só libera a música num gesto que conta: com o mouse, apertar o botão já conta; no
+      // toque, só quando o dedo sai da tela (no pointerdown do toque, o iPhone e o Android recusam o som)
+      if ((e.type === 'pointerdown') !== (e.pointerType === 'mouse')) return;
       if ((e.target as HTMLElement)?.closest?.('[data-intro-option]')) return;
       begin();
     };
     window.addEventListener('keydown', onKey);
     window.addEventListener('pointerdown', onPointer);
+    window.addEventListener('pointerup', onPointer);
     return () => {
       window.removeEventListener('keydown', onKey);
       window.removeEventListener('pointerdown', onPointer);
+      window.removeEventListener('pointerup', onPointer);
     };
   }, [phase, begin]);
 
