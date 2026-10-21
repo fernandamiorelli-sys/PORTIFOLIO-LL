@@ -10,23 +10,25 @@ import { Resolve } from '../type/Resolve';
 import { Picture } from './Picture';
 import './sheet.css';
 
-const VISIBLE = PIECES.filter((p) => hasMedia(p.media) && !p.pending);
+/** As peças que a ficha percorre (com mídia e prontas), na ordem do acervo. */
+export const ACERVO = PIECES.filter((p) => hasMedia(p.media) && !p.pending);
 
 /** Ficha da obra: imagem grande + processo criativo + ficha técnica. Esc fecha, setas navegam. */
 export function PieceSheet() {
   const id = useExperience((s) => s.sheet);
-  const piece = useMemo(() => VISIBLE.find((p) => p.id === id) ?? null, [id]);
+  const piece = useMemo(() => ACERVO.find((p) => p.id === id) ?? null, [id]);
   const ref = useRef<HTMLDivElement>(null);
   const closeRef = useRef<HTMLButtonElement>(null);
   const lastFocus = useRef<HTMLElement | null>(null);
 
-  const index = piece ? VISIBLE.indexOf(piece) : -1;
-  const go = (d: number) => experience.set({ sheet: VISIBLE[(index + d + VISIBLE.length) % VISIBLE.length].id });
+  const index = piece ? ACERVO.indexOf(piece) : -1;
+  const go = (d: number) => experience.set({ sheet: ACERVO[(index + d + ACERVO.length) % ACERVO.length].id });
   const close = () => experience.set({ sheet: null });
 
   useEffect(() => {
     if (!piece) return;
-    lastFocus.current = (document.activeElement as HTMLElement) ?? null;
+    // guarda quem abriu a ficha (navegar entre as peças não troca: o foco já está dentro dela)
+    if (!ref.current?.contains(document.activeElement)) lastFocus.current = (document.activeElement as HTMLElement) ?? null;
     getLenis()?.stop();
     closeRef.current?.focus({ preventScroll: true });
     const onKey = (e: KeyboardEvent) => {
@@ -120,7 +122,7 @@ export function PieceSheet() {
           ← Anterior
         </button>
         <span aria-hidden="true">
-          {String(index + 1).padStart(2, '0')} / {String(VISIBLE.length).padStart(2, '0')}
+          {String(index + 1).padStart(2, '0')} / {String(ACERVO.length).padStart(2, '0')}
         </span>
         <button type="button" className="t-mono" onClick={() => go(1)} aria-label="Próxima peça">
           Próxima →

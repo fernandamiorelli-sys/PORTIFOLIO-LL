@@ -526,6 +526,13 @@
   .led__place {
     display: none;
   }
+  /* legendas pequenas legíveis no celular: as colunas do painel e o rodapé do carimbo vão a 10 px */
+  .led__cols span {
+    font-size: 0.84em;
+  }
+  .bid-entry__stamp small {
+    font-size: 0.87em;
+  }
   .confrontos__posters {
     gap: 12vh;
     padding-top: 2vh;

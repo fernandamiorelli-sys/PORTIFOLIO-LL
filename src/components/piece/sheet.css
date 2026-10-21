@@ -37,11 +37,15 @@
   height: 100%;
 }
 
+/* a moldura da peça: o tamanho vem das margens (o 100% do .sheet__pic venceria o inset e a arte
+   passaria da tela) */
 .sheet__media > picture,
 .sheet__media > .loupe,
 .sheet__media > .compare {
   position: absolute;
   inset: calc(var(--hud) * 3) var(--gutter);
+  width: auto;
+  height: auto;
 }
 
 .sheet__media picture {
@@ -115,7 +119,7 @@
   font-family: var(--font-mono);
   font-size: var(--step-0);
   line-height: 1.62;
-  color: color-mix(in oklab, var(--color-osso) 78%, transparent);
+  color: color-mix(in oklab, var(--color-osso) 86%, transparent);
 }
 
 .sheet__ficha ul {

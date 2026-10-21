@@ -315,7 +315,8 @@
   font-family: var(--font-mono);
   font-size: var(--step-0);
   line-height: 1.62;
-  color: var(--fg-dim);
+  /* o mesmo tom dos parágrafos longos (.t-body) */
+  color: color-mix(in oklab, var(--fg) 78%, var(--bg));
 }
 
 .screening__notes {
@@ -384,9 +385,11 @@
   background: linear-gradient(90deg, transparent, var(--line) 12%, var(--line) 88%, transparent);
 }
 
+/* atrás dos cartões: as fotos atravessam a faixa do relógio (os cartões altos ocupam quase a tela toda)
+   e, quando passam, cobrem o relógio em vez de os números ficarem por cima da imagem */
 .day__clock {
   position: absolute;
-  z-index: 2;
+  z-index: 0;
   top: calc(var(--hud) * 2.5);
   left: var(--gutter);
   margin: 0;
@@ -405,6 +408,30 @@
 .day__clock i {
   font-style: normal;
   color: var(--color-calango);
+}
+
+/* o sol passa por trás das legendas: no céu escuro (texto claro), o brilho atrás da legenda apagava o
+   texto. Uma placa da cor do céu, de borda esfumada, fica atrás do bloco: o cartão tapa o brilho como
+   um objeto na frente dele (sem brilho atrás, a placa tem a cor do céu e não aparece). No céu claro o
+   texto é escuro e o brilho não atrapalha: ali a placa não existe e não custa pintura */
+.day .card__label {
+  position: relative;
+}
+
+.day.is-dark .card__label::before {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  inset: -18px -26px;
+  background: var(--bg);
+  -webkit-mask-image:
+    linear-gradient(to right, transparent, #000 26px, #000 calc(100% - 26px), transparent),
+    linear-gradient(transparent, #000 18px, #000 calc(100% - 18px), transparent);
+  -webkit-mask-composite: source-in;
+  mask-image:
+    linear-gradient(to right, transparent, #000 26px, #000 calc(100% - 26px), transparent),
+    linear-gradient(transparent, #000 18px, #000 calc(100% - 18px), transparent);
+  mask-composite: intersect;
 }
 
 .day__track {

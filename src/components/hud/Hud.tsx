@@ -2,7 +2,8 @@ import { useEffect, useRef, useState } from 'react';
 import { CALANGO_SILHOUETTE, CALANGO_VIEWBOX } from '../../assets/calango';
 import { audio } from '../../lib/audio';
 import { getLenis, gsap, scrollToTarget } from '../../lib/scroll';
-import { useExperience } from '../../lib/store';
+import { experience, useExperience } from '../../lib/store';
+import { ACERVO } from '../piece/PieceSheet';
 import { charsOf, Resolve, runTo } from '../type/Resolve';
 import './hud.css';
 
@@ -13,6 +14,8 @@ const INDEX = [
   { n: '02', label: 'Reforços', target: '#sala-reforcos' },
   { n: '03', label: 'Confrontos', target: '#sala-confrontos' },
   { n: '04', label: 'Identidade', target: '#sala-identidade' },
+  // atalho para o acervo inteiro: abre a ficha da primeira peça, e dali as setas percorrem todas
+  { n: '··', label: `Todas as peças · ${ACERVO.length}`, target: 'acervo' },
   { n: '··', label: 'Sobre', target: '#sobre' },
   { n: '··', label: 'Vamos trabalhar juntos', target: '#contato' },
 ];
@@ -78,6 +81,7 @@ export function Hud() {
   const room = useExperience((s) => s.room);
   const sheet = useExperience((s) => s.sheet);
   const [open, setOpen] = useState(false);
+  const menuRef = useRef<HTMLButtonElement>(null);
   const pctRef = useRef<HTMLSpanElement>(null);
   const railRef = useRef<HTMLSpanElement>(null);
 
@@ -109,7 +113,11 @@ export function Hud() {
 
   const go = (target: string) => {
     setOpen(false);
-    window.setTimeout(() => scrollToTarget(target, -20), 60);
+    if (target === 'acervo') {
+      // a ficha devolve o foco a quem a abriu: que seja o botão do índice, que continua na tela
+      menuRef.current?.focus();
+      experience.set({ sheet: ACERVO[0].id });
+    } else window.setTimeout(() => scrollToTarget(target, -20), 60);
   };
 
   return (
@@ -125,7 +133,7 @@ export function Hud() {
         </a>
         <div className="hud__right">
           <SoundToggle />
-          <button type="button" className="hud__menu" onClick={() => setOpen((o) => !o)} aria-expanded={open} aria-controls="hud-index">
+          <button ref={menuRef} type="button" className="hud__menu" onClick={() => setOpen((o) => !o)} aria-expanded={open} aria-controls="hud-index">
             {open ? 'Fechar' : 'Índice'}
           </button>
         </div>
@@ -142,7 +150,7 @@ export function Hud() {
         </span>
       </header>
 
-      <nav id="hud-index" className={`index ${open ? 'is-open' : ''}`} aria-label="Índice da exposição" aria-hidden={!open} inert={!open}>
+      <nav id="hud-index" className={`index ${open ? 'is-open' : ''}`} aria-label="Índice da exposição" aria-hidden={!open} inert={!open} data-lenis-prevent>
         <p className="index__k t-mono">Índice da exposição</p>
         <ol>
           {INDEX.map((item) => (

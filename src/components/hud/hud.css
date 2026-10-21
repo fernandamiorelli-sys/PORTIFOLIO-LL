@@ -17,6 +17,34 @@
   opacity: 0;
 }
 
+/* sombra discreta atrás dos textos fixos: um escuro do tamanho de cada texto, com a borda em degradê.
+   O que passa embaixo (foto, parágrafo) não briga mais com eles, e o resto da tela fica como está.
+   Com o escuro embaixo, o texto fica branco sem o difference (que anularia a sombra) */
+.hud__brand,
+.hud__right,
+.hud__room,
+.hud__meta {
+  mix-blend-mode: normal;
+}
+
+.hud__brand::before,
+.hud__right::before,
+.hud__room::before,
+.hud__meta::before {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  inset: -13px -20px;
+  border-radius: 14px;
+  background: rgba(7, 8, 7, 0.84);
+  filter: blur(9px);
+  pointer-events: none;
+}
+
+.hud__room:empty::before {
+  display: none;
+}
+
 @keyframes hud-in {
   from {
     opacity: 0;
@@ -125,9 +153,13 @@
   position: fixed;
   inset: 0;
   z-index: 55;
+  /* centrado quando cabe (as linhas 1fr dividem a sobra); quando passa da tela, num celular baixo, as
+     sobras vão a zero: a lista começa do alto e rola por dentro, sem cortar o título */
   display: grid;
-  align-content: center;
+  grid-template-rows: 1fr auto auto 1fr;
   padding: 12vh var(--gutter);
+  overflow-y: auto;
+  overscroll-behavior: contain;
   background: color-mix(in oklab, var(--color-breu) 94%, transparent);
   backdrop-filter: blur(14px);
   color: var(--color-osso);
@@ -145,11 +177,13 @@
 }
 
 .index__k {
+  grid-row: 2;
   margin: 0 0 3vh;
   color: var(--color-calango);
 }
 
 .index ol {
+  grid-row: 3;
   list-style: none;
   margin: 0;
   padding: 0;
@@ -186,6 +220,12 @@
 }
 
 @media (max-width: 760px) {
+  .hud__brand::before,
+  .hud__right::before,
+  .hud__room::before {
+    inset: -10px -15px;
+    filter: blur(7px);
+  }
   .hud__brand span {
     display: none;
   }

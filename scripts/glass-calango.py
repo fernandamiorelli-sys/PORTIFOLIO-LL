@@ -11,11 +11,14 @@ própria definição da superfície (vidro não perdoa faceta).
 
 Saída: public/media/3d/calango-vidro.bin
   'CLGV' · u32 tamanho do cabeçalho · cabeçalho JSON · posições f32×3 · normais i8×4 · índices u16/u32
+     + calango-vidro.bin.gz (o mesmo arquivo em gzip: é o que o site baixa, e descomprime no navegador)
      + public/media/3d/calango-vidro-campo.png (mapa de campo para as normais por pixel)
+     + calango-vidro-campo.webp (o mesmo mapa em WebP sem perda: é o que o site baixa)
 Coordenadas do modelo: altura do logo = 1, y para cima, origem no centro do viewBox, frente em +z.
 
 Uso: python3 scripts/glass-calango.py   (precisa de numpy, scipy, scikit-image, numba, fast-simplification, Pillow)
 """
+import gzip
 import json
 import math
 import os
@@ -301,6 +304,10 @@ def field_png(xs, ys, d2, ds):
     path = OUT.replace('.bin', '-campo.png')
     Image.fromarray(img).save(path, optimize=True)
     print(f'{path}: {os.path.getsize(path)/1024:.0f} KB ({W*2}x{H})', file=sys.stderr)
+    # o site baixa o WebP sem perda (os mesmos valores, ~35% menor); o PNG fica para navegador sem WebP
+    webp = path.replace('.png', '.webp')
+    Image.fromarray(img).save(webp, 'WEBP', lossless=True, quality=100, method=6, exact=True)
+    print(f'{webp}: {os.path.getsize(webp)/1024:.0f} KB', file=sys.stderr)
     return {'size': [W, H], 'min': [float(xs[0]), float(ys[-1])], 'max': [float(xs[-1]), float(ys[0])]}
 
 
@@ -393,6 +400,10 @@ def main():
         f.write(nq4.tobytes())
         f.write(idx.tobytes())
     print(f'{OUT}: {os.path.getsize(OUT)/1024:.0f} KB em {time.time()-t0:.1f}s', file=sys.stderr)
+    # o site baixa a versão em gzip (a Vercel não comprime .bin) e descomprime no navegador
+    with open(OUT, 'rb') as f, gzip.GzipFile(OUT + '.gz', 'wb', compresslevel=9, mtime=0) as g:
+        g.write(f.read())
+    print(f'{OUT}.gz: {os.path.getsize(OUT + ".gz")/1024:.0f} KB', file=sys.stderr)
     if os.environ.get('DEBUG_NPZ'):
         np.savez(os.environ['DEBUG_NPZ'], verts=pos, normals=nrm, faces=faces)
 

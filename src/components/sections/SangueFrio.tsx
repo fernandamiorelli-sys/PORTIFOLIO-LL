@@ -29,6 +29,8 @@ function applySky(sky: Sky, sun: HTMLElement | null, day: HTMLElement) {
     // o texto escolhe o tom de maior contraste com o céu (o ponto de virada fica perto de L = 0,16)
     el.style.setProperty('--fg', fg);
   }
+  // céu escuro: a legenda clara ganha a placa que tapa o brilho do sol atrás dela
+  day.classList.toggle('is-dark', fg === OSSO);
   if (sun) {
     sun.style.setProperty('--sun', sky.sun);
     sun.style.opacity = String(sky.alpha);
@@ -42,6 +44,7 @@ function resetSky(day: HTMLElement) {
     el?.style.removeProperty('--bg');
     el?.style.removeProperty('--fg');
   }
+  day.classList.remove('is-dark');
 }
 
 const FPS = 24;
@@ -104,6 +107,18 @@ function Screening({ piece }: { piece: Piece }) {
       { threshold: 0.2 },
     );
     io.observe(v);
+    // o filme só começa a baixar quando a sala está a uma tela de distância (antes disso, só o pôster)
+    const near = new IntersectionObserver(
+      ([e]) => {
+        if (!e.isIntersecting) return;
+        near.disconnect();
+        v.preload = 'auto';
+        // se o play já foi pedido (a sala já na tela), ele mesmo baixa; senão, começa a baixar agora
+        if (v.paused && v.readyState === 0) v.load();
+      },
+      { rootMargin: '100% 0px' },
+    );
+    near.observe(v);
     const onEnd = () => {
       if (!v.muted) {
         v.muted = true;
@@ -119,6 +134,7 @@ function Screening({ piece }: { piece: Piece }) {
     onMeta();
     return () => {
       io.disconnect();
+      near.disconnect();
       cancelAnimationFrame(raf);
       v.removeEventListener('ended', onEnd);
       v.removeEventListener('loadedmetadata', onMeta);
@@ -182,7 +198,7 @@ function Screening({ piece }: { piece: Piece }) {
 
       <div className="screening__grid">
         <div className="screening__player">
-          <video ref={videoRef} poster={`${piece.video!.base}-poster.jpg`} muted loop playsInline preload="metadata" aria-label={piece.alt}>
+          <video ref={videoRef} poster={`${piece.video!.base}-poster.jpg`} muted loop playsInline preload="none" aria-label={piece.alt}>
             <source src={`${piece.video!.base}.webm`} type="video/webm" />
             <source src={`${piece.video!.base}.mp4`} type="video/mp4" />
           </video>

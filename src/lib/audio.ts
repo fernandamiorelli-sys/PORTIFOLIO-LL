@@ -52,11 +52,12 @@ class AudioDirector {
         el.currentTime = AUDIO.loopFrom;
         void el.play().catch(() => {});
       });
-      // se nada responder em 12 s, a abertura segue no relógio virtual
+      // a entrada não espera mais que 5 s pela trilha: numa conexão lenta, a abertura segue no relógio
+      // virtual e a música entra quando chegar (no ponto em que a abertura estiver)
       window.setTimeout(() => {
         if (!settled && el.readyState >= 2) can(true);
         settle();
-      }, 12000);
+      }, 5000);
       el.load();
       this.el = el;
     });
@@ -119,6 +120,13 @@ class AudioDirector {
     ctx.resume().catch(() => {});
     playing.then(
       () => {
+        // a música chegou atrasada (conexão lenta ou gesto recusado): entra no ponto em que a abertura já
+        // está, sem voltar no tempo; se esse ponto passou do fim da faixa, recomeça da virada, como no laço
+        const target = (performance.now() - this.virtualStart) / 1000;
+        if (this.usingVirtual && target - el.currentTime > 0.25) {
+          const end = Number.isFinite(el.duration) ? el.duration : Infinity;
+          el.currentTime = target < end - 1 ? target : AUDIO.loopFrom;
+        }
         this.usingVirtual = false;
         // tocando, mas com o contexto ainda suspenso, não sai som: espera mais um gesto para retomá-lo
         if (ctx.state === 'running') this.stopRetry();

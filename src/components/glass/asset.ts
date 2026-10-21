@@ -1,7 +1,8 @@
 import * as THREE from 'three';
 
 // Calango de vidro (gerado por scripts/glass-calango.py): malha do logo extrudado e o mapa de campo
-// que dá a normal exata de cada pixel (as metades do PNG viram duas texturas).
+// que dá a normal exata de cada pixel (as metades do PNG viram duas texturas). O site baixa as versões
+// menores e sem perda (a malha em gzip, o mapa em WebP); navegador antigo cai no .bin e no PNG.
 
 export interface GlassHeader {
   version: number;
@@ -41,6 +42,18 @@ function loadImage(src: string) {
   });
 }
 
+/** a malha: o .bin em gzip, descomprimido aqui (a Vercel não comprime .bin); sem DecompressionStream,
+ *  o .bin cru. Se algum servidor no caminho já tiver descomprimido, os bytes chegam crus e servem igual */
+async function loadMesh() {
+  const gz = typeof DecompressionStream !== 'undefined';
+  const r = await fetch(`${BASE}.bin${gz ? '.gz' : ''}?v=${VERSION}`);
+  if (!r.ok) throw new Error(`calango-vidro.bin: ${r.status}`);
+  const buf = await r.arrayBuffer();
+  const head = new Uint8Array(buf, 0, 2);
+  if (head[0] !== 0x1f || head[1] !== 0x8b) return buf;
+  return new Response(new Blob([buf]).stream().pipeThrough(new DecompressionStream('gzip'))).arrayBuffer();
+}
+
 function half(img: HTMLImageElement, right: boolean) {
   const w = Math.floor(img.naturalWidth / 2);
   const h = img.naturalHeight;
@@ -64,11 +77,9 @@ export function loadGlassCalango(): Promise<GlassAsset> {
   if (cache) return cache;
   cache = (async () => {
     const [buf, img] = await Promise.all([
-      fetch(`${BASE}.bin?v=${VERSION}`).then((r) => {
-        if (!r.ok) throw new Error(`calango-vidro.bin: ${r.status}`);
-        return r.arrayBuffer();
-      }),
-      loadImage(`${BASE}-campo.png?v=${VERSION}`),
+      loadMesh(),
+      // o WebP sem perda tem os mesmos valores do PNG; o PNG só para navegador sem WebP
+      loadImage(`${BASE}-campo.webp?v=${VERSION}`).catch(() => loadImage(`${BASE}-campo.png?v=${VERSION}`)),
     ]);
     const magic = new TextDecoder().decode(new Uint8Array(buf, 0, 4));
     if (magic !== 'CLGV') throw new Error('calango-vidro.bin inválido');
