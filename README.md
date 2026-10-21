@@ -35,6 +35,24 @@ O logo minimalista do calango, extrudado como uma peça grossa de vidro, no esti
 - O data overlay projeta da peça 3D o focinho, o olho, as patas, a cauda e a espinha a cada leitura (12 por segundo); com o cursor em cima, trava no alvo e mira a parte do desenho mais perto do ponteiro.
 - Num aparelho que não segura o ritmo, só a peça passa a renderizar com menos pixels; o resto da página não muda.
 
+## O fundo topográfico
+
+Das salas em diante, o preto chapado ganha curvas de nível sutis, como um mapa topográfico que se revolve devagar (`src/components/topo/`):
+
+- O relevo é um campo de ruído simplex com os gradientes girando (flow noise: as ilhas encolhem e se refazem no lugar, sem deslizar), andando menos de 2 px por segundo. A cada cinco curvas, uma mestra, um pouco mais firme, como nos mapas. A tinta é o osso do site nas baixadas e puxa para o verde do calango nos altos, sempre com pouquíssimo contraste. Grão por pixel da tela e dither contra banding no fim.
+- Duas passadas: o relevo é calculado numa grade quatro vezes menor (o campo é suave) e as linhas são desenhadas na resolução da tela a partir dele. Isso custa cerca de um terço de calcular tudo na resolução cheia.
+- Para não pesar: desenha no máximo 24 vezes por segundo, para enquanto a página rola (a GPU fica toda para a rolagem), com a aba oculta, com a ficha ou o índice abertos e quando não está à vista; sai enquanto o céu da galeria do dia está claro. Num aparelho que não segura o ritmo, passa a desenhar menos pixels. Com "reduzir movimento", fica parado num quadro só.
+- Os shaders seguem a skill `shader-art-coding` (em `.claude/skills/`): `shaders/field.glsl` (o relevo) e `shaders/lines.glsl` (linhas, cor, grão) usam a biblioteca dela pelo nome. As constantes no alto de cada um controlam escala, intervalo entre curvas, cor, força das linhas, grão e movimento. Depois de mexer, gere e confira as versões que o site usa:
+
+```bash
+cd .claude/skills/shader-art-coding
+python3 scripts/glsl_tools.py bundle ../../../src/components/topo/shaders/field.glsl -o ../../../src/components/topo/shaders/field.bundle.glsl
+python3 scripts/glsl_tools.py bundle ../../../src/components/topo/shaders/lines.glsl -o ../../../src/components/topo/shaders/lines.bundle.glsl
+python3 scripts/glsl_tools.py check ../../../src/components/topo/shaders/*.bundle.glsl
+```
+
+No console (só no `npm run dev`): `__topo.debug(5)` mostra só as linhas, em contraste cheio; `__topo.debug(0)` volta ao normal.
+
 ## A tipografia
 
 Três vozes, todas SIL Open Font License:
@@ -82,4 +100,4 @@ Para publicar do zero em outra conta:
 
 ## Técnica
 
-React + Vite + TypeScript · GSAP (ScrollTrigger) · Lenis · three.js (shaders próprios no calango de vidro) · Web Audio API · WebGL puro na title screen · componentes do [21st.dev](https://21st.dev) como base (galeria com cartões girando).
+React + Vite + TypeScript · GSAP (ScrollTrigger) · Lenis · three.js (shaders próprios no calango de vidro) · Web Audio API · WebGL puro na title screen e no fundo topográfico · componentes do [21st.dev](https://21st.dev) como base (galeria com cartões girando).

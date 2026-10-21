@@ -7,6 +7,7 @@ import { Confrontos, Identidade, Reforcos } from './components/sections/Rooms';
 import { About, Closing } from './components/sections/Outro';
 import { PieceSheet } from './components/piece/PieceSheet';
 import { Hud } from './components/hud/Hud';
+import { Topo } from './components/topo/Topo';
 import { Cursor } from './components/hud/Cursor';
 import { Grain } from './components/hud/Grain';
 import { initScroll, lockScroll, unlockScroll } from './lib/scroll';
@@ -29,6 +30,7 @@ export default function App() {
   return (
     <>
       <div className="backdrop" aria-hidden="true" />
+      {live ? <Topo /> : null}
 
       <main className="site" aria-hidden={!live} inert={!live}>
         <Hero />

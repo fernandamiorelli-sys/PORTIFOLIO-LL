@@ -1,0 +1,13 @@
+/* entre o fundo chapado (.backdrop, z 0) e o conteúdo (main, z 2): cobre o preto e não recebe cliques.
+   Na altura da tela grande (lvh): a barra do navegador no celular não muda o tamanho nem obriga a redesenhar */
+.topo {
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: 1;
+  width: 100%;
+  height: 100vh;
+  height: 100lvh;
+  opacity: 0;
+  pointer-events: none;
+}
