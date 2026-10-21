@@ -9,7 +9,6 @@ import { PieceSheet } from './components/piece/PieceSheet';
 import { Hud } from './components/hud/Hud';
 import { Cursor } from './components/hud/Cursor';
 import { Grain } from './components/hud/Grain';
-import { ScanOverlay } from './components/hud/ScanOverlay';
 import { initScroll, lockScroll, unlockScroll } from './lib/scroll';
 import { useExperience } from './lib/store';
 
@@ -44,7 +43,6 @@ export default function App() {
 
       <PieceSheet />
       {live ? <Hud /> : null}
-      {live ? <ScanOverlay /> : null}
       <Cursor />
       <Grain />
       <Intro onEnterSite={enterSite} />

@@ -24,8 +24,6 @@ Exposição digital da direção de arte de **Lucas Lopes** para o **Abigos FR**
 
 Cada peça abre uma **ficha da obra**: o processo criativo como fala em off do diretor e as notas de produção. Em *Epiderme* e *Rural* há uma lupa para inspecionar a imperfeição; em *Gume*, um comparador entre o escudo original e o novo.
 
-Quando o visitante para de rolar sobre um trecho novo, a página é "lida": duas a cinco coisas na tela (fotos, pôsteres, títulos, o painel, o contrato) ganham caixa de rastreamento, nome, coordenadas, pontos rastreados e setas tracejadas. A leitura fica presa aos elementos até o visitante rolar para baixo (ou até eles saírem da tela) (`src/components/hud/ScanOverlay.tsx`).
-
 ## O calango de vidro
 
 O logo minimalista do calango, extrudado como uma peça grossa de vidro, no estilo das letras de vidro:
@@ -60,7 +58,7 @@ Atalhos de desenvolvimento (só no `npm run dev`):
 
 - `?direto` pula a abertura e vai direto ao site.
 
-No console do navegador (também só no `npm run dev`): `__glass.freeze(1.2)` congela o calango num ângulo, em radianos (`__glass.freeze(null)` solta), e `__scan.fire()` faz a próxima parada gerar uma leitura mesmo sem a página ter andado.
+No console do navegador (também só no `npm run dev`): `__glass.freeze(1.2)` congela o calango num ângulo, em radianos (`__glass.freeze(null)` solta).
 
 ## Publicar na Vercel
 
