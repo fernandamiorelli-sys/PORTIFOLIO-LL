@@ -18,32 +18,39 @@ const FLASH_POOL = [...new Set(PIECES.filter((p) => hasMedia(p.media) && !p.pend
 const PHRASES = MANIFESTO.phrases;
 const TRUTH = PHRASES.length - 1;
 /** segundos de cada frase do que não somos; a última fica um pouco mais antes de soltar a página */
-const STEP = 2;
-const TRUTH_HOLD = 2.8;
+const STEP = 2.5;
+const TRUTH_HOLD = 3.3;
 const DURATION = PHRASES.map((_, i) => (i < TRUTH ? STEP : TRUTH_HOLD));
 /** o que não somos fica degradado; o "não", no bitmap mais grosso */
 const NOT_REST: Level = 50;
 const mark = (p: string) => p.replace(/^(não)\b/i, '[[$1]]');
 
-// onde o calango de vidro fica: pousado no fim da frase da vez (cada frase termina num ponto,
-// `text.ends`, fração da largura), invadindo as últimas letras; troca de frase, ele desliza junto.
-// No texto do clube, vai para a direita e diminui. Na tela em pé a frase ocupa a largura toda: o
-// calango fica logo abaixo dela (`text.bottom`, fração da altura), sem cobrir letra, e o quadro de
-// dados não cruza o texto
-interface TextBox {
-  ends: number[];
-  bottom: number;
-}
-const placeOf = (tall: boolean, about: boolean, index: number, text: TextBox): GlassPlace => {
+const clamp = (v: number, a: number, b: number) => Math.min(b, Math.max(a, v));
+
+/**
+ * Onde o calango de vidro fica: um lugar só, do começo ao fim (ele não se move, só gira). Na tela
+ * deitada, invade o fim das frases (que terminam, em média, em `end`, fração da largura) e cabe entre
+ * o cabeçalho e o texto do clube. Na tela em pé, fica embaixo da frase e do texto do clube (que
+ * aparece no alto). As medidas chegam em px do palco.
+ */
+function placeOf(
+  tall: boolean,
+  m: { h: number; end: number; header: number; phrase: number; aboutTop: number; aboutBottom: number; rail: number },
+): GlassPlace {
+  // folga para as legendas do data overlay, acima e abaixo da caixa da peça
+  const above = 34;
+  const below = 30;
   if (tall) {
-    if (about) return { x: 0.74, y: 0.325, h: 0.18 };
-    const top = text.bottom + 0.025;
-    const h = Math.min(0.46, Math.max(0.3, 0.9 - top));
-    return { x: 0.6, y: top + h / 2, h };
+    const top = Math.max(m.phrase, m.aboutBottom) + above;
+    const bottom = m.rail - below;
+    const h = clamp((bottom - top) / m.h, 0.2, 0.5);
+    return { x: 0.58, y: (top + bottom) / 2 / m.h, h };
   }
-  if (about) return { x: 0.8, y: 0.445, h: 0.55 };
-  return { x: Math.min(0.62, Math.max(0.4, (text.ends[index] ?? 0.5) + 0.03)), y: 0.56, h: 0.74 };
-};
+  const top = m.header + above;
+  const bottom = m.aboutTop - below;
+  const h = clamp((bottom - top) / m.h, 0.3, 0.8);
+  return { x: clamp(m.end + 0.04, 0.42, 0.62), y: (top + bottom) / 2 / m.h, h };
+}
 
 /** a sequência já foi vista nesta visita (a trava não volta) */
 let seen = false;
@@ -102,7 +109,7 @@ export function Manifesto() {
   const [done, setDone] = useState(seen);
   const [about, setAbout] = useState(false);
   const [tall, setTall] = useState(() => window.matchMedia('(max-aspect-ratio: 1/1)').matches);
-  const [text, setText] = useState<TextBox>({ ends: [], bottom: 0.48 });
+  const [place, setPlace] = useState<GlassPlace>(() => (tall ? { x: 0.58, y: 0.7, h: 0.4 } : { x: 0.53, y: 0.45, h: 0.54 }));
 
   useEffect(() => {
     const mq = window.matchMedia('(max-aspect-ratio: 1/1)');
@@ -111,28 +118,43 @@ export function Manifesto() {
     return () => mq.removeEventListener('change', on);
   }, []);
 
-  // onde as frases grandes terminam (o calango se encaixa ali em qualquer tela). A altura vem do
-  // layout (offsetTop), que não sente o transform do estado do clube no celular
+  // o lugar do calango sai das medidas do palco (frases, cabeçalho, texto do clube, trilho) e só muda
+  // quando a tela muda de tamanho. As alturas vêm do layout (offsetTop), que não sente transform
   useEffect(() => {
     const section = sectionRef.current!;
     const sticky = section.querySelector<HTMLElement>('.manifesto__sticky')!;
     const stage = section.querySelector<HTMLElement>('.manifesto__stage')!;
+    const bar = section.querySelector<HTMLElement>('.manifesto__bar')!;
+    const aboutEl = section.querySelector<HTMLElement>('.manifesto__about')!;
+    const rail = section.querySelector<HTMLElement>('.manifesto__rail')!;
     const measure = () => {
       const box = sticky.getBoundingClientRect();
       if (!box.width || !box.height) return;
-      const round = (v: number) => Math.round(v * 100) / 100;
-      const ends: number[] = [];
-      let bottom = 0;
+      let ends = 0;
+      let n = 0;
+      let phrase = 0;
       section.querySelectorAll<HTMLElement>('.mf-big').forEach((p) => {
-        // as linhas da frase visível (letra a letra ou, com movimento reduzido, texto corrido)
+        // as linhas da frase (letra a letra ou, com movimento reduzido, texto corrido)
         let r = 0;
         const line = p.querySelector('span[aria-hidden]');
         for (const rect of line?.getClientRects() ?? []) r = Math.max(r, rect.right);
-        ends.push(round((r - box.left) / box.width));
-        bottom = Math.max(bottom, stage.offsetTop + p.offsetTop + p.offsetHeight);
+        if (r) {
+          ends += (r - box.left) / box.width;
+          n += 1;
+        }
+        phrase = Math.max(phrase, stage.offsetTop + p.offsetTop + p.offsetHeight);
       });
-      const bot = round(bottom / box.height);
-      setText((t) => (t.bottom === bot && t.ends.join() === ends.join() ? t : { ends, bottom: bot }));
+      const next = placeOf(window.matchMedia('(max-aspect-ratio: 1/1)').matches, {
+        h: box.height,
+        end: n ? ends / n : 0.5,
+        header: bar.offsetTop + bar.offsetHeight,
+        phrase,
+        aboutTop: aboutEl.offsetTop,
+        aboutBottom: aboutEl.offsetTop + aboutEl.offsetHeight,
+        rail: rail.offsetTop,
+      });
+      const round = (v: number) => Math.round(v * 1000) / 1000;
+      setPlace((p) => (round(p.x) === round(next.x) && round(p.y) === round(next.y) && round(p.h) === round(next.h) ? p : next));
     };
     const ro = new ResizeObserver(measure);
     ro.observe(sticky);
@@ -224,7 +246,6 @@ export function Manifesto() {
   }, [index, done]);
 
   const truth = index === TRUTH;
-  const place = placeOf(tall, about, index, text);
 
   return (
     <section
@@ -282,7 +303,7 @@ export function Manifesto() {
           ))}
         </div>
 
-        <GlassCalango place={place} compact={about || tall} />
+        <GlassCalango place={place} compact={tall} />
 
         <div ref={railRef} className="manifesto__rail" aria-hidden="true">
           <div className="manifesto__rail-segs">

@@ -1,5 +1,5 @@
-/* a leitura ocasional da página: só existe (e só ocupa memória) durante o pouco mais de um segundo
-   em que está na tela; abaixo do HUD e do índice */
+/* a leitura da página: o canvas só existe (e só ocupa memória) enquanto há uma leitura na tela;
+   abaixo do HUD e do índice */
 .scan {
   position: fixed;
   inset: 0;

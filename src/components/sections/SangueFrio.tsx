@@ -281,7 +281,13 @@ function DayGallery({ pieces }: { pieces: Piece[] }) {
       outer.style.height = `${travel() + window.innerHeight}px`;
     };
     size();
-    const ro = new ResizeObserver(size);
+    // a altura muda no quadro seguinte: mexer nela dentro do aviso do ResizeObserver muda a página
+    // inteira no meio da entrega dos avisos (o navegador acusa um laço)
+    let sizing = 0;
+    const ro = new ResizeObserver(() => {
+      cancelAnimationFrame(sizing);
+      sizing = requestAnimationFrame(size);
+    });
     ro.observe(track);
 
     let centers: number[] = [];
@@ -370,6 +376,7 @@ function DayGallery({ pieces }: { pieces: Piece[] }) {
 
     return () => {
       ro.disconnect();
+      cancelAnimationFrame(sizing);
       ctx.revert();
       resetSky(outer);
     };

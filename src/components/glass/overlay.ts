@@ -1,7 +1,8 @@
-import { CALANGO_SILHOUETTE, CALANGO_SPINE } from '../../assets/calango';
+import { CALANGO_SPINE } from '../../assets/calango';
 import { arrowCurve, box, label, link, marker, prepare, rng } from '../../lib/dataOverlay';
 import type { GlassHeader } from './asset';
 import type { GlassRenderer } from './glassRenderer';
+import { modelPoint, outlineModel } from './outline';
 
 // O data overlay sobre o calango de vidro: a máquina lendo a forma do logo minimalista.
 // Pontos do desenho (focinho, olho, patas, ponta da cauda, espinha) são projetados da peça 3D a cada
@@ -40,24 +41,13 @@ export class GlassOverlay {
 
   constructor(header: GlassHeader) {
     this.ctx = this.canvas.getContext('2d')!;
-    const [cx, cy] = header.center;
-    const s = header.scale;
-    const z = header.halfDepth;
-    const toModel = (x: number, y: number, zz = z) => [(x - cx) * s, -(y - cy) * s, zz];
     // contorno amostrado (frente e verso), para a caixa justa em volta da peça
-    const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-    path.setAttribute('d', CALANGO_SILHOUETTE);
-    const len = path.getTotalLength();
-    const outline: number[] = [];
     const N = 72;
-    for (let i = 0; i < N; i++) {
-      const p = path.getPointAtLength((i / N) * len);
-      outline.push(...toModel(p.x, p.y, z), ...toModel(p.x, p.y, -z));
-    }
+    const outline = outlineModel(header, N);
     this.nOutline = N * 2;
-    const spine = CALANGO_SPINE.flatMap(([x, y]) => toModel(x, y));
+    const spine = CALANGO_SPINE.flatMap(([x, y]) => modelPoint(header, x, y));
     this.nSpine = CALANGO_SPINE.length;
-    const feats = FEATURES.flatMap((f) => toModel(...f.at));
+    const feats = FEATURES.flatMap((f) => modelPoint(header, ...f.at));
     this.model = new Float32Array([...outline, ...spine, ...feats]);
     this.scr = new Float32Array((this.model.length / 3) * 2);
   }
@@ -76,10 +66,16 @@ export class GlassOverlay {
     this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
   }
 
-  /** Uma leitura nova a cada 1/12 s; entre elas, o desenho fica parado (o salto é o efeito).
-   *  `still` (movimento reduzido): sem tremor e sem tracejado correndo. */
-  update(now: number, glass: GlassRenderer, opts: { compact: boolean; alpha: number; force?: boolean; still?: boolean }) {
-    if (!opts.force && now - this.last < 1000 / 12) return;
+  /** Uma leitura nova a cada 1/12 s (1/30 com o cursor em cima); entre elas, o desenho fica parado
+   *  (o salto é o efeito). `still` (movimento reduzido): sem tremor e sem tracejado correndo.
+   *  `lock`: o cursor sobre a peça (px do palco) e o quanto a trava já entrou (0..1). */
+  update(
+    now: number,
+    glass: GlassRenderer,
+    opts: { compact: boolean; alpha: number; force?: boolean; still?: boolean; lock?: { x: number; y: number; amount: number } },
+  ) {
+    const locked = (opts.lock?.amount ?? 0) > 0.02;
+    if (!opts.force && now - this.last < 1000 / (locked ? 30 : 12)) return;
     this.last = now;
     this.seed = (this.seed * 1103515245 + 12345) >>> 0;
     const r = rng(opts.still ? 7 : this.seed);
@@ -105,8 +101,8 @@ export class GlassOverlay {
     const bw = x1 - x0;
     const bh = y1 - y0;
     box(ctx, x0 - 10 + j(), y0 - 10 + j(), bw + 20, bh + 20, {
-      ticks: 14,
-      top: opts.compact ? 'CALANGO_MIN' : 'ESPÉCIME 01 · CALANGO_MIN',
+      ticks: locked ? 22 : 14,
+      top: locked ? (opts.compact ? 'ALVO TRAVADO' : 'ESPÉCIME 01 · ALVO TRAVADO') : opts.compact ? 'CALANGO_MIN' : 'ESPÉCIME 01 · CALANGO_MIN',
       bottom: `W ${pad3(bw)} · H ${pad3(bh)}`,
     });
 
@@ -172,6 +168,38 @@ export class GlassOverlay {
       arrowCurve(ctx, hx0, hy1, px, py, 0.38, { arrows: 2, dim: true, phase, dash: [3, 5] });
       const [ex, ey] = ft(1);
       link(ctx, ex, ey, x1 + 10, ey);
+    }
+
+    // o cursor em cima: mira no ponteiro e uma seta até a parte do desenho mais perto dele
+    if (locked && opts.lock) {
+      const { x, y, amount } = opts.lock;
+      ctx.globalAlpha = opts.alpha * amount;
+      ctx.beginPath();
+      ctx.moveTo(x - 16, y + 0.5);
+      ctx.lineTo(x - 6, y + 0.5);
+      ctx.moveTo(x + 6, y + 0.5);
+      ctx.lineTo(x + 16, y + 0.5);
+      ctx.moveTo(x + 0.5, y - 16);
+      ctx.lineTo(x + 0.5, y - 6);
+      ctx.moveTo(x + 0.5, y + 6);
+      ctx.lineTo(x + 0.5, y + 16);
+      ctx.stroke();
+      let best = 0;
+      let bd = Infinity;
+      FEATURES.forEach((_, k) => {
+        const [fx, fy] = ft(k);
+        const d = (fx - x) ** 2 + (fy - y) ** 2;
+        if (d < bd) {
+          bd = d;
+          best = k;
+        }
+      });
+      const [fx, fy] = ft(best);
+      arrowCurve(ctx, x, y, fx, fy, 0.25, { arrows: 1, phase });
+      marker(ctx, fx, fy, 13);
+      const right = x + 150 < this.w;
+      label(ctx, right ? x + 20 : x - 20, y - 8, `MIRA · ${FEATURES[best].name.toUpperCase()} ${pad3(Math.sqrt(bd))} PX`, right ? 'left' : 'right');
+      ctx.globalAlpha = opts.alpha;
     }
 
     // ficha da leitura, ao lado da caixa

@@ -13,3 +13,10 @@
   height: 100%;
   display: block;
 }
+
+/* arrastando o calango, o texto do manifesto não é selecionado */
+html.is-spinning,
+html.is-spinning * {
+  -webkit-user-select: none;
+  user-select: none;
+}

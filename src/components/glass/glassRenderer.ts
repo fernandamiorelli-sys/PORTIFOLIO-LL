@@ -75,6 +75,8 @@ uniform float uThick;
 uniform float uAbsorb;
 uniform float uReveal;
 uniform vec2 uDepthRange;
+uniform vec3 uLight;
+uniform float uLightAmt;
 
 vec4 backAt(vec2 uv) {
   vec4 b = texture2D(uBack, uv);
@@ -114,6 +116,9 @@ vec3 studio(vec3 d) {
   c += vec3(0.6) * rectLight(d, normalize(vec3(-1.0, 0.05, -0.10)), Y, vec2(0.45, 1.3), 0.25);
   c += vec3(3.8) * rectLight(d, normalize(vec3(0.0, 0.94, 0.33)), vec3(0.0, 0.0, -1.0), vec2(1.10, 0.10), 0.02);
   c += vec3(0.32, 0.85, 0.20) * 1.4 * rectLight(d, normalize(vec3(0.0, -0.92, 0.38)), vec3(0.0, 0.0, -1.0), vec2(1.30, 0.16), 0.12);
+  // com o cursor em cima, um softbox a mais acompanha o ponteiro: um brilho largo corre pela face
+  // e acende as quinas por onde passa
+  c += vec3(4.0) * uLightAmt * rectLight(d, uLight, Y, vec2(0.22, 0.22), 0.18);
   return c;
 }
 
@@ -192,57 +197,6 @@ export interface Placement {
   height: number;
 }
 
-const ease = (t: number) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
-const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
-
-// O giro, em quadros-chave (segundo, y, x, z em rad), como a letra de vidro da referência: balança
-// de um lado para o outro, encara a câmera, dá uma volta inteira, deita para trás e volta. O laço
-// tem 14 s e cada volta soma 2π em y (a peça nunca "desgira").
-const KEYS: [number, number, number, number][] = [
-  [0, -0.3, 0.06, 0.03],
-  [2.0, 0.35, -0.1, -0.04],
-  [3.6, -0.55, 0.16, 0.06],
-  [5.2, -0.2, 0.02, 0],
-  [7.4, 2.9, 0.3, -0.1],
-  [9.0, 6.0, 0.85, 0.12],
-  [10.6, 6.4, 0.55, -0.05],
-  [12.2, 5.75, 0.1, 0.02],
-];
-const LOOP = 14;
-const TAU = Math.PI * 2;
-
-/** quadro-chave k (qualquer inteiro: os de fora do laço repetem com o tempo e a volta somados) */
-function key(k: number) {
-  const n = KEYS.length;
-  const wrap = Math.floor(k / n);
-  const [t, y, x, z] = KEYS[k - wrap * n];
-  return [t + wrap * LOOP, y + wrap * TAU, x, z];
-}
-
-/** Hermite cúbica pelos quadros-chave (tangentes de Catmull-Rom com o tempo de cada trecho) */
-function tumble(t: number, out: { x: number; y: number; z: number }) {
-  const turns = Math.floor(t / LOOP);
-  const c = t - turns * LOOP;
-  let i = 0;
-  while (i < KEYS.length - 1 && KEYS[i + 1][0] <= c) i++;
-  const a = key(i - 1);
-  const b = key(i);
-  const d = key(i + 1);
-  const e = key(i + 2);
-  const h = d[0] - b[0];
-  const s = (c - b[0]) / h;
-  const s2 = s * s;
-  const s3 = s2 * s;
-  const v = (j: number) => {
-    const m0 = (d[j] - a[j]) / (d[0] - a[0]);
-    const m1 = (e[j] - b[j]) / (e[0] - b[0]);
-    return (2 * s3 - 3 * s2 + 1) * b[j] + (s3 - 2 * s2 + s) * h * m0 + (-2 * s3 + 3 * s2) * d[j] + (s3 - s2) * h * m1;
-  };
-  out.y = v(1) + turns * TAU;
-  out.x = v(2);
-  out.z = v(3);
-}
-
 export class GlassRenderer {
   readonly renderer: THREE.WebGLRenderer;
   readonly scene = new THREE.Scene();
@@ -256,15 +210,12 @@ export class GlassRenderer {
   readonly uniforms: Record<string, THREE.IUniform>;
   private w = 1;
   private h = 1;
-  private from: Placement = { cx: 0, cy: 0, height: 1 };
-  private to: Placement = { cx: 0, cy: 0, height: 1 };
-  private moveT0 = 0;
-  private moveDur = 1;
+  private at: Placement = { cx: 0, cy: 0, height: 1 };
   private _mv = new THREE.Matrix4();
   private _v = new THREE.Vector3();
+  private _n = new THREE.Vector3();
   /** rotação atual (rad), para o overlay escrever os números */
-  readonly rot = { x: 0, y: 0, z: 0 };
-  reduced = false;
+  readonly rot = { x: 0, y: 0 };
 
   constructor(
     readonly canvas: HTMLCanvasElement,
@@ -312,6 +263,8 @@ export class GlassRenderer {
       uAbsorb: { value: 0.25 },
       uReveal: { value: 1 },
       uDepthRange: { value: new THREE.Vector2(5, 2) },
+      uLight: { value: new THREE.Vector3(0, 0, 1) },
+      uLightAmt: { value: 0 },
     };
     const defines = this.floatBack ? {} : { BACK_ENCODED: 1 };
     const backMat = new THREE.ShaderMaterial({ vertexShader: VERT, fragmentShader: BACK_FRAG, uniforms: this.uniforms, defines, side: THREE.BackSide });
@@ -355,23 +308,9 @@ export class GlassRenderer {
     this.backRT.setSize(Math.round(buffer.x / Math.max(1, dpr)), Math.round(buffer.y / Math.max(1, dpr)));
   }
 
-  /** Muda o lugar do calango (com transição, a menos que `now` não seja dado). */
-  place(p: Placement, now?: number, dur = 1.3) {
-    if (now == null) {
-      this.from = { ...p };
-      this.to = { ...p };
-      this.moveT0 = -1e9;
-      return;
-    }
-    this.from = this.current(now);
-    this.to = { ...p };
-    this.moveT0 = now;
-    this.moveDur = dur;
-  }
-
-  private current(now: number): Placement {
-    const k = ease(Math.min(1, Math.max(0, (now - this.moveT0) / this.moveDur)));
-    return { cx: lerp(this.from.cx, this.to.cx, k), cy: lerp(this.from.cy, this.to.cy, k), height: lerp(this.from.height, this.to.height, k) };
+  /** O lugar do calango (só muda quando a tela muda de tamanho: a peça não anda). */
+  place(p: Placement) {
+    this.at = { ...p };
   }
 
   /** px CSS por unidade do mundo no plano z = 0 */
@@ -379,20 +318,19 @@ export class GlassRenderer {
     return (2 * this.camera.position.z * Math.tan((this.camera.fov * Math.PI) / 360)) / this.h;
   }
 
-  private pose(now: number, t: number) {
-    const p = this.current(now);
+  /**
+   * angle: giro em torno do eixo vertical da própria peça; tilt: a inclinação para o cursor, aplicada
+   * depois (em torno do eixo horizontal da tela), para o eixo do giro não rodar junto
+   */
+  private pose(angle: number, tilt: number) {
+    const p = this.at;
     const u = this.unitsPerPx();
     this.pivot.position.set((p.cx - this.w / 2) * u, -(p.cy - this.h / 2) * u, 0);
     this.pivot.scale.setScalar(p.height * u);
-    if (this.reduced) {
-      this.rot.x = 0.06;
-      this.rot.y = -0.34;
-      this.rot.z = 0;
-    } else {
-      tumble(t, this.rot);
-      this.pivot.position.y += 0.012 * Math.sin(t * 0.8) * p.height * u;
-    }
-    this.pivot.rotation.set(this.rot.x, this.rot.y, this.rot.z, 'YXZ');
+    this.rot.y = angle;
+    this.rot.x = tilt;
+    // ordem XYZ: primeiro o giro (Y, da peça), depois a inclinação (X)
+    this.pivot.rotation.set(tilt, angle, 0, 'XYZ');
     this.pivot.updateMatrixWorld(true);
     this.camera.updateMatrixWorld();
     this._mv.multiplyMatrices(this.camera.matrixWorldInverse, this.front.matrixWorld);
@@ -403,9 +341,19 @@ export class GlassRenderer {
     (this.uniforms.uDepthRange.value as THREE.Vector2).set(this.camera.position.z - size * 0.75, size * 1.5);
   }
 
-  render(now: number, t: number, reveal = 1) {
-    this.pose(now, t);
+  /** desenha a peça; light: ponteiro relativo ao centro (-1..1) e o quanto a luz dele está acesa */
+  render(angle: number, tilt: number, light: { x: number; y: number; amount: number }, reveal = 1) {
+    this.pose(angle, tilt);
     this.uniforms.uReveal.value = reveal;
+    // a luz do ponteiro fica onde a face da frente a reflete na direção da câmera, deslocada para onde
+    // o ponteiro está (y da tela para baixo, do mundo para cima): o brilho corre pelo vidro com o cursor
+    const n = this._n.set(0, 0, 1).transformDirection(this._mv);
+    const v = this._v.setFromMatrixPosition(this._mv).normalize();
+    (this.uniforms.uLight.value as THREE.Vector3)
+      .copy(v.reflect(n))
+      .add(this._n.set(light.x * 0.4, -light.y * 0.4, 0))
+      .normalize();
+    this.uniforms.uLightAmt.value = light.amount;
     const r = this.renderer;
     this.front.visible = false;
     this.back.visible = true;

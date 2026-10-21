@@ -14,7 +14,7 @@ Exposição digital da direção de arte de **Lucas Lopes** para o **Abigos FR**
 | Title screen | Um painel de vidro em 3/4, com o escudo oficial e o título impressos nele; atrás, um terminal de dados animado em paralaxe (log, espécime, radar, ondas); a luz segue o mouse e revela os riscos | Title screen de Cyberpunk 2077 |
 | Hacking | A música entra em fade no 0:09 e estabiliza no 0:14; nesses 5 s o acervo é "descriptografado" e o calango minimalista se forma em caracteres | — |
 | O idealizador | O calango de código voa do hacking para o canto da tela e um convite pulsante pede para rolar; a foto do Lucas encolhe para uma moldura de museu, vira P&B e recebe a assinatura; o nome entra em foco | landonorris.com |
-| Manifesto | A página para (só na primeira vez, e só para baixo) e as frases passam sozinhas, cerca de 2 s cada: tudo o que o time *não* é chega em baixa resolução e é tarjado, como num documento sigiloso; só a última frase entra em foco. Ao lado, o logo do calango em vidro grosso gira refratando as letras, com um data overlay lendo a forma dele; no fundo, o acervo pisca | kinoria.studio · a letra S de vidro do Panter Vision |
+| Manifesto | A página para (só na primeira vez, e só para baixo) e as frases passam sozinhas, 2,5 s cada: tudo o que o time *não* é chega em baixa resolução e é tarjado, como num documento sigiloso; só a última frase entra em foco. Ao lado, sempre no mesmo lugar, o logo do calango em vidro grosso gira devagar no próprio eixo, refratando as letras, com um data overlay lendo a forma dele; com o cursor em cima, ele vira para o visitante e a luz acompanha o ponteiro; no fundo, o acervo pisca | kinoria.studio · a letra S de vidro do Panter Vision |
 | Sala 01 · Sangue-Frio | O filme ao lado da decupagem impressa (o marca-texto acompanha o plano que está passando); depois, as peças entram pela lateral enquanto o céu passa por um dia inteiro no sertão, cada uma com seu cabeçalho de cena | — |
 | Sala 02 · Reforços | Cada anúncio é um registro do BID (Boletim Informativo Diário); o carimbo "Regularizado" bate quando a ficha aparece | — |
 | Sala 03 · Confrontos | Painel de LED de estação: "Próximas partidas" (partida é jogo e é embarque), com a situação calculada pela data | O letreiro do pôster *Próxima Estação* |
@@ -24,7 +24,7 @@ Exposição digital da direção de arte de **Lucas Lopes** para o **Abigos FR**
 
 Cada peça abre uma **ficha da obra**: o processo criativo como fala em off do diretor e as notas de produção. Em *Epiderme* e *Rural* há uma lupa para inspecionar a imperfeição; em *Gume*, um comparador entre o escudo original e o novo.
 
-De tempos em tempos (a cada ~12 s de rolagem), a página é "lida" por um instante: duas a quatro coisas na tela ganham caixa de rastreamento, coordenadas e setas tracejadas (`src/components/hud/ScanOverlay.tsx`).
+Quando o visitante para de rolar sobre um trecho novo, a página é "lida": duas a cinco coisas na tela (fotos, pôsteres, títulos, o painel, o contrato) ganham caixa de rastreamento, nome, coordenadas, pontos rastreados e setas tracejadas. A leitura fica presa aos elementos até o visitante rolar para baixo (ou até eles saírem da tela) (`src/components/hud/ScanOverlay.tsx`).
 
 ## O calango de vidro
 
@@ -32,8 +32,9 @@ O logo minimalista do calango, extrudado como uma peça grossa de vidro, no esti
 
 - `scripts/glass-calango.py` transforma a silhueta do logo (`src/assets/calango.ts`) num sólido de bordas arredondadas, com o olho e as listras gravados, e gera `public/media/3d/calango-vidro.bin` (a malha) e `calango-vidro-campo.png` (o mapa que dá a normal exata de cada pixel). Precisa de Python com `numpy`, `scipy`, `numba`, `scikit-image`, `fast-simplification` e `Pillow`: `python3 scripts/glass-calango.py` (o raio do chanfro, 10 unidades, muda com a variável `BEVEL`).
 - No site (`src/components/glass/`), o raio atravessa a espessura e refrata duas vezes, cada comprimento de onda com seu índice (as bordas abrem em arco-íris), e o reflexo é de um estúdio de tiras de luz. O que aparece atrás do vidro é uma réplica do manifesto desenhada numa textura, nas mesmas posições da tela.
-- O giro não depende da rolagem: são quadros-chave num laço de 14 s (balança, encara a câmera, dá uma volta inteira e deita para trás). Com movimento reduzido, a peça fica parada.
-- O data overlay projeta da peça 3D o focinho, o olho, as patas, a cauda e a espinha a cada leitura (12 por segundo).
+- A peça não sai do lugar e o giro não depende da rolagem: ela gira devagar em torno do próprio eixo vertical, uma volta a cada 32 s (`src/components/glass/spin.ts`). Com movimento reduzido, fica parada.
+- Interação, nos padrões que o 21st.dev usa para objetos que respondem ao ponteiro (Tilt, Optimized Tilt Card, Interactive Globe): com o cursor em cima, ela para, vira de frente para o visitante, inclina na direção do ponteiro e um reflexo acompanha o cursor; arrastar gira, com inércia ao soltar; no celular, tocar segura a peça e deslizar para o lado gira. Quando ninguém mexe, o giro lento volta.
+- O data overlay projeta da peça 3D o focinho, o olho, as patas, a cauda e a espinha a cada leitura (12 por segundo); com o cursor em cima, trava no alvo e mira a parte do desenho mais perto do ponteiro.
 - Num aparelho que não segura o ritmo, só a peça passa a renderizar com menos pixels; o resto da página não muda.
 
 ## A tipografia
@@ -59,7 +60,7 @@ Atalhos de desenvolvimento (só no `npm run dev`):
 
 - `?direto` pula a abertura e vai direto ao site.
 
-No console do navegador (também só no `npm run dev`): `__gate(null)` libera o portão do manifesto, `__glass.freeze(3.5)` congela o giro do calango num instante (`__glass.freeze(null)` solta) e `__scan.fire()` dispara a próxima leitura do data overlay.
+No console do navegador (também só no `npm run dev`): `__gate(null)` libera o portão do manifesto, `__glass.freeze(1.2)` congela o calango num ângulo, em radianos (`__glass.freeze(null)` solta), e `__scan.fire()` faz a próxima parada gerar uma leitura mesmo sem a página ter andado.
 
 ## Publicar na Vercel
 
