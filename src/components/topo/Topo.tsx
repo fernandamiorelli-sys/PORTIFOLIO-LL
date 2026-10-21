@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { getLenis, gsap, ScrollTrigger } from '../../lib/scroll';
-import { isTouch, reducedMotion } from '../../lib/store';
+import { experience, isTouch, reducedMotion } from '../../lib/store';
 import { luminance } from '../sections/dayCycle';
 import { TopoRenderer } from './topoRenderer';
 import './topo.css';
@@ -70,8 +70,8 @@ export function Topo() {
     });
     ro.observe(canvas);
 
-    // compila com o navegador ocioso: a abertura do site já passou e o relevo só aparece depois do manifesto
-    // (o Safari não tem requestIdleCallback: espera um pouco)
+    // compila com o navegador ocioso, ainda na tela de abertura (o Safari não tem requestIdleCallback:
+    // espera um pouco)
     const compile = () => r.compile();
     const hasIdle = typeof (window as Partial<Window>).requestIdleCallback === 'function';
     const idle = hasIdle ? window.requestIdleCallback(compile, { timeout: 2500 }) : window.setTimeout(compile, 600);
@@ -104,14 +104,12 @@ export function Topo() {
         if (!shown) dirty = true; // volta a aparecer: desenha logo
         canvas.style.opacity = String((shown = opacity));
       }
-      if (!opacity) {
-        visibleFor = 0;
-        return;
-      }
 
-      if (!r.ready) {
+      // os programas ficam prontos (ligados e com um desenho minúsculo) enquanto a abertura está na tela:
+      // o trabalho pesado do driver não cai no manifesto nem na rolagem, quando o relevo aparece
+      if (!r.ready && (opacity || experience.get().phase !== 'site')) {
         try {
-          if (!r.poll()) return;
+          if (r.poll()) r.warm();
         } catch (err) {
           failed = true;
           canvas.style.opacity = '0';
@@ -119,6 +117,11 @@ export function Topo() {
           return;
         }
       }
+      if (!opacity) {
+        visibleFor = 0;
+        return;
+      }
+      if (!r.ready) return;
       // índice ou ficha abertos: o Lenis para e a tela está coberta
       if (root.classList.contains('lenis-stopped')) return;
 

@@ -30,7 +30,7 @@ export default function App() {
   return (
     <>
       <div className="backdrop" aria-hidden="true" />
-      {live ? <Topo /> : null}
+      <Topo />
 
       <main className="site" aria-hidden={!live} inert={!live}>
         <Hero />

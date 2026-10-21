@@ -141,6 +141,28 @@ export class TopoRenderer {
     gl.drawArrays(gl.TRIANGLES, 0, 3);
   }
 
+  /**
+   * Um desenho de um pixel, fora da vista, logo depois de ligar os programas: muitos drivers só terminam
+   * de preparar um programa no primeiro desenho, e esse trabalho cai aqui, não no primeiro quadro de
+   * verdade (que seria no meio da rolagem, na saída do manifesto).
+   */
+  warm() {
+    const { gl, field, lines } = this;
+    if (!this.ready || !field || !lines) return;
+    gl.disable(gl.BLEND);
+    gl.bindFramebuffer(gl.FRAMEBUFFER, this.framebuffer);
+    gl.viewport(0, 0, 1, 1);
+    gl.useProgram(field.program);
+    gl.drawArrays(gl.TRIANGLES, 0, 3);
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+    gl.useProgram(lines.program);
+    gl.activeTexture(gl.TEXTURE0);
+    gl.bindTexture(gl.TEXTURE_2D, this.texture);
+    gl.uniform1i(lines.channel, 0);
+    gl.drawArrays(gl.TRIANGLES, 0, 3);
+    gl.flush();
+  }
+
   /** Solta os recursos; o contexto fica com o canvas (perder o contexto à força quebraria uma remontagem). */
   dispose() {
     this.release();
