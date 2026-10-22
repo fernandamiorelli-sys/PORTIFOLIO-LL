@@ -34,6 +34,17 @@
   height: 100%;
 }
 
+/* a foto: no computador, a horizontal (3:2); no celular, a vertical. O <picture> escolhe a imagem;
+   aqui ficam o enquadramento e o placeholder borrado de cada recorte */
+.hero__pic {
+  background-image: var(--lqip-art);
+  background-position: 50% 42%;
+}
+
+.hero__pic img {
+  object-position: 50% 42%;
+}
+
 .hero__pb {
   position: absolute;
   inset: 0;
@@ -53,9 +64,9 @@
 .hero__sig {
   position: absolute;
   z-index: 3;
-  right: 6%;
-  bottom: 5%;
-  width: 82%;
+  right: 5%;
+  bottom: 7%;
+  width: 44%;
   color: var(--color-osso);
   filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.45));
   pointer-events: none;
@@ -69,7 +80,9 @@
   align-items: center;
   justify-content: space-between;
   padding: 0 var(--gutter);
-  font-size: clamp(3rem, 10.5vw, 13rem);
+  /* o nome cabe nos lados da moldura 3:2 (a mesma conta do Hero.tsx: a moldura tem min(75vh, 52vw)
+     de largura; "LUCAS" mede ~3,4 em) */
+  font-size: calc((100vw - min(75vh, 52vw) - 2 * var(--gutter)) / 7.2);
   color: var(--color-osso);
   pointer-events: none;
 }
@@ -281,6 +294,18 @@
 @media (max-width: 760px) {
   .hero {
     height: 300vh;
+  }
+  .hero__pic {
+    background-image: var(--lqip);
+    background-position: 50% 38%;
+  }
+  .hero__pic img {
+    object-position: 50% 38%;
+  }
+  .hero__sig {
+    right: 6%;
+    bottom: 5%;
+    width: 82%;
   }
   .hero__names {
     flex-direction: column;

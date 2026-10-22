@@ -6,9 +6,14 @@
 // Sai em alfa pré-multiplicado: tinta clara sobre transparente, para o canvas ficar por cima do fundo
 // do site sem precisar saber a cor dele (no preto aparece; num fundo claro, some sozinha). O grão é
 // por pixel e por quadro; o dither TPDF vem por último, contra o banding dos tons quase pretos.
+// Com o cursor por perto (iMouse: posição em px e, em z, o quanto a luz está acesa), as linhas
+// acendem num raio suave, como um mapa visto com uma lanterna.
 // @render time=24.0
 #ifndef DEBUG_MODE
 #define DEBUG_MODE 0 // 0 final (pré-multiplicado) | 5 máscara das linhas, contraste cheio | 7 prévia sobre o preto do site
+#endif
+#ifndef TOPO_GAIN
+#define TOPO_GAIN 1.0 // força das linhas (o celular pede mais: a tela pequena e o preto do OLED engolem o sutil)
 #endif
 
 // --- desenho
@@ -24,6 +29,10 @@ const float LINE_ALPHA = 0.055;         // força da curva comum
 const float INDEX_ALPHA = 0.09;         // ...e a mestra, um pouco mais clara
 const float LOWLAND_FADE = 0.55;        // nas baixadas a linha fica com esta fração da força
 const float GRAIN = 0.011;              // grão: até ~3/255 de tinta clara por pixel
+
+// --- lanterna (o cursor)
+const float LAMP_RADIUS = 0.3;          // raio da luz, em alturas de tela
+const float LAMP_GAIN = 3.2;            // quanto a linha acende no centro da luz
 
 // --- prévia
 const vec3 SITE_BG = vec3(0.027, 0.031, 0.027); // #070807, o preto do site (só no DEBUG 7)
@@ -51,7 +60,9 @@ void mainImage(out vec4 fragColor, in vec2 fragCoord) {
 
     // os altos do relevo, um pouco mais claros e mais verdes que as baixadas
     float high = smoothstep(-0.55, 0.85, h / H_RANGE);
-    float a = line * mix(LINE_ALPHA, INDEX_ALPHA, isIndex) * mix(LOWLAND_FADE, 1.0, high);
+    vec2 dm = (fragCoord - iMouse.xy) / iResolution.y;
+    float lamp = iMouse.z * exp(-dot(dm, dm) / (LAMP_RADIUS * LAMP_RADIUS));
+    float a = line * mix(LINE_ALPHA, INDEX_ALPHA, isIndex) * mix(LOWLAND_FADE, 1.0, high) * TOPO_GAIN * (1.0 + LAMP_GAIN * lamp);
     vec3 ink = mix(INK_LOW, INK_HIGH, high);
     float grain = GRAIN * hash13(vec3(fragCoord, float(iFrame)));
 

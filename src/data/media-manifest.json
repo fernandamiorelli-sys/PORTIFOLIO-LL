@@ -225,5 +225,27 @@
     ],
     "lqip": "data:image/webp;base64,UklGRmoAAABXRUJQVlA4IF4AAACwBACdASoYABgAPuFcp02opSOiMAwBEBwJQBkahDv7kfGnrrZgx0ug6Vo6zwAAAP71eVn/OVjfzkKS0wfpLgJogbYbsYPpxIzacB0EUam4108ivnMJF3sufHbDYAAA",
     "color": "#080808"
+  },
+  "lucas-lopes-dono-3x2-pb": {
+    "width": 3504,
+    "height": 2336,
+    "widths": [
+      960,
+      1600,
+      2400
+    ],
+    "lqip": "data:image/webp;base64,UklGRmIAAABXRUJQVlA4IFYAAACwAwCdASoYABAAPu1mqk4ppaOiMAgBMB2JaQAASiC//qL4kuE8AAD+zXbUMuHQpov5cesy4YqX4On0ufZ8xdpYsn6nK/rXztckfIBvifXqeJnLrwAAAA==",
+    "color": "#383838"
+  },
+  "lucas-lopes-dono-3x2": {
+    "width": 3504,
+    "height": 2336,
+    "widths": [
+      960,
+      1600,
+      2400
+    ],
+    "lqip": "data:image/webp;base64,UklGRmQAAABXRUJQVlA4IFgAAADQAwCdASoYABAAPu1iqk2ppaQiMAgBMB2JZQCdABt4EP8lh8s4N6AA/s12zsy1GlYReca4IWqFwz4fH+ZwJVA/rpjzTqLjF6N23mC/0vPyBg7qB+PhaXgA",
+    "color": "#080808"
   }
 }

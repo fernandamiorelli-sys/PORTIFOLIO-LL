@@ -9,12 +9,13 @@ void main() {
   gl_Position = vec4(p * 2.0 - 1.0, 0.0, 1.0);
 }`;
 
-const fragment = (body: string, debug: number) => `#version 300 es
+const fragment = (body: string, debug: number, gain: number) => `#version 300 es
 precision highp float;
 precision highp int;
-${debug ? `#define DEBUG_MODE ${debug}\n` : ''}uniform vec3 iResolution;
+${debug ? `#define DEBUG_MODE ${debug}\n` : ''}${gain !== 1 ? `#define TOPO_GAIN ${gain.toFixed(3)}\n` : ''}uniform vec3 iResolution;
 uniform float iTime;
 uniform int iFrame;
+uniform vec4 iMouse;
 uniform sampler2D iChannel0;
 out vec4 topoColor;
 ${body}
@@ -30,7 +31,15 @@ interface Pass {
   resolution: WebGLUniformLocation | null;
   time: WebGLUniformLocation | null;
   frame: WebGLUniformLocation | null;
+  mouse: WebGLUniformLocation | null;
   channel: WebGLUniformLocation | null;
+}
+
+/** A lanterna: onde está o cursor (px do canvas, de baixo para cima) e o quanto a luz está acesa. */
+export interface Lamp {
+  x: number;
+  y: number;
+  amount: number;
 }
 
 /** Desenha o fundo topográfico em duas passadas: o relevo numa textura pequena, as linhas na tela. */
@@ -55,11 +64,12 @@ export class TopoRenderer {
     this.parallel = gl.getExtension('KHR_parallel_shader_compile');
   }
 
-  /** Começa a compilar. Com KHR_parallel_shader_compile, o navegador compila fora da thread principal. */
-  compile(debug = 0) {
+  /** Começa a compilar. Com KHR_parallel_shader_compile, o navegador compila fora da thread principal.
+   *  gain: força das linhas (1 no computador; mais no celular) */
+  compile(debug = 0, gain = 1) {
     this.release();
-    this.field = this.build(fragment(fieldSource, debug));
-    this.lines = this.build(fragment(linesSource, debug));
+    this.field = this.build(fragment(fieldSource, debug, gain));
+    this.lines = this.build(fragment(linesSource, debug, gain));
     this.linked = false;
   }
 
@@ -81,6 +91,7 @@ export class TopoRenderer {
         p.resolution = gl.getUniformLocation(p.program, 'iResolution');
         p.time = gl.getUniformLocation(p.program, 'iTime');
         p.frame = gl.getUniformLocation(p.program, 'iFrame');
+        p.mouse = gl.getUniformLocation(p.program, 'iMouse');
         p.channel = gl.getUniformLocation(p.program, 'iChannel0');
       }
       this.linked = true;
@@ -117,7 +128,7 @@ export class TopoRenderer {
     gl.bindFramebuffer(gl.FRAMEBUFFER, null);
   }
 
-  draw(time: number, frame: number) {
+  draw(time: number, frame: number, lamp?: Lamp) {
     const { gl, field, lines } = this;
     if (!this.ready || !field || !lines) return;
     gl.disable(gl.BLEND);
@@ -138,6 +149,7 @@ export class TopoRenderer {
     gl.uniform3f(lines.resolution, this.canvas.width, this.canvas.height, 1);
     gl.uniform1f(lines.time, time);
     gl.uniform1i(lines.frame, frame);
+    gl.uniform4f(lines.mouse, lamp?.x ?? 0, lamp?.y ?? 0, lamp?.amount ?? 0, 0);
     gl.drawArrays(gl.TRIANGLES, 0, 3);
   }
 
@@ -195,7 +207,7 @@ export class TopoRenderer {
       return s;
     });
     gl.linkProgram(program);
-    return { program, shaders, resolution: null, time: null, frame: null, channel: null };
+    return { program, shaders, resolution: null, time: null, frame: null, mouse: null, channel: null };
   }
 
   private release() {

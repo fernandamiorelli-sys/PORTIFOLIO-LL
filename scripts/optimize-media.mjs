@@ -9,12 +9,19 @@ const SRC = 'media-src/img';
 const OUT = 'public/media/img';
 const MANIFEST = 'src/data/media-manifest.json';
 const WIDTHS = [480, 960, 1600];
+// a foto que ocupa a tela inteira no computador também sai numa versão maior (telas Retina)
+const WIDE = { 'lucas-lopes-dono-3x2': [960, 1600, 2400], 'lucas-lopes-dono-3x2-pb': [960, 1600, 2400] };
 
 // variações derivadas de um original (ex.: retrato em P&B para o hero)
 const DERIVED = [
   {
     from: 'lucas-lopes-dono.jpg',
     to: 'lucas-lopes-dono-pb.jpg',
+    make: (img) => img.grayscale().linear(1.18, -14).modulate({ brightness: 1.02 }),
+  },
+  {
+    from: 'lucas-lopes-dono-3x2.png',
+    to: 'lucas-lopes-dono-3x2-pb.jpg',
     make: (img) => img.grayscale().linear(1.18, -14).modulate({ brightness: 1.02 }),
   },
 ];
@@ -53,7 +60,8 @@ for (const file of files) {
   }
   const input = sharp(path.join(SRC, file)).rotate();
   const { width, height } = await input.metadata();
-  const widths = [...new Set(WIDTHS.filter((w) => w < width).concat(Math.min(width, WIDTHS.at(-1))))];
+  const sizes = WIDE[slug] ?? WIDTHS;
+  const widths = [...new Set(sizes.filter((w) => w < width).concat(Math.min(width, sizes.at(-1))))];
 
   for (const w of widths) {
     const base = input.clone().resize({ width: w, withoutEnlargement: true });

@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { SITE } from '../../data/site';
 import { audio } from '../../lib/audio';
-import { bestFormat, imageUrl, loadImage } from '../../lib/media';
+import { bestFormat, imageFor, loadImage } from '../../lib/media';
+import { HERO_PHOTOS, HERO_WIDE } from '../sections/Hero';
 import { experience, isTouch, reducedMotion, useExperience } from '../../lib/store';
 import { DataField } from './dataField';
 import { TitleRenderer, type Framing } from './glass';
@@ -34,12 +35,15 @@ const loadFonts = () => Promise.all(FONTS.map((f) => document.fonts.load(f).catc
 
 async function preloadAll(onProgress: (k: number) => void) {
   const fmt = await bestFormat;
+  const hero = window.matchMedia(HERO_WIDE).matches ? HERO_PHOTOS.wide : HERO_PHOTOS.tall;
+  const dpr = window.devicePixelRatio || 1;
   const tasks: Promise<unknown>[] = [
     document.fonts.ready,
     loadFonts(),
     audio.preload(),
-    loadImage(imageUrl('lucas-lopes-dono', 900, fmt)),
-    loadImage(imageUrl('lucas-lopes-dono-pb', 900, fmt)).catch(() => null),
+    // a foto do idealizador no recorte desta tela, na largura que o <picture> vai pedir
+    loadImage(imageFor(hero.color, innerWidth * dpr, fmt)),
+    loadImage(imageFor(hero.pb, innerWidth * 0.6 * dpr, fmt)).catch(() => null),
     // o calango de vidro do manifesto: malha, mapa de campo e o código do vidro
     import('../glass/asset').then((m) => m.loadGlassCalango()).catch(() => null),
     import('../glass/glassRenderer'),

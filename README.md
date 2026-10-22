@@ -13,8 +13,9 @@ Exposição digital da direção de arte de **Lucas Lopes** para o **Abigos FR**
 | Boot | A tela abre desfocada e entra em foco em 1 s | — |
 | Title screen | Um painel de vidro em 3/4, com o escudo oficial e o título impressos nele; atrás, um terminal de dados animado em paralaxe (log, espécime, radar, ondas); a luz segue o mouse e revela os riscos | Title screen de Cyberpunk 2077 |
 | Hacking | A música entra em fade no 0:09 e estabiliza no 0:14; nesses 5 s o acervo é "descriptografado" e o calango minimalista se forma em caracteres. Numa conexão lenta, a entrada não espera a trilha mais que 5 s: a música entra quando chegar, no ponto em que a abertura estiver | — |
-| O idealizador | O calango de código voa do hacking para o canto da tela e um convite pulsante pede para rolar; a foto do Lucas encolhe para uma moldura de museu, vira P&B e recebe a assinatura; o nome entra em foco | landonorris.com |
+| O idealizador | O calango de código voa do hacking para o canto da tela e um convite pulsante pede para rolar; a foto do Lucas encolhe para uma moldura de museu, vira P&B e recebe a assinatura; o nome entra em foco dos dois lados. No computador, a foto é a horizontal (3:2) e a moldura também; no celular, a vertical, em retrato | landonorris.com |
 | Manifesto | As frases trocam com a rolagem, sem trava: cada uma pede meia tela (uma rolada de trackpad ou uma deslizada no celular, mais ou menos). Tudo o que o time *não* é chega em baixa resolução e é tarjado, como num documento sigiloso; só a última frase entra em foco. No campo vazio à direita, sempre no mesmo lugar, o logo do calango em vidro grosso gira devagar no próprio eixo, refratando a página, com um data overlay lendo a forma dele; com o cursor em cima, ele vira para o visitante e a luz acompanha o ponteiro; no fundo, o acervo pisca em rajadas de 3 a 5 fotos emendadas, cada uma por 0,3 s, com um respiro escuro entre as rajadas | kinoria.studio · a letra S de vidro do Panter Vision |
+| Corredores | Na entrada das salas, entre uma e outra e na saída, um letreiro de pontos verde anuncia a próxima sala, como num painel de estação; ele corre devagar só enquanto está à vista | O painel "Próximas partidas" de Confrontos |
 | Sala 01 · Sangue-Frio | O filme ao lado da decupagem impressa (o marca-texto acompanha o plano que está passando; ele só começa a baixar quando o visitante chega perto); depois, as peças entram pela lateral enquanto o céu passa por um dia inteiro no sertão, cada uma com seu cabeçalho de cena | — |
 | Sala 02 · Reforços | Cada anúncio é um registro do BID (Boletim Informativo Diário); o carimbo "Regularizado" bate quando a ficha aparece | — |
 | Sala 03 · Confrontos | Painel de LED de estação: "Próximas partidas" (partida é jogo e é embarque), com a situação calculada pela data | O letreiro do pôster *Próxima Estação* |
@@ -42,7 +43,8 @@ Das salas em diante, o preto chapado ganha curvas de nível sutis, como um mapa 
 
 - O relevo é um campo de ruído simplex com os gradientes girando (flow noise: as ilhas encolhem e se refazem no lugar, sem deslizar), andando menos de 2 px por segundo. A cada cinco curvas, uma mestra, um pouco mais firme, como nos mapas. A tinta é o osso do site nas baixadas e puxa para o verde do calango nos altos, sempre com pouquíssimo contraste. Grão por pixel da tela e dither contra banding no fim.
 - Duas passadas: o relevo é calculado numa grade quatro vezes menor (o campo é suave) e as linhas são desenhadas na resolução da tela a partir dele. Isso custa cerca de um terço de calcular tudo na resolução cheia.
-- Para não pesar: os shaders ficam prontos ainda na tela de abertura (compilados com o navegador ocioso e com um primeiro desenho invisível), para nenhum engasgo cair na rolagem; desenha no máximo 24 vezes por segundo, para enquanto a página rola (a GPU fica toda para a rolagem), com a aba oculta, com a ficha ou o índice abertos e quando não está à vista; sai enquanto o céu da galeria do dia está claro. Num aparelho que não segura o ritmo, passa a desenhar menos pixels. Com "reduzir movimento", fica parado num quadro só.
+- No computador, o cursor é uma lanterna: as curvas acendem num raio suave em volta dele e apagam quando o mouse sai da janela. No celular, as linhas são 2,2 vezes mais fortes (a tela pequena e o preto do OLED engolem o sutil).
+- Para não pesar: os shaders ficam prontos ainda na tela de abertura (compilados com o navegador ocioso e com um primeiro desenho invisível), para nenhum engasgo cair na rolagem; desenha no máximo 24 vezes por segundo (40 enquanto a lanterna anda), para enquanto a página rola (a GPU fica toda para a rolagem), com a aba oculta, com a ficha ou o índice abertos e quando não está à vista; sai enquanto o céu da galeria do dia está claro. Num aparelho que não segura o ritmo, passa a desenhar menos pixels. Com "reduzir movimento", fica parado num quadro só.
 - Os shaders seguem a skill `shader-art-coding` (em `.claude/skills/`): `shaders/field.glsl` (o relevo) e `shaders/lines.glsl` (linhas, cor, grão) usam a biblioteca dela pelo nome. As constantes no alto de cada um controlam escala, intervalo entre curvas, cor, força das linhas, grão e movimento. Depois de mexer, gere e confira as versões que o site usa:
 
 ```bash
@@ -52,7 +54,7 @@ python3 scripts/glsl_tools.py bundle ../../../src/components/topo/shaders/lines.
 python3 scripts/glsl_tools.py check ../../../src/components/topo/shaders/*.bundle.glsl
 ```
 
-No console (só no `npm run dev`): `__topo.debug(5)` mostra só as linhas, em contraste cheio; `__topo.debug(0)` volta ao normal.
+No console (só no `npm run dev`): `__topo.debug(5)` mostra só as linhas, em contraste cheio; `__topo.debug(0)` volta ao normal; `__topo.gain(2.2)` muda a força das linhas para comparar.
 
 ## A tipografia
 
@@ -95,7 +97,8 @@ Para publicar do zero em outra conta:
 - **Textos das peças, salas, manifesto e sobre** (inclusive os cabeçalhos de cena, a decupagem do filme e os registros do BID): `src/data/pieces.ts`
 - **Ritmo do manifesto** (rolagem por frase: a altura da seção em `manifesto.css` e `ABOUT_SHARE`; flashes: `FLASH_HOLD`, `flashBurst`, `flashGap`) e lugar do calango de vidro: `src/components/sections/Manifesto.tsx`
 - **Contato (WhatsApp, e-mail), música e tempos da abertura:** `src/data/site.ts`
-- **Novas imagens:** coloque o original em `media-src/img/` e rode `npm run media`. O script gera AVIF, WebP e JPG em três tamanhos e atualiza `src/data/media-manifest.json`.
+- **Novas imagens:** coloque o original em `media-src/img/` e rode `npm run media`. O script gera AVIF, WebP e JPG em três tamanhos e atualiza `src/data/media-manifest.json`. A foto horizontal do idealizador (`lucas-lopes-dono-3x2.png`, que ocupa a tela inteira no computador) também sai em 2400 px; as fotos de cada tela ficam em `HERO_PHOTOS`, em `src/components/sections/Hero.tsx`.
+- **Corredores entre as salas:** `src/components/sections/Corridor.tsx`; o texto vem dos dados de cada sala (`RoomIntro.tsx`) e, no último, de `Outro.tsx`.
 - **Novo filme:** `npm run video media-src/video/arquivo.mp4 15.6` (gera WebM, MP4 e o pôster no segundo indicado; precisa de ffmpeg).
 - **Escudo da title screen:** `python3 scripts/cut-crest.py` recorta o escudo oficial (`media-src/crest/logo-abigos-principal.jpg`) sem o círculo verde.
 

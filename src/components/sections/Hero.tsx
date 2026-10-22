@@ -10,6 +10,14 @@ import './hero.css';
 
 // Referência: landonorris.com. A foto ocupa a tela; ao rolar, encolhe para uma moldura de museu,
 // perde a cor e recebe a assinatura. O calango de código, que veio do hacking, fica no canto.
+// No computador a foto é a horizontal (3:2) e a moldura também; no celular, a vertical, em retrato.
+
+/** A tela larga (a mesma divisa do CSS: até 760 px é celular) e as fotos de cada recorte. */
+export const HERO_WIDE = '(min-width: 761px)';
+export const HERO_PHOTOS = {
+  tall: { color: 'lucas-lopes-dono', pb: 'lucas-lopes-dono-pb' },
+  wide: { color: 'lucas-lopes-dono-3x2', pb: 'lucas-lopes-dono-3x2-pb' },
+} as const;
 
 const clamp01 = (v: number) => Math.max(0, Math.min(1, v));
 const range = (p: number, a: number, b: number) => clamp01((p - a) / (b - a));
@@ -104,10 +112,11 @@ export function Hero() {
     let vw = sticky.clientWidth;
     let vh = sticky.clientHeight;
     const apply = (p: number) => {
-      const mobile = vw < 760;
-      // moldura final: retrato 9:16 centrado
-      const fh = mobile ? Math.min(vh * 0.62, vw * 1.25) : vh * 0.7;
-      const fw = fh * (9 / 16);
+      const mobile = vw <= 760;
+      // moldura final, centrada: no celular, retrato 9:16; no computador, a foto horizontal (3:2), com
+      // espaço dos lados para o nome (a mesma conta do tamanho do nome em hero.css)
+      const fh = mobile ? Math.min(vh * 0.62, vw * 1.25) : Math.min(vh * 0.5, (vw * 0.52) / 1.5);
+      const fw = fh * (mobile ? 9 / 16 : 1.5);
       const s = easeInOut(range(p, 0.02, 0.55));
       const w = vw + (fw - vw) * s;
       const h = vh + (fh - vh) * s;
@@ -164,15 +173,15 @@ export function Hero() {
 
         <div ref={frameRef} className="hero__frame">
           <Picture
-            slug="lucas-lopes-dono"
+            slug={HERO_PHOTOS.tall.color}
+            art={{ slug: HERO_PHOTOS.wide.color, media: HERO_WIDE }}
             alt="Lucas Lopes, de suéter preto, olhando para cima em direção a uma claraboia circular que ilumina a parede clara."
             sizes="100vw"
             eager
             className="hero__pic"
-            position="50% 38%"
           />
           <div ref={pbRef} className="hero__pb">
-            <Picture slug="lucas-lopes-dono-pb" alt="" sizes="60vw" eager className="hero__pic" position="50% 38%" />
+            <Picture slug={HERO_PHOTOS.tall.pb} art={{ slug: HERO_PHOTOS.wide.pb, media: HERO_WIDE }} alt="" sizes="60vw" eager className="hero__pic" />
           </div>
           <Signature ref={sigRef} className="hero__sig" />
         </div>

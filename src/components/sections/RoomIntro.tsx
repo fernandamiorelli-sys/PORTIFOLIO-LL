@@ -1,15 +1,17 @@
 import { useEffect, useRef, type CSSProperties } from 'react';
-import type { Room } from '../../data/pieces';
+import { ROOMS, type Room } from '../../data/pieces';
 import { ScrollTrigger } from '../../lib/scroll';
 import { reducedMotion } from '../../lib/store';
 import { charsOf, measureEm, positionsOf, Resolve, scrubResolve } from '../type/Resolve';
+import { Corridor } from './Corridor';
 import './room.css';
 
 const BAND = 0.3;
 
 /**
- * Entrada de sala. O nome da sala ocupa a largura inteira e entra em foco conforme a pessoa chega:
- * uma linha de leitura o atravessa e, atrás dela, o bitmap vira serifa. Embaixo, o texto de parede e a ficha.
+ * Entrada de sala. Antes dela, o corredor que vem da sala anterior (na primeira, a entrada). O nome da
+ * sala ocupa a largura inteira e entra em foco conforme a pessoa chega: uma linha de leitura o atravessa
+ * e, atrás dela, o bitmap vira serifa. Embaixo, o texto de parede e a ficha.
  */
 export function RoomIntro({ room, count }: { room: Room; count: number }) {
   const ref = useRef<HTMLElement>(null);
@@ -48,9 +50,16 @@ export function RoomIntro({ room, count }: { room: Room; count: number }) {
   }, [room.n]);
 
   const plural = count === 1 ? 'peça' : 'peças';
+  const prev = ROOMS[ROOMS.findIndex((r) => r.id === room.id) - 1];
 
   return (
     <header ref={ref} className={`room-intro room-intro--${room.id}`} id={`sala-${room.id}`}>
+      <Corridor
+        label={prev ? 'Corredor' : 'Entrada'}
+        route={prev ? `${prev.n} → ${room.n}` : `Sala ${room.n}`}
+        exit={prev ? `Saída · ${prev.title}` : 'Fim do manifesto'}
+        items={[`${prev ? 'Próxima sala' : 'Entrada'} → ${room.n} ${room.title}`, `${String(count).padStart(2, '0')} ${plural}`, room.kicker, 'Abigos FR', 'Temporada 2026']}
+      />
       <p className="room-intro__top t-mono">
         <span>Sala {room.n}</span>
         <i aria-hidden="true" />

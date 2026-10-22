@@ -1,11 +1,12 @@
 import { useEffect, useRef } from 'react';
-import { ABOUT } from '../../data/pieces';
+import { ABOUT, ROOMS } from '../../data/pieces';
 import { CONTACT, SITE } from '../../data/site';
 import { gsap, scrollToTarget, ScrollTrigger } from '../../lib/scroll';
 import { experience, reducedMotion } from '../../lib/store';
 import { Picture } from '../piece/Picture';
 import { Signature, type SignatureHandle } from '../piece/Signature';
 import { charsOf, Resolve, scrubResolve, setLevel } from '../type/Resolve';
+import { Corridor } from './Corridor';
 import './outro.css';
 
 // ───────────────────────────── SOBRE
@@ -25,6 +26,12 @@ export function About() {
 
   return (
     <section ref={ref} className="about" id="sobre" aria-labelledby="about-h">
+      <Corridor
+        label="Corredor"
+        route={`${ROOMS.at(-1)?.n} → Sobre`}
+        exit="Fim das salas"
+        items={['Saída da exposição → O idealizador', `${SITE.author} (21)`, 'Diretor de arte', 'Abigos FR', `Temporada ${SITE.year}`]}
+      />
       <p className="about__slug t-mono">
         <span>Int. sala da claraboia — dia</span>
         <i aria-hidden="true" />

@@ -1,7 +1,7 @@
 /* ───────── sobre: a entrada do personagem */
+/* em cima, o corredor que sai das salas (ele é a divisa; ocupa o respiro que havia aqui) */
 .about {
-  padding: 22vh var(--gutter) 20vh;
-  border-top: 1px solid var(--line);
+  padding: 6vh var(--gutter) 20vh;
 }
 
 .about__slug {

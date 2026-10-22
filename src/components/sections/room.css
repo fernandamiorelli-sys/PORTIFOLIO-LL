@@ -1,6 +1,7 @@
 .room-intro {
   position: relative;
-  padding: 24vh var(--gutter) 14vh;
+  /* em cima, o corredor (ele ocupa a maior parte do respiro que havia aqui) */
+  padding: 6vh var(--gutter) 14vh;
   color: var(--fg);
   transition: color 0.5s ease;
 }
@@ -128,7 +129,7 @@
 
 @media (max-width: 900px) {
   .room-intro {
-    padding-top: 16vh;
+    padding-top: 4vh;
     padding-bottom: 10vh;
   }
   .room-intro__sub {

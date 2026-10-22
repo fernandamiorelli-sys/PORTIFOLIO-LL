@@ -32,6 +32,15 @@ export function imageUrl(slug: string, max = 960, format: 'avif' | 'webp' | 'jpg
   return `/media/img/${slug}-${w}.${format}`;
 }
 
+/** A variante que o navegador escolhe para `need` pixels de tela (a menor que basta, senão a maior):
+ *  para pré-carregar a mesma que o <picture> vai pedir. */
+export function imageFor(slug: string, need: number, format: 'avif' | 'webp' | 'jpg' = 'jpg') {
+  const info = MEDIA[slug];
+  if (!info) return '';
+  const w = info.widths.find((x) => x >= need) ?? info.widths.at(-1);
+  return `/media/img/${slug}-${w}.${format}`;
+}
+
 /** Melhor formato suportado, detectado uma vez (para canvas/WebGL, que não usam <picture>). */
 export const bestFormat: Promise<'avif' | 'webp' | 'jpg'> = (async () => {
   const test = (src: string) =>
