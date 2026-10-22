@@ -2,7 +2,7 @@ import { memo, useEffect, useRef, useState } from 'react';
 import { MANIFESTO, PIECES } from '../../data/pieces';
 import { hasMedia, imageUrl } from '../../lib/media';
 import { gsap, ScrollTrigger } from '../../lib/scroll';
-import { experience, isTouch, reducedMotion } from '../../lib/store';
+import { experience, isTouch, reducedMotion, useExperience } from '../../lib/store';
 import { GlassCalango, type GlassPlace } from '../glass/GlassCalango';
 import { charsOf, Resolve, restOf, runTo, type Level } from '../type/Resolve';
 import './manifesto.css';
@@ -25,6 +25,28 @@ const PHRASE_SHARE = (1 - ABOUT_SHARE) / PHRASES.length;
 const FLASH_HOLD = 0.3;
 const flashBurst = () => 3 + Math.floor(Math.random() * 3);
 const flashGap = () => 0.48 + Math.random() * 0.36;
+/** a altura do recorte de cada foto nos flashes (object-position, em %: 0 é o alto da foto, 100 o pé).
+ *  Na tela deitada, a foto em pé enche a largura e só uma faixa da altura aparece: esta é a faixa com o
+ *  assunto (o rosto, o escudo, o título). Na tela em pé, quem sobra é a largura, e o recorte segue no
+ *  meio. Fora da lista, o meio (50) */
+const FLASH_FOCUS: Record<string, number> = {
+  'sangue-frio-pendurado': 40,
+  'sangue-frio-resenha': 24,
+  'sangue-frio-cavalo': 42,
+  'sangue-frio-posing': 30,
+  'sangue-frio-noite': 34,
+  'sangue-frio-close': 35,
+  'sangue-frio-tecido': 70,
+  'sangue-frio-dobrado': 64,
+  'sangue-frio-novo-escudo': 38,
+  'reforcos-leo': 0,
+  'reforcos-filipe': 30,
+  'confrontos-amistoso': 18,
+  'confrontos-treino': 26,
+  'confrontos-pucrs': 40,
+  'identidade-mascote': 54,
+  'identidade-vidro': 35,
+};
 /** o que não somos fica degradado; o "não", no bitmap mais grosso */
 const NOT_REST: Level = 50;
 const mark = (p: string) => p.replace(/^(não)\b/i, '[[$1]]');
@@ -122,6 +144,9 @@ export function Manifesto() {
   const [place, setPlace] = useState<GlassPlace>(() => (tall ? { x: 0.68, y: 0.7, h: 0.4 } : { x: 0.78, y: 0.45, h: 0.54 }));
   /** os flashes correm (frases na tela) e o pedido de uma rajada já, na troca de frase */
   const flashing = useRef({ on: false, kick: false });
+  // aberto o site, as fotos dos flashes já vêm (e ficam prontas atrás do vidro) enquanto o idealizador
+  // está na tela: carregar, decodificar e recortar não cai na chegada ao manifesto
+  const early = useExperience((s) => s.phase === 'site') && !reducedMotion;
 
   useEffect(() => {
     const mq = window.matchMedia('(max-aspect-ratio: 1/1)');
@@ -311,7 +336,14 @@ export function Manifesto() {
       <div className="manifesto__sticky">
         <div ref={flashRef} className="manifesto__flash" aria-hidden="true">
           {FLASH_POOL.map((slug) => (
-            <img key={slug} src={imageUrl(slug, 960, 'webp')} alt="" loading="lazy" decoding="async" />
+            <img
+              key={slug}
+              src={imageUrl(slug, 960, 'webp')}
+              alt=""
+              loading={early ? 'eager' : 'lazy'}
+              decoding="async"
+              style={{ objectPosition: `50% ${FLASH_FOCUS[slug] ?? 50}%` }}
+            />
           ))}
         </div>
 

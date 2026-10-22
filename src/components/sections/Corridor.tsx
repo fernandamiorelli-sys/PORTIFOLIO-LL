@@ -13,7 +13,8 @@ export function Corridor({ label, route, exit, items }: { label: string; route: 
   useEffect(() => {
     const el = ref.current;
     if (!el || reducedMotion) return;
-    const io = new IntersectionObserver(([e]) => el.classList.toggle('is-running', e.isIntersecting), { rootMargin: '10% 0px' });
+    // do aviso, vale a mudança mais recente (o navegador pode juntar várias)
+    const io = new IntersectionObserver((entries) => el.classList.toggle('is-running', entries.at(-1)!.isIntersecting), { rootMargin: '10% 0px' });
     io.observe(el);
     return () => io.disconnect();
   }, []);

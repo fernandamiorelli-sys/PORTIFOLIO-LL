@@ -56,10 +56,10 @@ export function Hero() {
       last = now;
       ascii.draw(now);
     };
-    // só desenha enquanto o hero está na tela
-    const io = new IntersectionObserver(([e]) => {
+    // só desenha enquanto o hero está na tela (do aviso, vale a mudança mais recente)
+    const io = new IntersectionObserver((entries) => {
       cancelAnimationFrame(raf);
-      raf = e.isIntersecting ? requestAnimationFrame(loop) : 0;
+      raf = entries.at(-1)!.isIntersecting ? requestAnimationFrame(loop) : 0;
     });
     io.observe(canvas);
     return () => {

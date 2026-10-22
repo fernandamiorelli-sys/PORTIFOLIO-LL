@@ -52,6 +52,8 @@ export class BackdropPainter {
   private texts = new WeakMap<Text, TextCache>();
   /** as fotos do acervo já recortadas e filtradas para esta tela, prontas para desenhar */
   private flashes = new Map<HTMLImageElement, ImageBitmap>();
+  /** onde cada foto é filtrada antes de virar bitmap (uma por vez) */
+  private scratch = document.createElement('canvas');
   private queue: HTMLImageElement[] = [];
   private draining = false;
   /** sobe a cada redimensionamento: o que estava sendo preparado para a tela antiga não serve */
@@ -73,6 +75,7 @@ export class BackdropPainter {
     this.queue = [];
     this.flashes.forEach((b) => b.close());
     this.flashes.clear();
+    this.scratch.width = this.scratch.height = 0;
   }
 
   resize(w: number, h: number, scale: number) {
@@ -120,9 +123,11 @@ export class BackdropPainter {
   }
 
   /**
-   * A foto como a página a mostra (object-fit: cover, no centro) e com o mesmo filtro do CSS, em meia
-   * resolução: atrás do vidro, sobra. Decodificar e recortar acontece fora da thread principal
-   * (createImageBitmap de um Blob, que vem do cache); o filtro é um desenho só, na GPU.
+   * A foto como a página a mostra (object-fit: cover, mirando o mesmo ponto: o object-position de
+   * cada uma) e com o mesmo filtro do CSS, em meia resolução: atrás do vidro, sobra. Decodificar e
+   * recortar acontece fora da thread principal (createImageBitmap de um Blob, que vem do cache); o
+   * filtro é um desenho só, na GPU, num canvas de rascunho que serve a todas (um por foto deixava lixo
+   * para o coletor de memória).
    */
   private async flashBitmap(img: HTMLImageElement) {
     const W = Math.max(1, Math.round((this.w * this.scale) / 2));
@@ -130,18 +135,25 @@ export class BackdropPainter {
     const s = Math.max(W / img.naturalWidth, H / img.naturalHeight);
     const sw = Math.max(1, Math.round(W / s));
     const sh = Math.max(1, Math.round(H / s));
+    const cs = getComputedStyle(img);
+    const filter = cs.filter;
+    const [fx = 0.5, fy = 0.5] = cs.objectPosition.split(' ').map((v) => (v.endsWith('%') ? parseFloat(v) / 100 : 0.5));
     const blob = await (await fetch(img.currentSrc || img.src)).blob();
-    const cut = await createImageBitmap(blob, Math.round((img.naturalWidth - sw) / 2), Math.round((img.naturalHeight - sh) / 2), sw, sh, {
+    const cut = await createImageBitmap(blob, Math.round((img.naturalWidth - sw) * fx), Math.round((img.naturalHeight - sh) * fy), sw, sh, {
       resizeWidth: W,
       resizeHeight: H,
       resizeQuality: 'medium',
     });
-    const c = document.createElement('canvas');
-    c.width = W;
-    c.height = H;
+    const c = this.scratch;
+    if (c.width !== W || c.height !== H) {
+      c.width = W;
+      c.height = H;
+    }
     const x = c.getContext('2d')!;
-    x.filter = getComputedStyle(img).filter;
+    x.clearRect(0, 0, W, H);
+    x.filter = filter;
     x.drawImage(cut, 0, 0, W, H);
+    x.filter = 'none';
     cut.close();
     return createImageBitmap(c);
   }

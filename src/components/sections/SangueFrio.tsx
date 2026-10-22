@@ -90,9 +90,10 @@ function Screening({ piece }: { piece: Piece }) {
       setShot(k);
     };
     const io = new IntersectionObserver(
-      ([e]) => {
+      (entries) => {
         cancelAnimationFrame(raf);
-        if (e.isIntersecting) {
+        // do aviso, vale a mudança mais recente
+        if (entries.at(-1)!.isIntersecting) {
           void v.play().catch(() => {});
           raf = requestAnimationFrame(tick);
         } else {
@@ -109,8 +110,8 @@ function Screening({ piece }: { piece: Piece }) {
     io.observe(v);
     // o filme só começa a baixar quando a sala está a uma tela de distância (antes disso, só o pôster)
     const near = new IntersectionObserver(
-      ([e]) => {
-        if (!e.isIntersecting) return;
+      (entries) => {
+        if (!entries.some((e) => e.isIntersecting)) return;
         near.disconnect();
         v.preload = 'auto';
         // se o play já foi pedido (a sala já na tela), ele mesmo baixa; senão, começa a baixar agora

@@ -37,8 +37,8 @@ function BidEntry({ piece, index }: { piece: Piece; index: number }) {
     const el = ref.current;
     if (!el || stamped) return;
     const io = new IntersectionObserver(
-      ([e]) => {
-        if (!e.isIntersecting) return;
+      (entries) => {
+        if (!entries.some((e) => e.isIntersecting)) return;
         io.disconnect();
         window.setTimeout(() => setStamped(true), 450);
       },

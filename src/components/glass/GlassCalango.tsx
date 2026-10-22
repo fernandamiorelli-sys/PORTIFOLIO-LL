@@ -8,6 +8,9 @@ import { GlassOverlay } from './overlay';
 import { FRONT, Spin } from './spin';
 import './glass.css';
 
+/** Rolando a página, o vidro desenha no máximo 30 vezes por segundo (folga para o compasso da tela). */
+const SCROLL_FRAME_MS = 1000 / 30 - 4;
+
 /** Onde o calango fica, em frações do palco: centro (x, y) e altura. */
 export interface GlassPlace {
   x: number;
@@ -50,6 +53,7 @@ export function GlassCalango({ place, compact }: { place: GlassPlace; compact: b
     let flashDirty = false;
     let lastPaint = -1e9;
     let lastComposite = -1e9;
+    let lastRender = 0;
     let shownAt = -1;
     let lastNow = 0;
     /** com movimento reduzido a peça fica parada: só desenha de novo quando algo muda */
@@ -157,11 +161,14 @@ export function GlassCalango({ place, compact }: { place: GlassPlace; compact: b
       if (!glass || !painter || !overlay || !hit) return;
       const dt = lastNow ? (now - lastNow) / 1000 : 0;
       lastNow = now;
+      // rolando a página, o vidro fica mais leve: ele desenha 30 vezes por segundo (gira devagar, a
+      // diferença não se vê) e a réplica acompanha a 12. É o trecho em que a placa de vídeo mais sofre
+      const scrolling = !!getLenis()?.isScrolling;
       // a réplica só é redesenhada quando a página muda: 24 vezes por segundo enquanto as letras e as
-      // tarjas se mexem (atrás do vidro, distorcido, não se vê diferença para 60) e 4 por segundo para
-      // o trilho de progresso, que anda o tempo todo mas quase nunca fica atrás da peça. Um flash que
-      // troca não mexe no texto: só remonta a réplica com a foto nova
-      if ((now < dirtyUntil && now - lastPaint > 41) || (slowDirty && now - lastPaint > 250)) {
+      // tarjas se mexem (atrás do vidro, distorcido, não se vê diferença para 60; 12 rolando) e 4 por
+      // segundo para o trilho de progresso, que anda o tempo todo mas quase nunca fica atrás da peça. Um
+      // flash que troca não mexe no texto: só remonta a réplica com a foto nova
+      if ((now < dirtyUntil && now - lastPaint > (scrolling ? 83 : 41)) || (slowDirty && now - lastPaint > 250)) {
         painter.paint();
         glass.bgTexture.needsUpdate = true;
         lastPaint = lastComposite = now;
@@ -180,9 +187,16 @@ export function GlassCalango({ place, compact }: { place: GlassPlace; compact: b
       else spin.step(dt);
       // parado (movimento reduzido), só desenha quando algo muda: a página atrás, o cursor, o arrasto
       if (reducedMotion && !needsRender && !engaged && !spin.isDragging && spin.light.amount < 0.002 && frozen == null) return;
+      // rolando (e sem ninguém mexendo na peça), pula quadros até dar o compasso de 30 por segundo; esses
+      // intervalos esticados de propósito não contam para a qualidade automática
+      if (scrolling && !engaged && !spin.isDragging && frozen == null && now - lastRender < SCROLL_FRAME_MS) {
+        lastFrame = 0;
+        return;
+      }
       needsRender = false;
+      lastRender = now;
       if (shownAt < 0) shownAt = now;
-      if (lastFrame && now - lastFrame < 250) intervals.push(now - lastFrame);
+      if (!scrolling && lastFrame && now - lastFrame < 250) intervals.push(now - lastFrame);
       lastFrame = now;
       if (intervals.length >= 90) {
         const median = intervals.sort((a, b) => a - b)[45];
@@ -288,9 +302,11 @@ export function GlassCalango({ place, compact }: { place: GlassPlace; compact: b
         return;
       }
     });
+    // com a página ocupada, o navegador junta várias mudanças num aviso só: vale a mais recente (a
+    // primeira podia parar a peça com ela à vista)
     const io = new IntersectionObserver(
-      ([e]) => {
-        visible = e.isIntersecting;
+      (entries) => {
+        visible = entries.at(-1)!.isIntersecting;
         if (visible) start();
         else stop();
       },
@@ -315,6 +331,13 @@ export function GlassCalango({ place, compact }: { place: GlassPlace; compact: b
         resize();
         await glass.compile();
         if (!alive) return;
+        // o primeiro desenho do vidro é o mais caro: a placa de vídeo termina de preparar os programas,
+        // sobe as texturas e cria os alvos de desenho. Ele acontece aqui, ainda na abertura (e invisível:
+        // revelação zero), e não no quadro em que o manifesto chega. A réplica da página monta os seus
+        // caches junto
+        painter.paint();
+        glass.bgTexture.needsUpdate = true;
+        glass.render(spin.angle, 0, spin.light, 0);
         mo.observe(section, { subtree: true, attributes: true, attributeFilter: ['data-l', 'class', 'style'], childList: true, characterData: true });
         io.observe(stage);
         ro.observe(stage);
@@ -330,8 +353,9 @@ export function GlassCalango({ place, compact }: { place: GlassPlace; compact: b
         window.addEventListener('touchend', onTouchEnd, passive);
         window.addEventListener('touchcancel', onTouchEnd, passive);
       })
-      .catch(() => {
+      .catch((err) => {
         // sem WebGL ou sem o arquivo: o manifesto continua inteiro, só sem a peça
+        if (import.meta.env.DEV) console.warn(err);
         host.dataset.state = 'off';
       });
 

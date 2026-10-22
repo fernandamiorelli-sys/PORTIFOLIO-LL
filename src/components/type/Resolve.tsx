@@ -270,8 +270,8 @@ export const Resolve = memo(function Resolve({
       return () => cancels.forEach((c) => c());
     }
     const io = new IntersectionObserver(
-      ([e]) => {
-        if (!e.isIntersecting) return;
+      (entries) => {
+        if (!entries.some((e) => e.isIntersecting)) return;
         io.disconnect();
         play();
       },
