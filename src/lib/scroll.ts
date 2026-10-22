@@ -7,17 +7,6 @@ gsap.registerPlugin(ScrollTrigger);
 
 let lenis: Lenis | null = null;
 
-// ───────────────────────────── trecho lento
-// Uma seção pode pedir que a roda do mouse (e o trackpad) andem mais devagar dentro dela: o manifesto,
-// onde as frases trocam com a rolagem. Nada trava; só cada giro da roda anda menos. O toque no celular
-// segue nativo (ali, a seção é mais longa).
-let slow: { start: number; end: number; factor: number } | null = null;
-
-/** Entre start e end (rolagem absoluta, px), a roda anda `factor` do normal (null desfaz). */
-export function setSlowZone(zone: { start: number; end: number; factor: number } | null) {
-  slow = zone;
-}
-
 export function initScroll() {
   if (lenis) return lenis;
   if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
@@ -28,13 +17,6 @@ export function initScroll() {
     lerp: reducedMotion ? 1 : 0.09,
     wheelMultiplier: 0.95,
     touchMultiplier: 1.1,
-    virtualScroll: (data) => {
-      // o Lenis usa o delta depois desta chamada: dentro do trecho lento, a roda anda menos
-      if (slow && lenis && data.event.type === 'wheel' && lenis.targetScroll >= slow.start - 1 && lenis.targetScroll <= slow.end + 1) {
-        data.deltaY *= slow.factor;
-      }
-      return true;
-    },
   });
   lenis.on('scroll', ScrollTrigger.update);
   gsap.ticker.add((time) => lenis?.raf(time * 1000));

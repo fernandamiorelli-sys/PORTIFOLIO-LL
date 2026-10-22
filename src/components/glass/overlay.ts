@@ -18,6 +18,11 @@ const FEATURES: { name: string; at: [number, number] }[] = [
   { name: 'cauda', at: [49, 588] },
 ];
 
+/** folga em volta do vidro (px CSS) para as legendas, a mira e a ficha da leitura, que fica ao lado */
+const SIDE = 300;
+const ABOVE = 90;
+const BELOW = 80;
+
 const pad3 = (n: number) => String(Math.max(0, Math.round(n))).padStart(3, '0');
 const deg = (r: number) => {
   const d = ((((r * 180) / Math.PI) % 360) + 360) % 360;
@@ -38,6 +43,8 @@ export class GlassOverlay {
   private seed = 1;
   /** acima disto fica o cabeçalho do documento: a ficha de dados não sobe ali */
   safeTop = 0;
+  /** o pedaço do palco que o canvas cobre (px CSS): o vidro e a folga das legendas, não a tela toda */
+  readonly crop = { x: 0, y: 0, w: 1, h: 1 };
 
   constructor(header: GlassHeader) {
     this.ctx = this.canvas.getContext('2d')!;
@@ -56,8 +63,22 @@ export class GlassOverlay {
     this.w = w;
     this.h = h;
     this.dpr = dpr;
-    this.canvas.width = Math.round(w * dpr);
-    this.canvas.height = Math.round(h * dpr);
+    this.last = -1e9;
+  }
+
+  /** o canvas cobre a caixa do vidro (px CSS do palco) e a folga em volta, dentro do palco */
+  fit(glass: { x: number; y: number; w: number; h: number }) {
+    const x0 = Math.max(0, Math.floor(glass.x - SIDE));
+    const y0 = Math.max(0, Math.floor(glass.y - ABOVE));
+    const x1 = Math.max(x0 + 1, Math.min(Math.ceil(this.w), Math.ceil(glass.x + glass.w + SIDE)));
+    const y1 = Math.max(y0 + 1, Math.min(Math.ceil(this.h), Math.ceil(glass.y + glass.h + BELOW)));
+    Object.assign(this.crop, { x: x0, y: y0, w: x1 - x0, h: y1 - y0 });
+    const cw = Math.round(this.crop.w * this.dpr);
+    const ch = Math.round(this.crop.h * this.dpr);
+    if (this.canvas.width !== cw || this.canvas.height !== ch) {
+      this.canvas.width = cw;
+      this.canvas.height = ch;
+    }
     this.last = -1e9;
   }
 
@@ -85,6 +106,8 @@ export class GlassOverlay {
     this.clear();
     if (opts.alpha <= 0.01) return;
     prepare(ctx, this.dpr);
+    // tudo abaixo conta em px do palco; o canvas começa no canto do recorte
+    ctx.translate(-this.crop.x, -this.crop.y);
     ctx.globalAlpha = opts.alpha;
 
     // caixa da peça inteira

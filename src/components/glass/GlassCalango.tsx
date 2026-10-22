@@ -46,16 +46,17 @@ export function GlassCalango({ place, compact }: { place: GlassPlace; compact: b
     let dirtyUntil = 0;
     /** o trilho de progresso mudou (a cada quadro, durante as frases): basta repintar devagar */
     let slowDirty = false;
-    /** um flash do acervo acendeu ou apagou: uma repintura basta (troca seca, sem transição) */
+    /** um flash do acervo acendeu ou apagou: basta remontar a réplica (troca seca, sem transição) */
     let flashDirty = false;
     let lastPaint = -1e9;
+    let lastComposite = -1e9;
     let shownAt = -1;
     let lastNow = 0;
     /** com movimento reduzido a peça fica parada: só desenha de novo quando algo muda */
     let needsRender = true;
     let target: GlassPlace = place;
     let size = { w: 1, h: 1 };
-    /** só em desenvolvimento: congela o giro num ângulo, para comparar quadros */
+    /** só em desenvolvimento: congela o giro num ângulo, para comparar quadros (e a qualidade não muda) */
     let frozen: number | null = null;
     // rede de segurança para aparelho fraco: se os quadros passam de ~34 ms de forma consistente, a
     // peça renderiza com menos pixels por ponto (nunca abaixo de 1); num aparelho que dá conta, nada muda
@@ -94,6 +95,19 @@ export function GlassCalango({ place, compact }: { place: GlassPlace; compact: b
       return Math.max(Math.min(1, full), full * quality);
     };
 
+    /** os canvas cobrem só o recorte em que a peça cabe (quem escolhe é o renderizador) e, no do
+     *  overlay, a folga das legendas em volta: o resto do palco seria transparente */
+    const fitCanvas = () => {
+      if (!glass || !overlay) return;
+      overlay.fit(glass.crop);
+      for (const [el, c] of [
+        [glass.canvas, glass.crop],
+        [overlay.canvas, overlay.crop],
+      ] as const) {
+        Object.assign(el.style, { left: `${c.x}px`, top: `${c.y}px`, width: `${c.w}px`, height: `${c.h}px`, right: 'auto', bottom: 'auto' });
+      }
+    };
+
     const resize = () => {
       if (!glass || !painter || !overlay) return;
       size = { w: stage.clientWidth, h: stage.clientHeight };
@@ -109,6 +123,7 @@ export function GlassCalango({ place, compact }: { place: GlassPlace; compact: b
       const bar = stage.querySelector('.manifesto__bar');
       overlay.safeTop = bar ? bar.getBoundingClientRect().bottom - stage.getBoundingClientRect().top : 0;
       glass.place(toPx(target));
+      fitCanvas();
       dirtyUntil = performance.now() + 50;
       needsRender = true;
     };
@@ -144,12 +159,19 @@ export function GlassCalango({ place, compact }: { place: GlassPlace; compact: b
       lastNow = now;
       // a réplica só é redesenhada quando a página muda: 24 vezes por segundo enquanto as letras e as
       // tarjas se mexem (atrás do vidro, distorcido, não se vê diferença para 60) e 4 por segundo para
-      // o trilho de progresso, que anda o tempo todo mas quase nunca fica atrás da peça
-      if ((now < dirtyUntil && now - lastPaint > 41) || (flashDirty && now - lastPaint > 50) || (slowDirty && now - lastPaint > 250)) {
+      // o trilho de progresso, que anda o tempo todo mas quase nunca fica atrás da peça. Um flash que
+      // troca não mexe no texto: só remonta a réplica com a foto nova
+      if ((now < dirtyUntil && now - lastPaint > 41) || (slowDirty && now - lastPaint > 250)) {
         painter.paint();
         glass.bgTexture.needsUpdate = true;
-        lastPaint = now;
+        lastPaint = lastComposite = now;
         slowDirty = false;
+        flashDirty = false;
+        needsRender = true;
+      } else if (flashDirty && now - lastComposite > 50) {
+        painter.composite();
+        glass.bgTexture.needsUpdate = true;
+        lastComposite = now;
         flashDirty = false;
         needsRender = true;
       }
@@ -165,9 +187,10 @@ export function GlassCalango({ place, compact }: { place: GlassPlace; compact: b
       if (intervals.length >= 90) {
         const median = intervals.sort((a, b) => a - b)[45];
         intervals.length = 0;
-        if (median > 34 && quality > 0.6 && now - shownAt > 1500) {
+        if (median > 34 && quality > 0.6 && now - shownAt > 1500 && frozen == null) {
           quality *= 0.75;
           glass.resize(size.w, size.h, glassDpr());
+          fitCanvas();
         }
       }
       const reveal = reducedMotion ? 1 : Math.min(1, (now - shownAt) / 900);
@@ -327,7 +350,10 @@ export function GlassCalango({ place, compact }: { place: GlassPlace; compact: b
       setPlace: (p) => {
         target = p;
         needsRender = true;
-        if (glass) glass.place(toPx(p));
+        if (glass) {
+          glass.place(toPx(p));
+          fitCanvas();
+        }
       },
     };
 
@@ -351,6 +377,7 @@ export function GlassCalango({ place, compact }: { place: GlassPlace; compact: b
       delete stage.dataset.cursor;
       document.documentElement.classList.remove('is-spinning');
       glass?.dispose();
+      painter?.dispose();
       host.replaceChildren();
     };
     // a peça é criada uma vez; lugar e modo chegam pelos efeitos abaixo

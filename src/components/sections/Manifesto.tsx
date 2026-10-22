@@ -1,7 +1,7 @@
 import { memo, useEffect, useRef, useState } from 'react';
 import { MANIFESTO, PIECES } from '../../data/pieces';
 import { hasMedia, imageUrl } from '../../lib/media';
-import { gsap, ScrollTrigger, setSlowZone } from '../../lib/scroll';
+import { gsap, ScrollTrigger } from '../../lib/scroll';
 import { experience, isTouch, reducedMotion } from '../../lib/store';
 import { GlassCalango, type GlassPlace } from '../glass/GlassCalango';
 import { charsOf, Resolve, restOf, runTo, type Level } from '../type/Resolve';
@@ -11,8 +11,8 @@ import './manifesto.css';
 // Tudo o que "não somos" chega em baixa resolução e, quando passa, é tarjado como num documento
 // sigiloso: sobra só o "não". A última frase é a única que entra em foco.
 //
-// Ritmo: as frases trocam com a rolagem, sem trava. Cada frase pede bastante rolagem e, dentro do
-// manifesto, a roda do mouse anda mais devagar (setSlowZone): nada para, mas também nada voa.
+// Ritmo: as frases trocam com a rolagem, sem trava. Cada frase pede meia tela de rolagem (uma rolada
+// de trackpad ou uma deslizada no celular, mais ou menos) e a rolagem anda como no resto do site.
 
 const FLASH_POOL = [...new Set(PIECES.filter((p) => hasMedia(p.media) && !p.pending).map((p) => p.media))];
 const PHRASES = MANIFESTO.phrases;
@@ -20,13 +20,11 @@ const TRUTH = PHRASES.length - 1;
 /** fração da rolagem do manifesto para o texto do clube, no fim; o resto se divide entre as frases */
 const ABOUT_SHARE = 0.15;
 const PHRASE_SHARE = (1 - ABOUT_SHARE) / PHRASES.length;
-/** dentro do manifesto, a roda do mouse anda esta fração do normal */
-const WHEEL_SLOW = 0.6;
 /** flashes do acervo: cada foto fica este tempo (s); as rajadas têm de 3 a 5 fotos emendadas e, entre
- *  uma rajada e outra, um escuro curto */
-const FLASH_HOLD = 0.085;
+ *  uma rajada e outra, um escuro na mesma proporção (cerca de um terço do tempo) */
+const FLASH_HOLD = 0.3;
 const flashBurst = () => 3 + Math.floor(Math.random() * 3);
-const flashGap = () => 0.16 + Math.random() * 0.12;
+const flashGap = () => 0.48 + Math.random() * 0.36;
 /** o que não somos fica degradado; o "não", no bitmap mais grosso */
 const NOT_REST: Level = 50;
 const mark = (p: string) => p.replace(/^(não)\b/i, '[[$1]]');
@@ -169,7 +167,7 @@ export function Manifesto() {
   }, []);
 
   // as frases andam com a rolagem: cada uma tem a sua fatia do trecho preso e, no fim, entra o texto
-  // do clube. O trilho enche junto. Dentro do trecho, a roda do mouse anda mais devagar
+  // do clube. O trilho enche junto
   useEffect(() => {
     const section = sectionRef.current!;
     const segs = Array.from(railRef.current?.querySelectorAll<HTMLElement>('.manifesto__rail i') ?? []);
@@ -205,10 +203,7 @@ export function Manifesto() {
       start: 'top top',
       end: 'bottom bottom',
       onUpdate: (self) => update(self.progress),
-      onRefresh: (self) => {
-        setSlowZone({ start: self.start, end: self.end, factor: WHEEL_SLOW });
-        update(self.progress);
-      },
+      onRefresh: (self) => update(self.progress),
     });
     const seenTrig = ScrollTrigger.create({
       trigger: section,
@@ -230,7 +225,6 @@ export function Manifesto() {
       main.kill();
       seenTrig.kill();
       label.kill();
-      setSlowZone(null);
       flashing.current.on = false;
     };
   }, []);
@@ -241,7 +235,7 @@ export function Manifesto() {
   }, [index]);
 
   // flashes do acervo: enquanto as frases estão na tela, rajadas de fotos emendadas uma na outra, com um
-  // escuro curto entre as rajadas. As fotos são escuras e esverdeadas (filtro e opacidade em
+  // escuro entre as rajadas. As fotos são escuras e esverdeadas (filtro e opacidade em
   // manifesto.css): nenhuma passa de ~7% de luminância, então nenhuma troca (de foto para foto ou para
   // o escuro) chega ao limiar de flash das diretrizes de acessibilidade, 10%. Com movimento reduzido,
   // não há flashes
@@ -254,16 +248,21 @@ export function Manifesto() {
     let left = 0;
     let next = 0;
     let deck: number[] = [];
+    // cada foto só entra depois de decodificada (fora da thread principal, assim que carrega): a
+    // primeira aparição não espera a decodificação nem acende vazia
+    const ready = new WeakSet<HTMLImageElement>();
+    const decode = (img: HTMLImageElement) => img.decode().then(() => ready.add(img), () => {});
+    imgs.forEach((img) => (img.complete && img.naturalWidth ? decode(img) : img.addEventListener('load', () => decode(img), { once: true })));
     const hide = () => {
       shown?.classList.remove('is-on');
       shown = null;
     };
-    // a próxima foto do baralho embaralhado (que recomeça quando acaba), entre as que já carregaram
+    // a próxima foto do baralho embaralhado (que recomeça quando acaba), entre as que já estão prontas
     const draw = () => {
       for (let tries = 0; tries <= imgs.length; tries++) {
         if (!deck.length) deck = imgs.map((_, i) => i).sort(() => Math.random() - 0.5);
         const img = imgs[deck.pop()!];
-        if (img.complete && img.naturalWidth && img !== shown) return img;
+        if (ready.has(img) && img !== shown) return img;
       }
       return null;
     };

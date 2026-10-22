@@ -77,6 +77,7 @@ uniform float uReveal;
 uniform vec2 uDepthRange;
 uniform vec3 uLight;
 uniform float uLightAmt;
+uniform vec4 uCrop;        // o pedaço do palco que o canvas cobre: canto de baixo à esquerda e tamanho (uv)
 
 vec4 backAt(vec2 uv) {
   vec4 b = texture2D(uBack, uv);
@@ -138,8 +139,9 @@ vec2 screenUv(vec3 p) {
 // a página atrás do vidro, onde o raio que sai a encontra. A leitura acontece sempre (fora de
 // qualquer if): assim o mipmap mede o quanto a imagem encolhe ali e filtra no nível certo, e as
 // bordas curvas mostram faixas lisas em vez de grão. w diz se o raio chegou mesmo à página.
+// screenUv conta dentro do recorte do canvas; a página é o palco inteiro
 vec3 pageAt(vec3 p, vec3 t, out float w) {
-  vec2 uv = screenUv(p + t * ((uBgZ - p.z) / min(t.z, -1e-3)));
+  vec2 uv = uCrop.xy + screenUv(p + t * ((uBgZ - p.z) / min(t.z, -1e-3))) * uCrop.zw;
   vec2 e = smoothstep(vec2(-0.02), vec2(0.03), uv) * smoothstep(vec2(-0.02), vec2(0.03), 1.0 - uv);
   w = e.x * e.y * step(t.z, -1e-3);
   return texture2D(uBg, clamp(uv, 0.0, 1.0)).rgb;
@@ -197,6 +199,8 @@ export interface Placement {
   height: number;
 }
 
+const clamp = (v: number, a: number, b: number) => Math.min(b, Math.max(a, v));
+
 export class GlassRenderer {
   readonly renderer: THREE.WebGLRenderer;
   readonly scene = new THREE.Scene();
@@ -210,7 +214,11 @@ export class GlassRenderer {
   readonly uniforms: Record<string, THREE.IUniform>;
   private w = 1;
   private h = 1;
+  private dpr = 1;
   private at: Placement = { cx: 0, cy: 0, height: 1 };
+  /** o pedaço do palco que o canvas cobre, em px CSS (alinhado aos pixels da tela) */
+  readonly crop = { x: 0, y: 0, w: 1, h: 1 };
+  private device = { w: 0, h: 0 };
   private _mv = new THREE.Matrix4();
   private _v = new THREE.Vector3();
   private _n = new THREE.Vector3();
@@ -223,6 +231,8 @@ export class GlassRenderer {
     bgCanvas: HTMLCanvasElement,
   ) {
     this.renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true, premultipliedAlpha: true, powerPreference: 'high-performance' });
+    // os tamanhos chegam já em pixels da tela (o recorte é alinhado a eles)
+    this.renderer.setPixelRatio(1);
     this.renderer.setClearColor(0x000000, 0);
     this.renderer.autoClear = false;
     this.camera.position.set(0, 0, 6);
@@ -265,6 +275,7 @@ export class GlassRenderer {
       uDepthRange: { value: new THREE.Vector2(5, 2) },
       uLight: { value: new THREE.Vector3(0, 0, 1) },
       uLightAmt: { value: 0 },
+      uCrop: { value: new THREE.Vector4(0, 0, 1, 1) },
     };
     const defines = this.floatBack ? {} : { BACK_ENCODED: 1 };
     const backMat = new THREE.ShaderMaterial({ vertexShader: VERT, fragmentShader: BACK_FRAG, uniforms: this.uniforms, defines, side: THREE.BackSide });
@@ -298,19 +309,78 @@ export class GlassRenderer {
   resize(w: number, h: number, dpr: number) {
     this.w = Math.max(1, w);
     this.h = Math.max(1, h);
-    this.renderer.setPixelRatio(dpr);
-    this.renderer.setSize(this.w, this.h, false);
+    this.dpr = dpr;
     this.camera.aspect = this.w / this.h;
-    this.camera.updateProjectionMatrix();
-    const buffer = this.renderer.getDrawingBufferSize(new THREE.Vector2());
-    (this.uniforms.uRes.value as THREE.Vector2).copy(buffer);
-    // o verso fica na resolução da página (px CSS), não na da tela: só guia a segunda refração
-    this.backRT.setSize(Math.round(buffer.x / Math.max(1, dpr)), Math.round(buffer.y / Math.max(1, dpr)));
+    this.fit();
   }
 
   /** O lugar do calango (só muda quando a tela muda de tamanho: a peça não anda). */
   place(p: Placement) {
     this.at = { ...p };
+    this.fit();
+  }
+
+  /**
+   * O canvas cobre só a caixa onde a peça pode aparecer, em qualquer giro e inclinação, e não o palco
+   * inteiro: o resto seria transparente, e limpar, suavizar (MSAA) e compor uma tela cheia de nada a
+   * cada quadro pesa na GPU. A câmera continua a do palco inteiro; o canvas é uma janela dela.
+   */
+  private fit() {
+    const { dpr } = this;
+    const W = Math.max(1, Math.round(this.w * dpr));
+    const H = Math.max(1, Math.round(this.h * dpr));
+    const box = this.footprint();
+    // a caixa em px CSS inteiros (com folga): o verso, que fica na resolução da página, cai na mesma
+    // grade do palco inteiro; depois, em pixels da tela
+    const pad = 6;
+    const left = clamp(Math.floor(box.x0 - pad), 0, Math.ceil(this.w) - 1);
+    const top = clamp(Math.floor(box.y0 - pad), 0, Math.ceil(this.h) - 1);
+    const x0 = Math.round(left * dpr);
+    const y0 = Math.round(top * dpr);
+    const x1 = clamp(Math.round(Math.ceil(box.x1 + pad) * dpr), x0 + 1, W);
+    const y1 = clamp(Math.round(Math.ceil(box.y1 + pad) * dpr), y0 + 1, H);
+    const cw = x1 - x0;
+    const ch = y1 - y0;
+    this.camera.setViewOffset(W, H, x0, y0, cw, ch);
+    this.camera.updateProjectionMatrix();
+    if (cw !== this.device.w || ch !== this.device.h) {
+      this.device = { w: cw, h: ch };
+      this.renderer.setSize(cw, ch, false);
+      (this.uniforms.uRes.value as THREE.Vector2).set(cw, ch);
+      // o verso fica na resolução da página (px CSS), não na da tela: só guia a segunda refração
+      this.backRT.setSize(Math.max(1, Math.round(cw / Math.max(1, dpr))), Math.max(1, Math.round(ch / Math.max(1, dpr))));
+    }
+    (this.uniforms.uCrop.value as THREE.Vector4).set(x0 / W, (H - y1) / H, cw / W, ch / H);
+    Object.assign(this.crop, { x: x0 / dpr, y: y0 / dpr, w: cw / dpr, h: ch / dpr });
+  }
+
+  /** a caixa da peça na tela (px CSS do palco), somando os giros e as inclinações possíveis */
+  private footprint() {
+    this.camera.clearViewOffset();
+    this.camera.updateProjectionMatrix();
+    const geo = this.front.geometry;
+    if (!geo.boundingBox) geo.computeBoundingBox();
+    const bb = geo.boundingBox!;
+    const corners: THREE.Vector3[] = [];
+    for (let i = 0; i < 8; i++) corners.push(new THREE.Vector3(i & 1 ? bb.max.x : bb.min.x, i & 2 ? bb.max.y : bb.min.y, i & 4 ? bb.max.z : bb.min.z));
+    const box = { x0: Infinity, y0: Infinity, x1: -Infinity, y1: -Infinity };
+    const v = this._v;
+    // a inclinação vai a ±0,3 rad (o cursor em cima): um pouco de folga para a mola
+    for (const tilt of [-0.36, 0, 0.36]) {
+      for (let i = 0; i < 48; i++) {
+        this.pose((i / 48) * Math.PI * 2, tilt);
+        for (const c of corners) {
+          v.copy(c).applyMatrix4(this.front.matrixWorld).project(this.camera);
+          const x = (v.x * 0.5 + 0.5) * this.w;
+          const y = (0.5 - v.y * 0.5) * this.h;
+          box.x0 = Math.min(box.x0, x);
+          box.x1 = Math.max(box.x1, x);
+          box.y0 = Math.min(box.y0, y);
+          box.y1 = Math.max(box.y1, y);
+        }
+      }
+    }
+    return box;
   }
 
   /** px CSS por unidade do mundo no plano z = 0 */
@@ -368,15 +438,17 @@ export class GlassRenderer {
     r.render(this.scene, this.camera);
   }
 
-  /** Projeta pontos do modelo (x, y, z em altura = 1) para px CSS do canvas. */
+  /** Projeta pontos do modelo (x, y, z em altura = 1) para px CSS do palco. */
   project(points: ArrayLike<number>, out: Float32Array) {
     const v = this._v;
+    const { crop } = this;
     for (let i = 0; i < points.length / 3; i++) {
       v.set(points[i * 3], points[i * 3 + 1], points[i * 3 + 2])
         .applyMatrix4(this.front.matrixWorld)
         .project(this.camera);
-      out[i * 2] = (v.x * 0.5 + 0.5) * this.w;
-      out[i * 2 + 1] = (0.5 - v.y * 0.5) * this.h;
+      // a câmera enxerga só o recorte do canvas: de volta ao palco inteiro
+      out[i * 2] = crop.x + (v.x * 0.5 + 0.5) * crop.w;
+      out[i * 2 + 1] = crop.y + (0.5 - v.y * 0.5) * crop.h;
     }
     return out;
   }

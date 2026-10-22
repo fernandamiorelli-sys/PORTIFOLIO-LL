@@ -1,15 +1,8 @@
 .manifesto {
   position: relative;
-  /* o palco fica preso por 3,7 telas: as frases trocam com a rolagem (cerca de 0,63 tela cada, com a
-     roda do mouse mais lenta ali dentro) e, no fim, entra o texto do clube */
-  height: 470vh;
-}
-
-/* no toque a rolagem é nativa (a roda lenta não vale): cada frase pede cerca de 0,9 tela */
-@media (hover: none) and (pointer: coarse) {
-  .manifesto {
-    height: 630vh;
-  }
+  /* o palco fica preso por 2,95 telas: as frases trocam com a rolagem, meia tela cada (uma rolada de
+     trackpad ou uma deslizada no celular, mais ou menos), e no fim entra o texto do clube */
+  height: 395vh;
 }
 
 .manifesto__sticky {
@@ -232,7 +225,7 @@
   translate: -50% 0;
   display: grid;
   justify-items: center;
-  gap: 0.7rem;
+  gap: 0.8rem;
   transition: opacity 0.4s ease;
 }
 
@@ -243,13 +236,13 @@
 /* um segmento por frase; o da vez enche com a rolagem */
 .manifesto__rail-segs {
   display: flex;
-  gap: 6px;
+  gap: 8px;
 }
 
 .manifesto__rail span {
   position: relative;
-  width: 26px;
-  height: 2px;
+  width: 34px;
+  height: 3px;
   background: var(--line);
 }
 
@@ -264,6 +257,8 @@
 /* o convite para seguir rolando (some com o trilho, no texto do clube) */
 .manifesto__next {
   margin: 0;
+  font-size: calc(var(--step--1) * 1.18);
+  letter-spacing: 0.06em;
   color: var(--fg);
 }
 
