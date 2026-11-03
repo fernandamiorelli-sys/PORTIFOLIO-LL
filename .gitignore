@@ -8,3 +8,7 @@ media-src/
 __pycache__/
 *.pyc
 *.tsbuildinfo
+# Real SFX: venv, modelos e índices de embeddings que ela gera na própria pasta
+.claude/skills/real-sfx/vendor/venv/
+.claude/skills/real-sfx/vendor/models/
+.claude/skills/real-sfx/library_embeddings.*
