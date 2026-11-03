@@ -8,7 +8,9 @@ media-src/
 __pycache__/
 *.pyc
 *.tsbuildinfo
-# Real SFX: venv, modelos e índices de embeddings que ela gera na própria pasta
+# Real SFX: os sons de interface (uisfx) moram em vendor/node_modules e entram no git;
+# o venv, os modelos e os índices de embeddings que ela gera na própria pasta, não
+!.claude/skills/real-sfx/vendor/node_modules/
 .claude/skills/real-sfx/vendor/venv/
 .claude/skills/real-sfx/vendor/models/
 .claude/skills/real-sfx/library_embeddings.*
