@@ -10,8 +10,13 @@ export const SITE = {
   version: 'ACERVO v2026.07',
 } as const;
 
+/** WhatsApp: o número com país e DDD, só os dígitos, e a mensagem que já chega escrita na conversa
+ *  (quem clica pode editar antes de enviar). O link direto do WhatsApp (wa.me) não expira */
+const WHATSAPP = '5551991541559';
+const WHATSAPP_HELLO = 'Olá! Vi o portfólio Tudo o que não somos e quero conversar sobre um projeto.';
+
 export const CONTACT = {
-  whatsapp: 'https://w.app/phbaih',
+  whatsapp: `https://wa.me/${WHATSAPP}?text=${encodeURIComponent(WHATSAPP_HELLO)}`,
   email: 'trabalhecomlucas07@gmail.com',
 } as const;
 

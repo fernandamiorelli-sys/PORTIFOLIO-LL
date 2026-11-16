@@ -20,11 +20,8 @@ const TRUTH = PHRASES.length - 1;
 /** fração da rolagem do manifesto para o texto do clube, no fim; o resto se divide entre as frases */
 const ABOUT_SHARE = 0.15;
 const PHRASE_SHARE = (1 - ABOUT_SHARE) / PHRASES.length;
-/** flashes do acervo: cada foto fica este tempo (s); as rajadas têm de 3 a 5 fotos emendadas e, entre
- *  uma rajada e outra, um escuro na mesma proporção (cerca de um terço do tempo) */
+/** flashes do acervo: cada foto fica este tempo (s), uma atrás da outra, sem escuro entre elas */
 const FLASH_HOLD = 0.3;
-const flashBurst = () => 3 + Math.floor(Math.random() * 3);
-const flashGap = () => 0.48 + Math.random() * 0.36;
 /** a altura do recorte de cada foto nos flashes (object-position, em %: 0 é o alto da foto, 100 o pé).
  *  Na tela deitada, a foto em pé enche a largura e só uma faixa da altura aparece: esta é a faixa com o
  *  assunto (o rosto, o escudo, o título). Na tela em pé, quem sobra é a largura, e o recorte segue no
@@ -142,8 +139,8 @@ export function Manifesto() {
   const [about, setAbout] = useState(false);
   const [tall, setTall] = useState(() => window.matchMedia('(max-aspect-ratio: 1/1)').matches);
   const [place, setPlace] = useState<GlassPlace>(() => (tall ? { x: 0.68, y: 0.7, h: 0.4 } : { x: 0.78, y: 0.45, h: 0.54 }));
-  /** os flashes correm (frases na tela) e o pedido de uma rajada já, na troca de frase */
-  const flashing = useRef({ on: false, kick: false });
+  /** os flashes correm: as frases estão na tela (no texto do clube, no fim, eles param) */
+  const flashing = useRef({ on: false });
   // aberto o site, as fotos dos flashes já vêm (e ficam prontas atrás do vidro) enquanto o idealizador
   // está na tela: carregar, decodificar e recortar não cai na chegada ao manifesto
   const early = useExperience((s) => s.phase === 'site') && !reducedMotion;
@@ -199,10 +196,7 @@ export function Manifesto() {
     const filled = segs.map(() => -1);
     const state = { index: 0, live: false, about: false };
     const sync = () => {
-      const on = state.live && !state.about;
-      // os flashes começam com uma rajada na hora
-      if (on && !flashing.current.on) flashing.current.kick = true;
-      flashing.current.on = on;
+      flashing.current.on = state.live && !state.about;
     };
     const update = (p: number) => {
       const k = p / PHRASE_SHARE;
@@ -254,23 +248,16 @@ export function Manifesto() {
     };
   }, []);
 
-  // a troca de frase puxa uma rajada de flashes na hora
-  useEffect(() => {
-    if (index > 0) flashing.current.kick = true;
-  }, [index]);
-
-  // flashes do acervo: enquanto as frases estão na tela, rajadas de fotos emendadas uma na outra, com um
-  // escuro entre as rajadas. As fotos são escuras e esverdeadas (filtro e opacidade em
-  // manifesto.css): nenhuma passa de ~7% de luminância, então nenhuma troca (de foto para foto ou para
-  // o escuro) chega ao limiar de flash das diretrizes de acessibilidade, 10%. Com movimento reduzido,
-  // não há flashes
+  // flashes do acervo: enquanto as frases estão na tela, uma foto atrás da outra, sem escuro entre elas
+  // (no texto do clube, no fim, elas param). As fotos são escuras e esverdeadas (filtro e opacidade em
+  // manifesto.css): nenhuma passa de ~7% de luminância, então nenhuma troca chega ao limiar de flash
+  // das diretrizes de acessibilidade, 10%. Com movimento reduzido, não há flashes
   useEffect(() => {
     const flash = flashRef.current;
     if (!flash || reducedMotion) return;
     const imgs = Array.from(flash.querySelectorAll('img'));
     if (!imgs.length) return;
     let shown: HTMLImageElement | null = null;
-    let left = 0;
     let next = 0;
     let deck: number[] = [];
     // cada foto só entra depois de decodificada (fora da thread principal, assim que carrega): a
@@ -292,35 +279,20 @@ export function Manifesto() {
       return null;
     };
     const tick = (time: number) => {
-      const f = flashing.current;
-      if (!f.on) {
+      if (!flashing.current.on) {
         hide();
-        left = 0;
         next = 0;
         return;
       }
-      if (f.kick) {
-        f.kick = false;
-        // fora de uma rajada: a próxima começa já
-        if (!shown) {
-          if (!left) left = flashBurst();
-          next = 0;
-        }
-      }
       if (time < next) return;
-      const img = left > 0 ? draw() : null;
+      next = time + FLASH_HOLD;
+      // a próxima entra no lugar da anterior no mesmo quadro: nunca fica um escuro entre as duas. Sem
+      // outra pronta (só no começo, enquanto as fotos chegam), a da vez fica
+      const img = draw();
+      if (!img) return;
       hide();
-      if (left > 0) {
-        left -= 1;
-        if (img) {
-          img.classList.add('is-on');
-          shown = img;
-        }
-        next = time + FLASH_HOLD;
-      } else {
-        left = flashBurst();
-        next = time + flashGap();
-      }
+      img.classList.add('is-on');
+      shown = img;
     };
     gsap.ticker.add(tick);
     return () => {
